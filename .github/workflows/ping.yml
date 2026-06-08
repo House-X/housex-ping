@@ -1,0 +1,18 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    - cron: '0 8 */3 * *'  # كل 3 أيام الساعة 8 صباحاً
+  workflow_dispatch:        # تشغيل يدوي عند الحاجة
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            "https://rlhbxrcofivyxftwoxca.supabase.co/rest/v1/user_profiles?select=id&limit=1" \
+            -H "apikey: sb_publishable_tne4h0L8csjpMilRBUa42A_EGCgIVAP" \
+            -H "Authorization: Bearer sb_publishable_tne4h0L8csjpMilRBUa42A_EGCgIVAP"
+          echo " — Supabase pinged successfully"
