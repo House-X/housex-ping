@@ -1,0 +1,24 @@
+name: housex-news-engine
+
+on:
+  schedule:
+    # كل يوم اثنين الساعة 06:00 UTC = 09:00 بتوقيت إسطنبول
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}   # زر تشغيل يدوي من تبويب Actions
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger news engine
+        env:
+          FUNCTION_URL: ${{ secrets.NEWS_FN_URL }}
+          CRON_SECRET:  ${{ secrets.NEWS_CRON_SECRET }}
+        run: |
+          echo "تشغيل محرّك الأخبار..."
+          curl -sS -X POST "$FUNCTION_URL" \
+            -H "x-cron-key: $CRON_SECRET" \
+            -H "content-type: application/json" \
+            --fail-with-body
+          echo ""
+          echo "تم."
