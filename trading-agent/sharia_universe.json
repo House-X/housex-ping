@@ -1,0 +1,7 @@
+{
+  "_note": "Only instruments listed here can be traded. You (ideally with your Sharia advisor) own this list; the agent can read it but never edit it.",
+  "crypto_spot_bases": ["BTC", "ETH"],
+  "stocks_etfs": ["SPUS", "HLAL"],
+  "crypto_blocked_bases": ["DOGE", "SHIB", "PEPE", "FLOKI", "BONK", "WIF"],
+  "_crypto_blocked_reason": "Meme coins: no underlying utility, driven by speculation (gharar / maysir)."
+}

@@ -13,19 +13,22 @@ from rich.prompt import Confirm
 from agent.config import settings
 from agent.core import TradingAgent
 from agent.paper_broker import PaperBroker
+from agent.sharia import universe
 
 console = Console()
 
 HELP = """[bold]أوامر سريعة[/]
   /account   ملخص الحساب والصفقات المفتوحة
   /check     فحص وقف الخسارة وجني الأرباح على الصفقات المفتوحة
+  /halal     عرض قائمة الأصول المعتمدة شرعياً
   /new       محادثة جديدة
   /exit      خروج
 
 [bold]أمثلة[/]
   حلّل BTC/USDT واعطني أفضل سيناريو للدخول اليوم
-  ما أهم الأخبار المؤثرة على الذهب XAUUSD هذا الأسبوع؟
-  افتح صفقة شراء على EURUSD حسب الخطة السابقة
+  ما أهم الأخبار المؤثرة على الذهب هذا الأسبوع؟ وما البديل الحلال للتداول عليه؟
+  هل عملة ADA/USDT متوافقة مع الشريعة؟
+  افتح الصفقة حسب الخطة السابقة
   راجع آخر 10 صفقات وقل لي أين أخطئ
 """
 
@@ -71,6 +74,9 @@ def main() -> None:
             continue
         if text == "/account":
             console.print_json(json.dumps(broker.account(), ensure_ascii=False, default=str))
+            continue
+        if text == "/halal":
+            console.print_json(json.dumps(universe(), ensure_ascii=False))
             continue
         if text == "/check":
             closed = broker.check_stops()

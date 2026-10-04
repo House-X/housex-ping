@@ -4,7 +4,10 @@ from __future__ import annotations
 import json
 from typing import Any, Callable
 
-from . import market_data
+import time
+
+from . import market_data, sharia
+from .config import settings
 from .indicators import snapshot
 
 TIMEFRAMES = ["15m", "1h", "4h", "1d", "1w"]
@@ -30,6 +33,19 @@ CLIENT_TOOLS: list[dict[str, Any]] = [
         },
     },
     {
+        "name": "check_sharia",
+        "description": (
+            "Sharia compliance screen for an instrument: compliant / not_compliant / review_required, "
+            "with reasons and a halal alternative. Only 'compliant' instruments can be traded."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"symbol": {"type": "string"}},
+            "required": ["symbol"],
+            "additionalProperties": False,
+        },
+    },
+    {
         "name": "get_account",
         "description": "Account balance, equity, open positions with live P&L and R-multiple, and active risk rules.",
         "input_schema": {"type": "object", "properties": {}, "additionalProperties": False},
@@ -37,39 +53,39 @@ CLIENT_TOOLS: list[dict[str, Any]] = [
     {
         "name": "preview_trade",
         "description": (
-            "Dry-run a trade: returns current entry price, position size from the risk rules, "
-            "reward/risk, leverage and any rule violations. Always preview before open_trade."
+            "Dry-run a spot BUY: returns current entry price, Sharia screen, position size from the "
+            "risk rules (cash-funded, no leverage), reward/risk and any violations. Always preview "
+            "before open_trade."
         ),
         "input_schema": {
             "type": "object",
             "properties": {
                 "symbol": {"type": "string"},
-                "side": {"type": "string", "enum": ["buy", "sell"]},
                 "stop_loss": {"type": "number"},
                 "take_profit": {"type": "number"},
                 "risk_pct": {"type": "number", "description": "Optional, capped by the configured max"},
             },
-            "required": ["symbol", "side", "stop_loss", "take_profit"],
+            "required": ["symbol", "stop_loss", "take_profit"],
             "additionalProperties": False,
         },
     },
     {
         "name": "open_trade",
         "description": (
-            "Open a market position. The human trader must approve it in the terminal; if they decline "
-            "you will get an error result - respect it and do not retry the same order."
+            "Buy a spot position at market with cash (no leverage, no shorting). Refused unless the "
+            "symbol passes the Sharia screen and was analysed with analyze_market recently. The human "
+            "trader must approve it; if they decline, respect it and do not retry the same order."
         ),
         "input_schema": {
             "type": "object",
             "properties": {
                 "symbol": {"type": "string"},
-                "side": {"type": "string", "enum": ["buy", "sell"]},
                 "stop_loss": {"type": "number"},
                 "take_profit": {"type": "number"},
                 "rationale": {"type": "string", "description": "Setup, confluences and invalidation - saved to the journal"},
                 "risk_pct": {"type": "number"},
             },
-            "required": ["symbol", "side", "stop_loss", "take_profit", "rationale"],
+            "required": ["symbol", "stop_loss", "take_profit", "rationale"],
             "additionalProperties": False,
         },
     },
@@ -152,6 +168,7 @@ class ToolExecutor:
     def __init__(self, broker, confirm: Callable[[str, dict], bool]):
         self.broker = broker
         self.confirm = confirm
+        self.analysed_at: dict[str, float] = {}  # symbol -> time of last successful analysis
 
     def run(self, name: str, args: dict) -> str:
         return json.dumps(getattr(self, f"_{name}")(**args), ensure_ascii=False, default=str)
@@ -163,7 +180,21 @@ class ToolExecutor:
                 out["timeframes"][tf] = snapshot(market_data.fetch_ohlcv(symbol, tf, 300))
             except Exception as e:
                 out["timeframes"][tf] = {"error": str(e)}
+        if any("error" not in v for v in out["timeframes"].values()):
+            self.analysed_at[symbol.upper()] = time.time()
+        out["sharia"] = sharia.check(symbol)
         return out
+
+    def _check_sharia(self, symbol: str) -> dict:
+        return sharia.check(symbol)
+
+    def _require_fresh_analysis(self, symbol: str) -> None:
+        ts = self.analysed_at.get(symbol.upper())
+        max_age = settings.analysis_max_age_min * 60
+        if ts is None or time.time() - ts > max_age:
+            raise PermissionError(
+                f"No data analysis of {symbol.upper()} in the last {settings.analysis_max_age_min} "
+                "minutes. Run analyze_market (and check the news) before opening a trade.")
 
     def _get_account(self) -> dict:
         return self.broker.account()
@@ -172,9 +203,10 @@ class ToolExecutor:
         return self.broker.preview_order(**kw)
 
     def _open_trade(self, rationale: str, **kw) -> dict:
+        self._require_fresh_analysis(kw["symbol"])
         preview = self.broker.preview_order(**kw)
         if not preview["allowed"]:
-            raise ValueError("Rejected by risk rules: " + "; ".join(preview["violations"]))
+            raise ValueError("Rejected: " + "; ".join(preview["violations"]))
         if not self.confirm("OPEN TRADE", {**preview, "rationale": rationale}):
             raise PermissionError("Trader declined this order.")
         return {"opened": self.broker.open_position(rationale=rationale, **kw)}

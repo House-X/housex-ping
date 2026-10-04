@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from . import risk
+from . import risk, sharia
 from .config import settings
 from .market_data import last_price
 
@@ -45,8 +45,7 @@ class PaperBroker:
     # ── helpers ─────────────────────────────────────────
     @staticmethod
     def _pnl(pos: dict, price: float) -> float:
-        direction = 1 if pos["side"] == "buy" else -1
-        return (price - pos["entry"]) * pos["units"] * direction
+        return (price - pos["entry"]) * pos["units"]  # spot long only
 
     def _find(self, position_id: str) -> dict:
         for p in self.state["positions"]:
@@ -75,6 +74,7 @@ class PaperBroker:
         return {
             "mode": "paper",
             "balance": round(self.state["balance"], 2),
+            "free_cash": round(self.free_cash(), 2),
             "equity": round(equity, 2),
             "unrealized_pnl": round(unrealized, 2),
             "today_realized_pnl": round(self.today_pnl(), 2),
@@ -83,32 +83,41 @@ class PaperBroker:
             "risk_rules": risk.rules_summary(),
         }
 
-    def preview_order(self, symbol: str, side: str, stop_loss: float, take_profit: float,
+    def free_cash(self) -> float:
+        """Cash not tied up in open positions. Spot only: we can never spend more than this."""
+        return self.state["balance"] - sum(p["cost"] for p in self.state["positions"])
+
+    def preview_order(self, symbol: str, stop_loss: float, take_profit: float,
                       risk_pct: float | None = None, entry: float | None = None) -> dict:
+        compliance = sharia.check(symbol)
         entry = entry or self.price(symbol)
         equity = self.account()["equity"]
-        errors = risk.validate_trade(side, entry, stop_loss, take_profit,
-                                     len(self.state["positions"]), self.today_pnl(), equity)
-        sizing = risk.position_size(equity, entry, stop_loss, risk_pct) if not errors else None
+        cash = self.free_cash()
+        errors = [] if compliance["tradable"] else \
+            [f"Sharia screen: {compliance['status']} - " + " ".join(compliance["reasons"])]
+        errors += risk.validate_trade(entry, stop_loss, take_profit, len(self.state["positions"]),
+                                      self.today_pnl(), equity, cash)
+        sizing = risk.position_size(equity, cash, entry, stop_loss, risk_pct) if not errors else None
         return {
-            "symbol": symbol.upper(), "side": side, "entry": entry,
+            "symbol": symbol.upper(), "side": "buy (spot)", "entry": entry,
             "stop_loss": stop_loss, "take_profit": take_profit,
-            "reward_risk": round(abs(take_profit - entry) / abs(entry - stop_loss), 2)
-                           if entry != stop_loss else None,
-            "sizing": sizing, "allowed": not errors, "violations": errors,
+            "reward_risk": round((take_profit - entry) / (entry - stop_loss), 2)
+                           if entry > stop_loss else None,
+            "free_cash": round(cash, 2), "sizing": sizing, "sharia": compliance,
+            "allowed": not errors, "violations": errors,
         }
 
-    def open_position(self, symbol: str, side: str, stop_loss: float, take_profit: float,
+    def open_position(self, symbol: str, stop_loss: float, take_profit: float,
                       rationale: str, risk_pct: float | None = None) -> dict:
-        preview = self.preview_order(symbol, side, stop_loss, take_profit, risk_pct)
+        preview = self.preview_order(symbol, stop_loss, take_profit, risk_pct)
         if not preview["allowed"]:
-            raise ValueError("Trade rejected by risk rules: " + "; ".join(preview["violations"]))
+            raise ValueError("Trade rejected: " + "; ".join(preview["violations"]))
         s = preview["sizing"]
         pos = {
-            "id": uuid.uuid4().hex[:8], "symbol": symbol.upper(), "side": side,
+            "id": uuid.uuid4().hex[:8], "symbol": symbol.upper(), "side": "buy",
             "units": s["units"], "entry": preview["entry"],
             "stop_loss": stop_loss, "take_profit": take_profit,
-            "risk_amount": s["risk_amount"], "notional": s["notional"],
+            "risk_amount": s["risk_amount"], "cost": s["cost"],
             "opened_at": _now(), "rationale": rationale,
         }
         self.state["positions"].append(pos)
@@ -132,6 +141,10 @@ class PaperBroker:
     def modify_position(self, position_id: str, stop_loss: float | None = None,
                         take_profit: float | None = None) -> dict:
         pos = self._find(position_id)
+        new_sl = pos["stop_loss"] if stop_loss is None else stop_loss
+        new_tp = pos["take_profit"] if take_profit is None else take_profit
+        if new_sl >= new_tp:
+            raise ValueError("Stop loss must stay below take profit")
         if stop_loss is not None:
             pos["stop_loss"] = stop_loss
         if take_profit is not None:
@@ -144,10 +157,9 @@ class PaperBroker:
         closed = []
         for pos in list(self.state["positions"]):
             px = self.price(pos["symbol"])
-            buy = pos["side"] == "buy"
-            if (buy and px <= pos["stop_loss"]) or (not buy and px >= pos["stop_loss"]):
+            if px <= pos["stop_loss"]:
                 closed.append(self.close_position(pos["id"], "stop_loss hit", pos["stop_loss"]))
-            elif (buy and px >= pos["take_profit"]) or (not buy and px <= pos["take_profit"]):
+            elif px >= pos["take_profit"]:
                 closed.append(self.close_position(pos["id"], "take_profit hit", pos["take_profit"]))
         return closed
 

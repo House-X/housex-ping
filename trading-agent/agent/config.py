@@ -25,7 +25,8 @@ class Settings:
     max_daily_loss_pct: float = _f("MAX_DAILY_LOSS_PCT", 3.0)
     max_open_positions: int = int(_f("MAX_OPEN_POSITIONS", 3))
     min_reward_risk: float = _f("MIN_REWARD_RISK", 1.5)
-    max_leverage: float = _f("MAX_LEVERAGE", 5)
+    max_position_pct: float = _f("MAX_POSITION_PCT", 30.0)
+    analysis_max_age_min: int = int(_f("ANALYSIS_MAX_AGE_MIN", 60))
 
     crypto_exchange: str = os.getenv("CRYPTO_EXCHANGE", "binance")
     exchange_api_key: str = os.getenv("EXCHANGE_API_KEY", "")
