@@ -2,7 +2,8 @@
 
 Symbol conventions accepted from the agent:
   crypto : BTC/USDT, ETH/USDT, SOL/USDT ...  (anything containing "/" with a crypto quote)
-  forex  : EURUSD, GBPJPY, USDTRY ...       (6 letters)
+  forex  : EURUSD, GBPJPY, USDTRY ...       (two ISO currency codes)
+  BIST   : THYAO.IS, ASELS.IS ...           (Borsa Istanbul, priced in TRY)
   other  : XAUUSD (gold), XAGUSD, US30, NAS100, SPX500, OIL, or any raw yfinance ticker
 """
 from __future__ import annotations
@@ -14,6 +15,8 @@ import yfinance as yf
 from .config import settings
 
 CRYPTO_QUOTES = ("USDT", "USDC", "BUSD", "BTC", "ETH", "FDUSD")
+CURRENCIES = {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "TRY", "SAR", "AED", "KWD",
+              "QAR", "EGP", "CNY", "SEK", "NOK", "DKK", "PLN", "ZAR", "MXN", "SGD", "HKD", "INR"}
 
 YF_ALIASES = {
     "XAUUSD": "GC=F", "GOLD": "GC=F",
@@ -38,9 +41,47 @@ def asset_class(symbol: str) -> str:
         return "crypto"
     if s in YF_ALIASES or s.startswith("^") or "=" in s:
         return "index_commodity"
-    if len(s) == 6 and s.isalpha():
+    if len(s) == 6 and s[:3] in CURRENCIES and s[3:] in CURRENCIES:
         return "forex"
     return "stock"
+
+
+def currency_of(symbol: str) -> str:
+    """Currency the instrument is priced in."""
+    s = symbol.upper()
+    if asset_class(s) == "crypto":
+        quote = s.split("/")[1].split(":")[0]
+        return "USD" if quote in ("USDT", "USDC", "BUSD", "FDUSD") else quote
+    if s.endswith(".IS"):
+        return "TRY"
+    return "USD"
+
+
+def fx_to_usd(currency: str) -> float:
+    """Multiply an amount in `currency` by this to get USD."""
+    if currency == "USD":
+        return 1.0
+    if currency in CRYPTO_QUOTES:  # e.g. ETH-quoted pair
+        return last_price(f"{currency}/USDT")
+    rate = float(fetch_ohlcv(f"USD{currency}", "1d", 5)["close"].iloc[-1])
+    return 1.0 / rate
+
+
+def fetch_daily_many(tickers: list[str], period: str = "1y") -> dict[str, pd.DataFrame]:
+    """Batch-download daily bars for many Yahoo tickers in one request (stocks scanner)."""
+    raw = yf.download(tickers, period=period, interval="1d", group_by="ticker",
+                      progress=False, auto_adjust=False, threads=True)
+    out = {}
+    for t in tickers:
+        try:
+            df = (raw[t] if len(tickers) > 1 else raw).rename(columns=str.lower)
+            df = df[["open", "high", "low", "close", "volume"]].dropna()
+            if len(df) >= 60:
+                df.index = pd.to_datetime(df.index, utc=True)
+                out[t] = df
+        except KeyError:
+            continue
+    return out
 
 
 def _crypto_exchange() -> ccxt.Exchange:

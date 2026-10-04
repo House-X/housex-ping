@@ -6,7 +6,7 @@ from typing import Any, Callable
 
 import time
 
-from . import market_data, sharia
+from . import crypto_research, market_data, scanner, sharia
 from .config import settings
 from .indicators import snapshot
 
@@ -18,8 +18,9 @@ CLIENT_TOOLS: list[dict[str, Any]] = [
         "description": (
             "Multi-timeframe technical snapshot for one instrument: trend, EMA20/50/200, RSI, MACD, "
             "ADX, ATR, Bollinger, recent swing support/resistance, volume. Call this before forming "
-            "any view or trade idea. Symbols: crypto 'BTC/USDT', forex 'EURUSD', gold 'XAUUSD', "
-            "indices 'NAS100','US30','SPX500', oil 'OIL', or a raw Yahoo ticker."
+            "any view or trade idea. Symbols: crypto 'BTC/USDT', Turkish stocks with .IS suffix "
+            "'THYAO.IS', US stocks 'AAPL', forex 'USDTRY', gold 'XAUUSD', indices 'BIST100','NAS100', "
+            "'SPX500', 'DXY', oil 'OIL', or a raw Yahoo ticker."
         ),
         "input_schema": {
             "type": "object",
@@ -35,12 +36,64 @@ CLIENT_TOOLS: list[dict[str, Any]] = [
     {
         "name": "check_sharia",
         "description": (
-            "Sharia compliance screen for an instrument: compliant / not_compliant / review_required, "
-            "with reasons and a halal alternative. Only 'compliant' instruments can be traded."
+            "Sharia compliance screen: compliant / not_compliant / review_required, with reasons and a "
+            "halal alternative. Stocks (US and .IS) are screened automatically on business activity "
+            "and AAOIFI ratios (debt, cash, interest income) with the purification %. Crypto is "
+            "tradable only if the trader approved it. Only 'compliant' instruments can be traded."
         ),
         "input_schema": {
             "type": "object",
             "properties": {"symbol": {"type": "string"}},
+            "required": ["symbol"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "scan_turkish_stocks",
+        "description": (
+            "Scan liquid Borsa Istanbul stocks for long setups (breakout, pullback in uptrend, trend "
+            "continuation, early reversal), ranked by a 0-100 technical score with relative strength "
+            "vs BIST100 and USD-adjusted returns, then filtered by the automatic Sharia screen. "
+            "Takes ~1 minute. Follow up on the best names with analyze_market and news."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "top_n": {"type": "integer", "minimum": 1, "maximum": 25},
+                "include_review": {"type": "boolean",
+                                   "description": "Also list stocks whose Sharia status needs manual review"},
+            },
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "scan_crypto",
+        "description": (
+            "Scan Binance spot USDT markets (stablecoins, leveraged tokens and blocked coins removed) "
+            "for long setups, scored 0-100 with relative strength vs BTC. Modes: 'established' = most "
+            "liquid coins; 'new_listings' = listed in the last ~120 days; 'trending' = CoinGecko "
+            "trending coins available on Binance. Each result shows whether it is approved to trade."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "mode": {"type": "string", "enum": ["established", "new_listings", "trending"]},
+                "top_n": {"type": "integer", "minimum": 1, "maximum": 25},
+            },
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "research_crypto",
+        "description": (
+            "Fundamental research on one coin (CoinGecko): what it does, categories, market cap, FDV "
+            "vs market cap (unlock/dilution risk), supply, ATH drawdown, developer activity, red "
+            "flags, and a category-based Sharia pre-screen. Use before recommending any coin, and "
+            "pair it with web_search for team, unlock schedule, audits and recent news."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"symbol": {"type": "string", "description": "e.g. 'SOL' or 'SOL/USDT'"}},
             "required": ["symbol"],
             "additionalProperties": False,
         },
@@ -137,7 +190,8 @@ SERVER_TOOLS: list[dict[str, Any]] = [
 
 ALL_TOOLS = CLIENT_TOOLS + SERVER_TOOLS
 _SCHEMAS = {t["name"]: t["input_schema"] for t in CLIENT_TOOLS}
-_PY_TYPES = {"string": str, "number": (int, float), "integer": int, "array": list, "object": dict}
+_PY_TYPES = {"string": str, "number": (int, float), "integer": int, "boolean": bool,
+             "array": list, "object": dict}
 
 
 def validate_input(name: str, data: Any) -> str | None:
@@ -155,7 +209,8 @@ def validate_input(name: str, data: Any) -> str | None:
         if key not in props:
             return f"Unexpected field '{key}'"
         spec = props[key]
-        if not isinstance(val, _PY_TYPES[spec["type"]]) or isinstance(val, bool):
+        is_bool = isinstance(val, bool)
+        if not isinstance(val, _PY_TYPES[spec["type"]]) or (is_bool and spec["type"] != "boolean"):
             return f"Field '{key}' must be {spec['type']}"
         if "enum" in spec and val not in spec["enum"]:
             return f"Field '{key}' must be one of {spec['enum']}"
@@ -195,6 +250,17 @@ class ToolExecutor:
             raise PermissionError(
                 f"No data analysis of {symbol.upper()} in the last {settings.analysis_max_age_min} "
                 "minutes. Run analyze_market (and check the news) before opening a trade.")
+
+    def _scan_turkish_stocks(self, top_n: int = 10, include_review: bool = False) -> dict:
+        return scanner.scan_bist(top_n=top_n, include_review=include_review)
+
+    def _scan_crypto(self, mode: str = "established", top_n: int = 10) -> dict:
+        return scanner.scan_crypto(mode=mode, top_n=top_n)
+
+    def _research_crypto(self, symbol: str) -> dict:
+        r = crypto_research.research(symbol)
+        r["approval_status"] = sharia.check(f"{symbol.upper().split('/')[0]}/USDT")["status"]
+        return r
 
     def _get_account(self) -> dict:
         return self.broker.account()

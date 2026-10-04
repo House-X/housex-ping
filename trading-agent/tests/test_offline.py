@@ -68,7 +68,7 @@ def test_validation_rules():
 ])
 def test_sharia_screen(symbol, status):
     from agent.sharia import check
-    r = check(symbol)
+    r = check(symbol, auto_screen=False)
     assert r["status"] == status
     assert r["tradable"] == (status == "compliant")
 
@@ -80,7 +80,7 @@ def test_non_compliant_symbol_is_rejected(broker):
 
 
 def test_paper_round_trip(broker):
-    pos = broker.open_position("BTC/USDT", 90, 130, "test")
+    broker.open_position("BTC/USDT", 90, 130, "test")
     assert broker.free_cash() == pytest.approx(9_000)
     broker._prices["BTC/USDT"] = 131
     closed = broker.check_stops()
@@ -142,3 +142,135 @@ def test_agent_loop_with_fake_client(broker, monkeypatch):
     assert agent.ask("preview") == "done"
     result = json.loads(agent.messages[2]["content"][0]["content"])
     assert result["allowed"] and result["reward_risk"] == 3.0
+
+
+# ── Phase 2: stock screen, multi-currency, scanners, crypto research ──
+
+from agent import scanner, stock_screen
+from agent.crypto_research import sharia_prescreen, tokenomics_flags
+
+CLEAN = {"name": "Clean Co", "sector": "Industrials", "industry": "Airlines", "market_cap": 1000,
+         "total_debt": 200, "cash_and_investments": 100, "interest_income": 2, "revenue": 500}
+
+
+@pytest.mark.parametrize("override,status,reason", [
+    ({}, "compliant", "Passes"),
+    ({"industry": "Banks - Regional"}, "not_compliant", "Prohibited core business"),
+    ({"industry": "Beverages - Brewers"}, "not_compliant", "Prohibited core business"),
+    ({"total_debt": 400}, "not_compliant", "Interest-bearing debt"),
+    ({"cash_and_investments": 350}, "not_compliant", "Cash/interest-bearing"),
+    ({"interest_income": 40}, "not_compliant", "Interest income"),
+    ({"total_debt": None}, "review_required", "Missing balance-sheet"),
+    ({"industry": "Aerospace & Defense"}, "review_required", "Mixed-activity"),
+])
+def test_stock_screen_rules(override, status, reason):
+    r = stock_screen.evaluate("TEST.IS", {**CLEAN, **override})
+    assert r["status"] == status
+    assert any(reason in x for x in r["reasons"])
+
+
+def test_stock_screen_purification():
+    r = stock_screen.evaluate("TEST.IS", CLEAN)
+    assert r["purification_pct"] == pytest.approx(0.4)
+
+
+def test_sharia_check_uses_auto_screen_for_stocks(monkeypatch):
+    from agent import sharia
+    monkeypatch.setattr(stock_screen, "screen", lambda s: stock_screen.evaluate(s, CLEAN))
+    r = sharia.check("THYAO.IS")
+    assert r["tradable"] and r["ratios"]["debt_to_market_cap"] == 0.2
+
+
+def test_try_position_pnl_in_usd(tmp_path, monkeypatch):
+    """Buy a BIST stock in TRY: P&L must be in USD and include the lira's move."""
+    from agent import sharia
+    monkeypatch.setattr(sharia, "check", lambda s, **k: {"status": "compliant", "tradable": True, "reasons": []})
+    prices, fx = {"THYAO.IS": 300.0}, {"TRY": 1 / 40, "USD": 1.0}
+    b = PaperBroker(state_file=tmp_path / "s.json", price_fn=lambda s: prices[s], fx_fn=lambda c: fx[c])
+    pos = b.open_position("THYAO.IS", 280, 360, "test")
+    assert pos["currency"] == "TRY"
+    assert pos["risk_amount"] == pytest.approx(100, rel=1e-3)  # 1% of $10k, in USD
+    assert pos["cost"] <= 3000
+    prices["THYAO.IS"] = 330.0   # +10% in TRY
+    fx["TRY"] = 1 / 44           # ...but lira lost ~9%
+    usd_pnl = b.account()["unrealized_pnl"]
+    expected = pos["units"] * (330 / 44 - 300 / 40)
+    assert usd_pnl == pytest.approx(expected, abs=0.01)
+    assert usd_pnl < pos["units"] * (330 - 300) / 40  # smaller than the naive TRY gain
+
+
+def test_technical_score_ranks_uptrend_above_downtrend():
+    up = scanner.technical_score(synthetic_ohlcv(drift=0.004))
+    down = scanner.technical_score(synthetic_ohlcv(drift=-0.004))
+    assert up["score"] > down["score"]
+    assert up["setup"] != "none" and down["setup"] == "none"
+
+
+def test_scan_bist_filters_by_sharia(monkeypatch):
+    monkeypatch.setattr(scanner, "bist_universe", lambda: ["GOOD.IS", "BANK.IS"])
+
+    def fetch_many(tickers):
+        out = {t: synthetic_ohlcv(drift=0.004, seed=i) * 1 for i, t in enumerate(tickers)}
+        for t in out:
+            out[t]["volume"] = 1e6  # liquid: close ~ hundreds * 1e6 > 50M TRY
+        return out
+
+    def screen(sym):
+        ok = sym == "GOOD.IS"
+        return {"status": "compliant" if ok else "not_compliant", "tradable": ok,
+                "reasons": [] if ok else ["Prohibited core business: Banks"], "purification_pct": 0}
+
+    r = scanner.scan_bist(fetch_many=fetch_many, screen=screen, min_score=0)
+    assert [o["symbol"] for o in r["opportunities"]] == ["GOOD.IS"]
+    assert r["excluded_by_sharia_screen"][0]["symbol"] == "BANK.IS"
+    assert "return_3m_usd_pct" in r["opportunities"][0]
+
+
+class FakeExchange:
+    id = "binance"
+    markets = {
+        "BTC/USDT": {"spot": True, "active": True, "quote": "USDT", "base": "BTC"},
+        "ETH/USDT": {"spot": True, "active": True, "quote": "USDT", "base": "ETH"},
+        "NEW/USDT": {"spot": True, "active": True, "quote": "USDT", "base": "NEW"},
+        "DOGE/USDT": {"spot": True, "active": True, "quote": "USDT", "base": "DOGE"},
+        "USDC/USDT": {"spot": True, "active": True, "quote": "USDT", "base": "USDC"},
+        "BTCUP/USDT": {"spot": True, "active": True, "quote": "USDT", "base": "BTCUP"},
+        "BTC/USDT:USDT": {"spot": False, "active": True, "quote": "USDT", "base": "BTC"},
+    }
+
+    def load_markets(self):
+        return self.markets
+
+    def fetch_tickers(self, syms):
+        return {s: {"quoteVolume": 1e8, "percentage": 1.0} for s in syms}
+
+
+def _fake_ohlcv(sym, n):
+    days = 60 if sym == "NEW/USDT" else n
+    df = synthetic_ohlcv(n=days, drift=0.003)
+    ts = (df.index.astype("int64") // 10**6).tolist()
+    return [[t, *row] for t, row in zip(ts, df[["open", "high", "low", "close", "volume"]].values.tolist())]
+
+
+def test_scan_crypto_excludes_stables_leveraged_meme_and_perps():
+    r = scanner.scan_crypto(exchange=FakeExchange(), fetch_ohlcv=_fake_ohlcv)
+    syms = {o["symbol"] for o in r["opportunities"]}
+    assert syms == {"BTC/USDT", "ETH/USDT", "NEW/USDT"}
+    eth = next(o for o in r["opportunities"] if o["symbol"] == "ETH/USDT")
+    assert eth["sharia"]["tradable"] is True
+
+
+def test_scan_crypto_new_listings():
+    r = scanner.scan_crypto(mode="new_listings", exchange=FakeExchange(), fetch_ohlcv=_fake_ohlcv)
+    assert [o["symbol"] for o in r["opportunities"]] == ["NEW/USDT"]
+    assert r["opportunities"][0]["listed_days_ago"] == 60
+    assert r["opportunities"][0]["sharia"]["tradable"] is False
+
+
+def test_crypto_prescreen_and_tokenomics():
+    assert sharia_prescreen(["Meme", "Solana Ecosystem"])["prescreen"] == "likely_not_compliant"
+    assert sharia_prescreen(["Lending/Borrowing Protocols"])["prescreen"] == "likely_not_compliant"
+    assert sharia_prescreen(["Decentralized Exchange (DEX)"])["prescreen"] == "needs_scholar_review"
+    assert sharia_prescreen(["Layer 1 (L1)"])["prescreen"] == "no_red_flags_found"
+    flags = tokenomics_flags({"market_cap": 40e6, "fdv": 200e6})
+    assert any("FDV" in f for f in flags) and any("under $50M" in f for f in flags)

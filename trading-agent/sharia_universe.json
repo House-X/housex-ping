@@ -1,7 +1,21 @@
 {
-  "_note": "Only instruments listed here can be traded. You (ideally with your Sharia advisor) own this list; the agent can read it but never edit it.",
-  "crypto_spot_bases": ["BTC", "ETH"],
-  "stocks_etfs": ["SPUS", "HLAL"],
-  "crypto_blocked_bases": ["DOGE", "SHIB", "PEPE", "FLOKI", "BONK", "WIF"],
-  "_crypto_blocked_reason": "Meme coins: no underlying utility, driven by speculation (gharar / maysir)."
+  "_note": "You (ideally with your Sharia advisor) own this list; the agent can read it but never edit it. Crypto: only crypto_spot_bases are tradable. Stocks: screened automatically (AAOIFI ratios); stocks_etfs force-approves and stocks_blocked force-blocks a ticker, e.g. a participation bank like ALBRK.IS.",
+  "crypto_spot_bases": [
+    "BTC",
+    "ETH"
+  ],
+  "crypto_blocked_bases": [
+    "DOGE",
+    "SHIB",
+    "PEPE",
+    "FLOKI",
+    "BONK",
+    "WIF"
+  ],
+  "_crypto_blocked_reason": "Meme coins: no underlying utility, driven by speculation (gharar / maysir).",
+  "stocks_etfs": [
+    "SPUS",
+    "HLAL"
+  ],
+  "stocks_blocked": []
 }

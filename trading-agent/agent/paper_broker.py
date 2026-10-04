@@ -12,7 +12,7 @@ from typing import Callable
 
 from . import risk, sharia
 from .config import settings
-from .market_data import last_price
+from .market_data import currency_of, fx_to_usd, last_price
 
 
 def _now() -> str:
@@ -25,9 +25,13 @@ def _today() -> str:
 
 class PaperBroker:
     def __init__(self, state_file: Path = settings.state_file,
-                 price_fn: Callable[[str], float] = last_price):
+                 price_fn: Callable[[str], float] = last_price,
+                 fx_fn: Callable[[str], float] = fx_to_usd):
+        """Account currency is USD. Positions priced in other currencies (e.g. TRY for BIST)
+        are converted at the live FX rate, so P&L reflects currency moves too."""
         self.state_file = state_file
         self.price = price_fn
+        self.fx = fx_fn
         self.state = self._load()
 
     # ── persistence ─────────────────────────────────────
@@ -43,9 +47,10 @@ class PaperBroker:
         self.state_file.write_text(json.dumps(self.state, indent=2, ensure_ascii=False))
 
     # ── helpers ─────────────────────────────────────────
-    @staticmethod
-    def _pnl(pos: dict, price: float) -> float:
-        return (price - pos["entry"]) * pos["units"]  # spot long only
+    def _pnl(self, pos: dict, price: float) -> float:
+        """USD P&L of a spot long position."""
+        fx_now = self.fx(pos.get("currency", "USD"))
+        return pos["units"] * (price * fx_now - pos["entry"] * pos.get("fx_at_entry", 1.0))
 
     def _find(self, position_id: str) -> dict:
         for p in self.state["positions"]:
@@ -72,7 +77,7 @@ class PaperBroker:
                               "r_multiple": round(pnl / p["risk_amount"], 2) if p["risk_amount"] else None})
         equity = self.state["balance"] + unrealized
         return {
-            "mode": "paper",
+            "mode": "paper", "account_currency": "USD",
             "balance": round(self.state["balance"], 2),
             "free_cash": round(self.free_cash(), 2),
             "equity": round(equity, 2),
@@ -91,15 +96,19 @@ class PaperBroker:
                       risk_pct: float | None = None, entry: float | None = None) -> dict:
         compliance = sharia.check(symbol)
         entry = entry or self.price(symbol)
+        ccy = currency_of(symbol)
+        fx = self.fx(ccy)
         equity = self.account()["equity"]
         cash = self.free_cash()
         errors = [] if compliance["tradable"] else \
             [f"Sharia screen: {compliance['status']} - " + " ".join(compliance["reasons"])]
         errors += risk.validate_trade(entry, stop_loss, take_profit, len(self.state["positions"]),
                                       self.today_pnl(), equity, cash)
-        sizing = risk.position_size(equity, cash, entry, stop_loss, risk_pct) if not errors else None
+        sizing = risk.position_size(equity, cash, entry * fx, stop_loss * fx, risk_pct) \
+            if not errors else None
         return {
-            "symbol": symbol.upper(), "side": "buy (spot)", "entry": entry,
+            "symbol": symbol.upper(), "side": "buy (spot)", "currency": ccy,
+            "fx_to_usd": fx, "entry": entry,
             "stop_loss": stop_loss, "take_profit": take_profit,
             "reward_risk": round((take_profit - entry) / (entry - stop_loss), 2)
                            if entry > stop_loss else None,
@@ -116,6 +125,7 @@ class PaperBroker:
         pos = {
             "id": uuid.uuid4().hex[:8], "symbol": symbol.upper(), "side": "buy",
             "units": s["units"], "entry": preview["entry"],
+            "currency": preview["currency"], "fx_at_entry": preview["fx_to_usd"],
             "stop_loss": stop_loss, "take_profit": take_profit,
             "risk_amount": s["risk_amount"], "cost": s["cost"],
             "opened_at": _now(), "rationale": rationale,

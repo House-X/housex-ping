@@ -8,8 +8,9 @@ No. 1 on currency trading and No. 21 on financial papers):
   - Currency exchange requires immediate hand-to-hand settlement (taqabud); retail forex
     brokers sell CFDs with no real exchange, so forex is analysis-only here.
   - Gold/silver must be bought spot with real possession, not as futures or CFDs.
-  - Stocks/ETFs must pass a Sharia screen (business activity + financial ratios).
-  - Only instruments explicitly approved in sharia_universe.json are tradable.
+  - Stocks/ETFs must pass a Sharia screen (business activity + financial ratios); this runs
+    automatically (agent/stock_screen.py) unless the trader approved/blocked the stock by hand.
+  - Crypto: only coins explicitly approved in sharia_universe.json are tradable.
 
 This is a screening tool, not a fatwa. Confirm your list with a qualified scholar.
 """
@@ -45,7 +46,7 @@ def universe() -> dict:
     return json.loads(UNIVERSE_FILE.read_text())
 
 
-def check(symbol: str) -> dict:
+def check(symbol: str, auto_screen: bool = True) -> dict:
     s = symbol.upper().strip()
     u = universe()
 
@@ -75,4 +76,11 @@ def check(symbol: str) -> dict:
         return result("review_required", [CRYPTO_SCREEN])
     if s in u.get("stocks_etfs", []):
         return result("compliant", ["Approved Sharia-screened stock/ETF in your universe."])
-    return result("review_required", [STOCK_SCREEN])
+    if s in u.get("stocks_blocked", []):
+        return result("not_compliant", ["Blocked in your Sharia universe."])
+    if not auto_screen:
+        return result("review_required", [STOCK_SCREEN])
+    from .stock_screen import screen
+    r = screen(s)
+    return {**result(r["status"], r["reasons"]),
+            **{k: r.get(k) for k in ("name", "industry", "ratios", "warnings", "purification_pct", "method")}}

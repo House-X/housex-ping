@@ -2,6 +2,7 @@
 
     python main.py            # chat with the agent
     python main.py --check    # just check SL/TP on open paper positions (for cron)
+    python main.py --scan bist|crypto|new|trending   # print an opportunity scan, no AI cost
 """
 import json
 import sys
@@ -9,9 +10,11 @@ import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
+from rich.table import Table
 
 from agent.config import settings
 from agent.core import TradingAgent
+from agent import scanner
 from agent.paper_broker import PaperBroker
 from agent.sharia import universe
 
@@ -21,10 +24,13 @@ HELP = """[bold]أوامر سريعة[/]
   /account   ملخص الحساب والصفقات المفتوحة
   /check     فحص وقف الخسارة وجني الأرباح على الصفقات المفتوحة
   /halal     عرض قائمة الأصول المعتمدة شرعياً
+  /scan bist | crypto | new | trending   مسح سريع للفرص بدون تكلفة ذكاء اصطناعي
   /new       محادثة جديدة
   /exit      خروج
 
 [bold]أمثلة[/]
+  ابحث لي عن أفضل 3 فرص في البورصة التركية هذا الأسبوع
+  ما أفضل العملات المدرجة حديثاً على بينانس؟ وادرس أقواها
   حلّل BTC/USDT واعطني أفضل سيناريو للدخول اليوم
   ما أهم الأخبار المؤثرة على الذهب هذا الأسبوع؟ وما البديل الحلال للتداول عليه؟
   هل عملة ADA/USDT متوافقة مع الشريعة؟
@@ -45,11 +51,34 @@ def on_tool(name: str, args: dict) -> None:
     console.print(f"\n[dim]→ {name} {json.dumps(args, ensure_ascii=False)}[/]")
 
 
+def run_scan(kind: str) -> None:
+    with console.status("جارٍ المسح..."):
+        if kind == "bist":
+            r = scanner.scan_bist(top_n=15)
+        else:
+            mode = {"crypto": "established", "new": "new_listings"}.get(kind, kind)
+            r = scanner.scan_crypto(mode=mode, top_n=15)
+    t = Table(title=f"{r.get('market') or r.get('exchange')} — {kind}", show_lines=False)
+    for col in ("symbol", "score", "setup", "rsi14", "return_3m_pct", "rel_strength_3m_pct", "sharia"):
+        t.add_column(col)
+    for o in r["opportunities"]:
+        t.add_row(o["symbol"], str(o["score"]), o["setup"], str(o["rsi14"]),
+                  str(o.get("return_3m_pct")), str(o.get("rel_strength_3m_pct")), o["sharia"]["status"])
+    console.print(t)
+    for e in r.get("excluded_by_sharia_screen", []):
+        console.print(f"[dim]✗ {e['symbol']}: {e['status']} — {'; '.join(e['reasons'])}[/]")
+
+
 def main() -> None:
     if settings.trading_mode != "paper":
         console.print("[red]Live mode is not wired up yet (step 3). Set TRADING_MODE=paper.[/]")
         sys.exit(1)
     broker = PaperBroker()
+
+    if "--scan" in sys.argv:
+        idx = sys.argv.index("--scan")
+        run_scan(sys.argv[idx + 1] if len(sys.argv) > idx + 1 else "bist")
+        return
 
     if "--check" in sys.argv:
         for c in broker.check_stops():
@@ -77,6 +106,13 @@ def main() -> None:
             continue
         if text == "/halal":
             console.print_json(json.dumps(universe(), ensure_ascii=False))
+            continue
+        if text.startswith("/scan"):
+            parts = text.split()
+            try:
+                run_scan(parts[1] if len(parts) > 1 else "bist")
+            except Exception as e:
+                console.print(f"[red]Scan failed: {e}[/]")
             continue
         if text == "/check":
             closed = broker.check_stops()
