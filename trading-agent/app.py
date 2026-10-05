@@ -51,6 +51,8 @@ TOOL_LABELS = {
     "scan_crypto": "مسح العملات الرقمية", "research_crypto": "بحث أساسي عن العملة",
     "get_account": "قراءة الحساب", "preview_trade": "معاينة الصفقة", "open_trade": "طلب فتح صفقة",
     "modify_trade": "طلب تعديل صفقة", "close_trade": "طلب إغلاق صفقة", "trade_history": "سجل الصفقات",
+    "backtest_strategy": "اختبار تاريخي", "create_alert": "إنشاء تنبيه", "list_alerts": "قراءة التنبيهات",
+    "cancel_alert": "إلغاء تنبيه",
 }
 ACTION_LABELS = {"OPEN TRADE": "فتح صفقة", "MODIFY TRADE": "تعديل صفقة", "CLOSE TRADE": "إغلاق صفقة"}
 SETUP_AR = {

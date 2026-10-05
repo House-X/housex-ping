@@ -92,3 +92,9 @@ def test_alerts_tab_approves_auto_buy_plan(tmp_path, monkeypatch):
     next(b for b in at.button if b.key == f"al_ok_{plan['id']}").click().run()
     assert not at.exception
     assert alerts.active()[0]["status"] == "armed"
+
+
+def test_every_tool_has_an_arabic_label():
+    from agent.tools import CLIENT_TOOLS
+    src = (__import__("pathlib").Path(__file__).parent.parent / "app.py").read_text(encoding="utf-8")
+    assert [t["name"] for t in CLIENT_TOOLS if f'"{t["name"]}":' not in src] == []
