@@ -53,3 +53,28 @@ def test_chat_then_reject(app):
     no = next(b for b in app.button if b.key and b.key.startswith("no_"))
     no.click().run()
     assert agent.executed == [] and "REJECTED" in agent.notes[0]
+
+
+def test_study_button_sends_candidate_to_chat(tmp_path, monkeypatch):
+    import json
+
+    from agent import explorer
+    store = tmp_path / "opp.json"
+    store.write_text(json.dumps({"runs": [{
+        "ts": "2026-10-05T12:00:00+00:00", "ai": True, "report": "## 📌 الخلاصة\nفرصة واحدة", "telegram": "",
+        "tradable": [{"market": "crypto", "symbol": "ETH/USDT", "score": 85,
+                      "setup": "breakout / new highs", "sharia": "compliant"}],
+        "research": []}], "seen": {}, "ai_runs": {}, "last_run_ts": 0}), encoding="utf-8")
+    monkeypatch.setattr(explorer, "STORE", store)
+
+    at = AppTest.from_file("../app.py", default_timeout=30)
+    agent = FakeAgent()
+    agent.prompts = []
+    original = agent.ask
+    agent.ask = lambda text: agent.prompts.append(text) or original(text)
+    at.session_state["agent"] = agent
+    at.run()
+    study = next(b for b in at.button if b.key and b.key.startswith("study_"))
+    study.click().run()
+    assert not at.exception
+    assert agent.prompts and "ETH/USDT" in agent.prompts[0] and "اختراق قمة جديدة" in agent.prompts[0]

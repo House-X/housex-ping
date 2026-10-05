@@ -29,15 +29,36 @@ EXPLORE_PROMPT = """\
 [Proactive exploration - the trader did not ask; you are scouting for them]
 The free scanners flagged these candidates (JSON below). Do NOT open, modify or close any trade.
 
-For the best tradable candidates (max 3) and the most interesting research candidates (max 2):
-- run analyze_market, check the news with web_search, and for coins use research_crypto
-- classify each: TRADE IDEA (clear plan now), WATCH (wait for a trigger) or SKIP (with reason)
-- for TRADE IDEA give entry, stop, target, reward/risk and conviction; for research candidates
-  say what must be verified for Sharia approval before they could be traded
-Be selective: reporting "nothing worth taking today" is fine.
+Research the best tradable candidates (max 3) and the most interesting research candidates (max 2):
+run analyze_market, check the news with web_search, and for coins use research_crypto.
+Be selective: "nothing worth buying today" is a perfectly good answer.
 
-Finish with a short phone-friendly summary for Telegram (max ~900 characters, plain text, no
-markdown tables) between the markers {start} and {end}.
+Write the WHOLE report in simple Arabic for a non-specialist, using exactly this layout:
+
+## 📌 الخلاصة
+Two sentences: is there anything worth doing today, and the one market factor that matters most.
+
+## 🟢 فرص شراء
+One card per TRADE IDEA (omit the section if none):
+### <symbol> — <what the company/coin is, in a few words>
+- **القرار:** شراء الآن أو شراء بشرط (the condition in plain words)
+- **لماذا:** two or three short reasons in everyday language
+- **الخطة:** الدخول · الوقف · الهدف · أقصى خسارة بالدولار
+- **الحالة الشرعية:** ...
+- **مستوى الثقة:** منخفض / متوسط / مرتفع
+
+## 🟡 للمراقبة
+One line each: symbol, what it is, and the exact trigger in plain words ("نشتري إذا ...").
+
+## ⚪ تجاهلناها
+One line each with the reason.
+
+## 🔬 عملات تحتاج بحثاً شرعياً قبل اعتمادها
+For research candidates: what the coin does, the specific Sharia question to settle, and whether
+it is even technically attractive. Remind that it cannot be traded until the trader approves it.
+
+Finish with a short phone-friendly Arabic summary for Telegram (max ~700 characters, plain text,
+emoji bullets, no markdown tables or headings) between the markers {start} and {end}.
 
 Candidates:
 {candidates}

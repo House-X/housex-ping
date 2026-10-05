@@ -53,6 +53,15 @@ TOOL_LABELS = {
     "modify_trade": "طلب تعديل صفقة", "close_trade": "طلب إغلاق صفقة", "trade_history": "سجل الصفقات",
 }
 ACTION_LABELS = {"OPEN TRADE": "فتح صفقة", "MODIFY TRADE": "تعديل صفقة", "CLOSE TRADE": "إغلاق صفقة"}
+SETUP_AR = {
+    "breakout / new highs": "اختراق قمة جديدة",
+    "pullback to EMA20 in uptrend": "تراجع مؤقت داخل اتجاه صاعد",
+    "trend continuation": "استمرار اتجاه صاعد",
+    "early reversal (above EMA50, fresh MACD turn)": "بداية انعكاس للصعود",
+    "none": "لا توجد فرصة واضحة",
+}
+SHARIA_AR = {"compliant": "✅ متوافق", "not_compliant": "❌ غير متوافق", "review_required": "⏸ يحتاج مراجعة"}
+MARKET_AR = {"crypto": "عملات رقمية", "new_listings": "عملات حديثة الإدراج", "bist": "البورصة التركية"}
 
 
 # ── broker / agent (kept for the whole browser session) ────────
@@ -184,7 +193,7 @@ with tab_chat:
         for item in list(agent.executor.pending):
             render_approval(item, agent)
 
-    prompt = st.chat_input("اكتب سؤالك هنا...")
+    prompt = st.chat_input("اكتب سؤالك هنا...") or ss.pop("queued_prompt", None)
     if prompt:
         ss.chat.append({"role": "user", "content": prompt, "tools": []})
         with st.chat_message("user", avatar="🧑‍💼"):
@@ -235,9 +244,11 @@ with tab_scan:
     r = ss.get("scan")
     if r:
         df = pd.DataFrame([{
-            "الرمز": o["symbol"], "الدرجة": o["score"], "نوع الفرصة": o["setup"], "RSI": o["rsi14"],
+            "الرمز": o["symbol"], "الدرجة": o["score"], "نوع الفرصة": SETUP_AR.get(o["setup"], o["setup"]),
+            "RSI": o["rsi14"],
             "أداء 3 أشهر %": o.get("return_3m_pct"), "بالدولار %": o.get("return_3m_usd_pct"),
-            "القوة النسبية %": o.get("rel_strength_3m_pct"), "الحالة الشرعية": o["sharia"]["status"],
+            "القوة النسبية %": o.get("rel_strength_3m_pct"),
+            "الحالة الشرعية": SHARIA_AR.get(o["sharia"]["status"], o["sharia"]["status"]),
         } for o in r["opportunities"]]).dropna(axis=1, how="all")
         st.dataframe(df, hide_index=True, width="stretch")
         excluded = r.get("excluded_by_sharia_screen") or []
@@ -273,9 +284,21 @@ with tab_ideas:
                  f"{len(run['research'])} للبحث · {'🤖 تحليل ذكي' if run['ai'] else '⚡ مسح فقط'}")
         with st.expander(title, expanded=(i == 0)):
             st.markdown(run.get("report") or run.get("telegram") or "-")
-            if run["tradable"] or run["research"]:
-                st.dataframe(pd.DataFrame(run["tradable"] + run["research"]), hide_index=True,
-                             width="stretch")
+            cands = run["tradable"] + run["research"]
+            if cands:
+                st.markdown("#### المرشحون في هذه الجولة")
+                for j, c in enumerate(cands):
+                    col1, col2 = st.columns([4, 1])
+                    col1.markdown(
+                        f"**{c['symbol']}** · {MARKET_AR.get(c.get('market'), c.get('market'))} · "
+                        f"الدرجة {c['score']}/100 · {SETUP_AR.get(c['setup'], c['setup'])} · "
+                        f"{SHARIA_AR.get(c.get('sharia'), c.get('sharia'))}")
+                    if col2.button("ادرسها معي 💬", key=f"study_{i}_{j}", width="stretch"):
+                        ss.queued_prompt = (f"اقترح المستكشف {c['symbol']} ({SETUP_AR.get(c['setup'], c['setup'])}). "
+                                            "ادرسها بالتفصيل الآن، واشرح لي بلغة بسيطة هل تستحق الشراء، "
+                                            "وإن كانت مناسبة حسب قواعدي جهّز الصفقة لأوافق عليها.")
+                        st.toast("أُرسلت للوكيل. افتح تبويب «المحادثة» لترى التحليل.", icon="💬")
+                        st.rerun()
 
 
 # ── backtest ───────────────────────────────────────────────────
