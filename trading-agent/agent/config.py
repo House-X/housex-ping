@@ -6,7 +6,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(ROOT / ".env")
+# override=True: the project .env wins over stale variables set elsewhere in Windows/the shell
+load_dotenv(ROOT / ".env", override=True)
 
 
 def _f(name: str, default: float) -> float:
