@@ -192,3 +192,16 @@ def test_time_in_market_counts_bars_not_calendar_days(monkeypatch):
     r = backtest.run(df, warmup=0, fee=0)
     assert r["trades"][0]["reason"] == "target"
     assert r["stats"]["time_in_market_pct"] == pytest.approx(4 / 6 * 100, abs=0.1)   # bars 1-4
+
+
+def test_manual_explore_bypasses_dedupe(store, telegram):
+    explorer.explore(scans=SCANS, agent_factory=FakeAgent)
+    again = explorer.explore(scans=SCANS, use_ai=False, force=True)
+    assert [c["symbol"] for c in again["tradable"]] == ["ETH/USDT", "BIMAS.IS"]
+
+
+def test_saved_candidates_are_capped(store):
+    many = {"crypto": lambda: {"opportunities": [opp(f"C{i}/USDT", 90) for i in range(12)]
+                                                + [opp(f"R{i}/USDT", 90, sharia="review_required") for i in range(9)]}}
+    run = explorer.explore(scans=many, use_ai=False, send=False)
+    assert len(run["tradable"]) == 6 and len(run["research"]) == 4

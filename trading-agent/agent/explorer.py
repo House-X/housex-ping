@@ -131,17 +131,20 @@ def _scanner_summary(tradable: list, research: list) -> str:
     return "\n".join(lines)
 
 
-def explore(broker=None, use_ai: bool = True, send: bool = True,
+def explore(broker=None, use_ai: bool = True, send: bool = True, force: bool = False,
             scans: dict | None = None, agent_factory: Callable | None = None) -> dict:
+    """force=True (a manual "explore now") re-reports candidates already seen in the last 24h;
+    the scheduled cycle keeps the de-duplication so Telegram isn't spammed."""
     state = _load()
     now = time.time()
     state["last_run_ts"] = now
     tradable, research = collect_candidates(scans)
 
     seen = {k: ts for k, ts in state["seen"].items() if now - ts < COOLDOWN_S}
-    fresh = lambda c: f"{c['symbol']}|{c['setup']}" not in seen  # noqa: E731
+    fresh = lambda c: force or f"{c['symbol']}|{c['setup']}" not in seen  # noqa: E731
     tradable, research = [c for c in tradable if fresh(c)], [c for c in research if fresh(c)]
 
+    tradable, research = tradable[:6], research[:4]
     run = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
            "tradable": tradable, "research": research, "ai": False, "report": "", "telegram": ""}
     if not tradable and not research:
@@ -161,7 +164,7 @@ def explore(broker=None, use_ai: bool = True, send: bool = True,
                 from .core import TradingAgent
                 agent = TradingAgent(broker, approval_mode="deferred", effort="medium",
                                      on_text=lambda t: None)
-            payload = json.dumps({"tradable": tradable[:6], "research_candidates": research[:4]},
+            payload = json.dumps({"tradable": tradable, "research_candidates": research},
                                  ensure_ascii=False)
             report = agent.ask(EXPLORE_PROMPT.format(start=TELEGRAM_START, end=TELEGRAM_END,
                                                      candidates=payload))

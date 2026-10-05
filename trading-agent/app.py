@@ -270,11 +270,11 @@ with tab_ideas:
     c1, c2 = st.columns(2)
     if c1.button("🔍 استكشف الآن (مع الذكاء الاصطناعي)", type="primary", width="stretch"):
         with st.spinner("الوكيل يمسح الأسواق ويدرس المرشحين... قد يستغرق دقيقتين إلى أربع"):
-            explorer.explore(broker)
+            explorer.explore(broker, force=True)
         st.rerun()
     if c2.button("⚡ مسح سريع مجاني", width="stretch"):
         with st.spinner("جارٍ المسح..."):
-            explorer.explore(broker, use_ai=False)
+            explorer.explore(broker, use_ai=False, force=True)
         st.rerun()
     runs = explorer.history(15)
     if not runs:
@@ -284,7 +284,7 @@ with tab_ideas:
                  f"{len(run['research'])} للبحث · {'🤖 تحليل ذكي' if run['ai'] else '⚡ مسح فقط'}")
         with st.expander(title, expanded=(i == 0)):
             st.markdown(run.get("report") or run.get("telegram") or "-")
-            cands = run["tradable"] + run["research"]
+            cands = run["tradable"][:6] + run["research"][:4]
             if cands:
                 st.markdown("#### المرشحون في هذه الجولة")
                 for j, c in enumerate(cands):
