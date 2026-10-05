@@ -89,7 +89,7 @@ def technical_score(df: pd.DataFrame, benchmark: pd.Series | None = None) -> dic
 # ── Borsa Istanbul ─────────────────────────────────────────────
 
 def bist_universe() -> list[str]:
-    data = json.loads((ROOT / "universes" / "bist.json").read_text())
+    data = json.loads((ROOT / "universes" / "bist.json").read_text(encoding="utf-8"))
     return [t if t.endswith(".IS") else f"{t}.IS" for t in data["tickers"]]
 
 

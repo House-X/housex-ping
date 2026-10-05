@@ -8,11 +8,15 @@ Symbol conventions accepted from the agent:
 """
 from __future__ import annotations
 
+import logging
+
 import ccxt
 import pandas as pd
 import yfinance as yf
 
 from .config import settings
+
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)  # delisted tickers are skipped quietly
 
 CRYPTO_QUOTES = ("USDT", "USDC", "BUSD", "BTC", "ETH", "FDUSD")
 CURRENCIES = {"USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "TRY", "SAR", "AED", "KWD",

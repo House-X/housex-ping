@@ -78,14 +78,14 @@ def _fetch_fundamentals(symbol: str) -> dict:
 
 def _load_cache() -> dict:
     try:
-        return json.loads(CACHE_FILE.read_text())
+        return json.loads(CACHE_FILE.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
 
 def _save_cache(cache: dict) -> None:
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    CACHE_FILE.write_text(json.dumps(cache, indent=1, ensure_ascii=False))
+    CACHE_FILE.write_text(json.dumps(cache, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
 def evaluate(symbol: str, f: dict) -> dict:

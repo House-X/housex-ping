@@ -43,7 +43,7 @@ ALTERNATIVES = {
 
 @lru_cache(maxsize=1)
 def universe() -> dict:
-    return json.loads(UNIVERSE_FILE.read_text())
+    return json.loads(UNIVERSE_FILE.read_text(encoding="utf-8"))
 
 
 def check(symbol: str, auto_screen: bool = True) -> dict:

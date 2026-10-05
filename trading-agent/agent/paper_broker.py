@@ -37,14 +37,14 @@ class PaperBroker:
     # ── persistence ─────────────────────────────────────
     def _load(self) -> dict:
         if self.state_file.exists():
-            return json.loads(self.state_file.read_text())
+            return json.loads(self.state_file.read_text(encoding="utf-8"))
         return {"balance": settings.paper_starting_balance,
                 "starting_balance": settings.paper_starting_balance,
                 "positions": [], "history": [], "daily_pnl": {}}
 
     def _save(self) -> None:
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
-        self.state_file.write_text(json.dumps(self.state, indent=2, ensure_ascii=False))
+        self.state_file.write_text(json.dumps(self.state, indent=2, ensure_ascii=False), encoding="utf-8")
 
     # ── helpers ─────────────────────────────────────────
     def _pnl(self, pos: dict, price: float) -> float:

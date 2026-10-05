@@ -275,3 +275,12 @@ def test_crypto_prescreen_and_tokenomics():
     assert sharia_prescreen(["Layer 1 (L1)"])["prescreen"] == "no_red_flags_found"
     flags = tokenomics_flags({"market_cap": 40e6, "fdv": 200e6})
     assert any("FDV" in f for f in flags) and any("under $50M" in f for f in flags)
+
+
+def test_screen_cache_roundtrip_with_turkish_and_arabic(tmp_path, monkeypatch):
+    """Windows with an Arabic locale defaults to cp1256, which cannot write 'Ç'. Files must be UTF-8."""
+    monkeypatch.setattr(stock_screen, "CACHE_FILE", tmp_path / "cache.json")
+    f = {**CLEAN, "name": "Türk Hava Yolları Çelebi — شركة"}
+    r1 = stock_screen.screen("THYAO.IS", fetch=lambda s: f)
+    r2 = stock_screen.screen("THYAO.IS", fetch=lambda s: 1 / 0)  # must come from cache
+    assert r1 == r2 and r2["name"].startswith("Türk")
