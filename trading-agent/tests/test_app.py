@@ -32,7 +32,7 @@ def app():
 
 def test_app_renders_without_errors(app):
     assert not app.exception
-    assert len(app.tabs) == 4
+    assert len(app.tabs) == 6
 
 
 def test_chat_then_approve(app):

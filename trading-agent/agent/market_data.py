@@ -131,3 +131,29 @@ def last_price(symbol: str) -> float:
     if asset_class(symbol) == "crypto":
         return float(_crypto_exchange().fetch_ticker(symbol.upper())["last"])
     return float(fetch_ohlcv(symbol, "5m", 5)["close"].iloc[-1])
+
+
+def fetch_daily_history(symbol: str, years: int = 4) -> pd.DataFrame:
+    """Several years of daily bars (paginated for crypto) for backtesting."""
+    if asset_class(symbol) == "crypto":
+        ex = _crypto_exchange()
+        since = ex.milliseconds() - int(years * 365.25 * 86_400_000)
+        rows: list = []
+        while True:
+            batch = ex.fetch_ohlcv(symbol.upper(), "1d", since=since, limit=1000)
+            if not batch:
+                break
+            rows += batch
+            if len(batch) < 1000:
+                break
+            since = batch[-1][0] + 86_400_000
+        df = pd.DataFrame(rows, columns=["ts", "open", "high", "low", "close", "volume"])
+        df["ts"] = pd.to_datetime(df["ts"], unit="ms", utc=True)
+        return df.drop_duplicates("ts").set_index("ts")
+    raw = yf.download(_yf_ticker(symbol), period=f"{years}y", interval="1d",
+                      progress=False, auto_adjust=False, multi_level_index=False)
+    if raw.empty:
+        raise ValueError(f"No history for {symbol}")
+    df = raw.rename(columns=str.lower)[["open", "high", "low", "close", "volume"]].dropna()
+    df.index = pd.to_datetime(df.index, utc=True)
+    return df

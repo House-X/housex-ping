@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from . import risk, sharia
+from . import notify, risk, sharia
 from .config import settings
 from .market_data import currency_of, fx_to_usd, last_price
 
@@ -132,6 +132,7 @@ class PaperBroker:
         }
         self.state["positions"].append(pos)
         self._save()
+        notify.trade_opened(pos, "paper")
         return pos
 
     def close_position(self, position_id: str, reason: str, price: float | None = None) -> dict:
@@ -146,6 +147,7 @@ class PaperBroker:
                   "r_multiple": round(pnl / pos["risk_amount"], 2) if pos["risk_amount"] else None}
         self.state["history"].append(closed)
         self._save()
+        notify.trade_closed(closed, "paper")
         return closed
 
     def modify_position(self, position_id: str, stop_loss: float | None = None,

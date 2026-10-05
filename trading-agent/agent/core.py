@@ -18,8 +18,9 @@ class TradingAgent:
     def __init__(self, broker, confirm: Callable[[str, dict], bool] | None = None,
                  on_text: Callable[[str], None] = lambda t: print(t, end="", flush=True),
                  on_tool: Callable[[str, dict], None] = lambda n, a: None,
-                 approval_mode: str = "prompt"):
+                 approval_mode: str = "prompt", effort: str | None = None):
         self.client = anthropic.Anthropic()
+        self.effort = effort or settings.effort
         self.executor = ToolExecutor(broker, confirm, approval_mode)
         self.notes: list[str] = []  # e.g. approval outcomes, delivered with the next user message
         self.on_text = on_text
@@ -34,7 +35,7 @@ class TradingAgent:
             tools=ALL_TOOLS,
             messages=self.messages,
             thinking={"type": "adaptive"},
-            output_config={"effort": settings.effort},
+            output_config={"effort": self.effort},
             cache_control={"type": "ephemeral"},
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",

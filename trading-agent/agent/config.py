@@ -37,6 +37,12 @@ class Settings:
     live_max_order_usd: float = _f("LIVE_MAX_ORDER_USD", 50)  # hard cap per order while you build trust
     require_ip_whitelist: bool = os.getenv("REQUIRE_IP_WHITELIST", "true").lower() == "true"
 
+    # Proactive explorer: scans run every N hours (free); the AI deep-dive is capped per day (paid)
+    explore_enabled: bool = os.getenv("EXPLORE_ENABLED", "true").lower() == "true"
+    explore_every_hours: float = _f("EXPLORE_EVERY_HOURS", 4)
+    explore_ai_max_per_day: int = int(_f("EXPLORE_AI_MAX_PER_DAY", 2))
+    explore_min_score: int = int(_f("EXPLORE_MIN_SCORE", 75))
+
     state_file: Path = ROOT / "data" / "paper_state.json"
 
 

@@ -5,4 +5,4 @@ pandas>=2.2
 numpy>=1.26
 python-dotenv>=1.0
 rich>=13.7
-streamlit>=1.40
+streamlit>=1.50

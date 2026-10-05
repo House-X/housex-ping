@@ -6,7 +6,7 @@ import time
 import uuid
 from typing import Any, Callable
 
-from . import crypto_research, market_data, scanner, sharia
+from . import backtest, crypto_research, market_data, scanner, sharia
 from .config import settings
 from .indicators import snapshot
 
@@ -95,6 +95,27 @@ CLIENT_TOOLS: list[dict[str, Any]] = [
             "type": "object",
             "properties": {"symbol": {"type": "string", "description": "e.g. 'SOL' or 'SOL/USDT'"}},
             "required": ["symbol"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "backtest_strategy",
+        "description": (
+            "Test the scanner's long-only rules on years of daily history for up to 6 symbols: entry "
+            "at next open after a qualifying setup, ATR stop, fixed reward/risk target, 1% risk, no "
+            "leverage, fees included. Returns win rate, average R, profit factor, max drawdown and "
+            "buy-and-hold for comparison. Use it to check whether a setup has worked on a symbol "
+            "before recommending it, and say clearly when there are too few trades to trust."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "symbols": {"type": "array", "items": {"type": "string"}},
+                "years": {"type": "integer", "minimum": 1, "maximum": 8},
+                "min_score": {"type": "integer", "minimum": 40, "maximum": 100},
+                "reward_risk": {"type": "number", "minimum": 1, "maximum": 5},
+            },
+            "required": ["symbols"],
             "additionalProperties": False,
         },
     },
@@ -295,6 +316,10 @@ class ToolExecutor:
         r = crypto_research.research(symbol)
         r["approval_status"] = sharia.check(f"{symbol.upper().split('/')[0]}/USDT")["status"]
         return r
+
+    def _backtest_strategy(self, symbols: list[str], years: int = 4, min_score: int = 70,
+                           reward_risk: float = 2.0) -> dict:
+        return backtest.backtest(symbols[:6], years=years, min_score=min_score, reward_risk=reward_risk)
 
     def _get_account(self) -> dict:
         return self.broker.account()

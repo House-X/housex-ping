@@ -4,7 +4,10 @@
     python main.py --check    # just check SL/TP on open paper positions (for cron)
     python main.py --scan bist|crypto|new|trending   # print an opportunity scan, no AI cost
     python main.py --verify   # check the Binance connection and API-key permissions
-    python main.py --watch    # keep syncing SL/TP exits every 30s (run in a second terminal)
+    python main.py --watch    # sync SL/TP exits every 30s + run the opportunity explorer on schedule
+    python main.py --explore  # run one exploration cycle now
+    python main.py --backtest BTC/USDT ETH/USDT [--years 4]   # historical test of the scanner rules
+    python main.py --telegram-setup   # link your Telegram bot (after messaging it once)
 """
 import json
 import sys
@@ -109,12 +112,20 @@ def build_broker():
 
 
 def watch(broker) -> None:
-    console.print("[dim]Watching positions every 30s. Ctrl+C to stop.[/]")
+    from agent import explorer, notify
+    console.print(f"[dim]Watching positions every 30s. Explorer: "
+                  f"{'every ' + str(settings.explore_every_hours) + 'h' if settings.explore_enabled else 'off'}"
+                  f" · Telegram: {'on' if notify.configured() else 'off'}. Ctrl+C to stop.[/]")
     while True:
         try:
             for e in broker.check_stops():
                 console.print(f"[bold]{e['closed_at']}[/] {e['symbol']} — {e['close_reason']} — "
                               f"P&L {e['pnl']} ({e['r_multiple']}R)")
+            if settings.explore_enabled and explorer.due():
+                console.print("[cyan]Exploring markets for opportunities...[/]")
+                run = explorer.explore(broker)
+                console.print(f"[cyan]Explorer: {len(run['tradable'])} tradable, "
+                              f"{len(run['research'])} research candidates, AI={run['ai']}[/]")
         except KeyboardInterrupt:
             break
         except Exception as e:  # network blips: log and keep watching
@@ -125,7 +136,36 @@ def watch(broker) -> None:
             break
 
 
+def run_backtest(args: list[str]) -> None:
+    from agent import backtest
+    years = 4
+    if "--years" in args:
+        years = int(args[args.index("--years") + 1])
+    symbols = [a for a in args if not a.startswith("--") and not a.isdigit()] or ["BTC/USDT", "ETH/USDT"]
+    with console.status(f"Backtesting {', '.join(symbols)} over {years} years..."):
+        r = backtest.backtest(symbols, years=years)
+    t = Table(title=f"Backtest — {years}y · min score {r['rules']['min_score']} · R:R {r['rules']['reward_risk']}")
+    for col in ("symbol", "trades", "win %", "avg R", "profit factor", "return %", "max DD %", "buy&hold %"):
+        t.add_column(col)
+    for sym, res in r["per_symbol"].items():
+        if "error" in res:
+            t.add_row(sym, res["error"], *[""] * 6)
+            continue
+        st = res["stats"]
+        t.add_row(sym, str(st["trades"]), str(st["win_rate_pct"]), str(st["avg_r"]), str(st["profit_factor"]),
+                  str(st["total_return_pct"]), str(st["max_drawdown_pct"]), str(st["buy_and_hold_pct"]))
+    console.print(t)
+    console.print(f"[dim]{r['caveats']}[/]")
+
+
 def main() -> None:
+    if "--telegram-setup" in sys.argv:
+        from agent import notify
+        console.print(notify.setup_chat_id())
+        return
+    if "--backtest" in sys.argv:
+        run_backtest(sys.argv[sys.argv.index("--backtest") + 1:])
+        return
     if "--scan" in sys.argv:
         idx = sys.argv.index("--scan")
         run_scan(sys.argv[idx + 1] if len(sys.argv) > idx + 1 else "bist")
@@ -137,6 +177,12 @@ def main() -> None:
         return
     if "--watch" in sys.argv:
         watch(broker)
+        return
+    if "--explore" in sys.argv:
+        from agent import explorer
+        with console.status("Exploring markets..."):
+            run = explorer.explore(broker)
+        console.print(run["report"] or run["telegram"])
         return
 
     if "--check" in sys.argv:

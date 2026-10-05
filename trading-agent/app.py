@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import json
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
-from agent import scanner
+from agent import market_data, scanner
 from agent.config import settings
 from agent.sharia import universe
 
@@ -27,6 +28,9 @@ html, body, [class*="st-"], .stMarkdown, .stChatMessage, button, input, textarea
 .stChatMessage, [data-testid="stChatMessageContent"], .stMarkdown {{ direction: rtl; text-align: right; }}
 pre, code, [data-testid="stDataFrame"], [data-testid="stJson"], .ltr {{ direction: ltr; text-align: left; }}
 [data-testid="stChatInput"] textarea {{ direction: rtl; text-align: right; }}
+[data-testid="stIconMaterial"], [class*="material-symbols"] {{
+  font-family: 'Material Symbols Rounded' !important;
+}}
 h1, h2, h3 {{ color: {ACCENT}; font-weight: 700; }}
 .hx-badge {{ display:inline-block; padding:2px 12px; border-radius:999px; font-weight:700; font-size:.85rem; }}
 .hx-paper {{ background:{ACCENT}; color:{BG}; }}
@@ -106,16 +110,17 @@ with st.sidebar:
     except Exception as e:
         st.warning(f"تعذّر قراءة الحساب: {e}")
 
-    if st.button("🔄 فحص الوقف والأهداف", use_container_width=True):
+    if st.button("🔄 فحص الوقف والأهداف", width="stretch"):
         closed = broker.check_stops()
         st.success(f"أُغلقت {len(closed)} صفقة" if closed else "لا توجد صفقات وصلت للوقف أو الهدف")
-    if st.button("🆕 محادثة جديدة", use_container_width=True):
+    if st.button("🆕 محادثة جديدة", width="stretch"):
         ss.chat = []
         ss.pop("agent", None)
         st.rerun()
     st.caption("لا رافعة · لا بيع على المكشوف · حلال فقط · التحليل قبل التنفيذ")
 
-tab_chat, tab_scan, tab_acc, tab_halal = st.tabs(["💬 المحادثة", "🔎 الفرص", "📊 الحساب", "☪️ القائمة الشرعية"])
+tab_chat, tab_ideas, tab_scan, tab_bt, tab_acc, tab_halal = st.tabs(
+    ["💬 المحادثة", "💡 فرص الوكيل", "🔎 المسح", "🧪 اختبار تاريخي", "📊 الحساب", "☪️ القائمة الشرعية"])
 
 
 # ── chat ───────────────────────────────────────────────────────
@@ -143,7 +148,7 @@ def render_approval(item: dict, agent) -> None:
         if d.get("rationale"):
             st.markdown(f"**المبرر:** {d['rationale']}")
         c1, c2 = st.columns(2)
-        if c1.button("✅ موافق، نفّذ", key=f"ok_{item['id']}", type="primary", use_container_width=True):
+        if c1.button("✅ موافق، نفّذ", key=f"ok_{item['id']}", type="primary", width="stretch"):
             try:
                 res = agent.executor.approve(item["id"])
                 msg = f"✅ تم التنفيذ: {ACTION_LABELS.get(res['action'], res['action'])}"
@@ -154,7 +159,7 @@ def render_approval(item: dict, agent) -> None:
                 agent.notes.append(f"Trader approved {item['action']} {item['id']} but it failed: {e}")
             ss.chat.append({"role": "assistant", "content": msg, "tools": []})
             st.rerun()
-        if c2.button("✖️ رفض", key=f"no_{item['id']}", use_container_width=True):
+        if c2.button("✖️ رفض", key=f"no_{item['id']}", width="stretch"):
             agent.executor.reject(item["id"])
             agent.notes.append(f"Trader REJECTED {item['action']} {item['id']}.")
             ss.chat.append({"role": "assistant", "content": "تم رفض الطلب، ولن يُنفَّذ.", "tools": []})
@@ -234,13 +239,97 @@ with tab_scan:
             "أداء 3 أشهر %": o.get("return_3m_pct"), "بالدولار %": o.get("return_3m_usd_pct"),
             "القوة النسبية %": o.get("rel_strength_3m_pct"), "الحالة الشرعية": o["sharia"]["status"],
         } for o in r["opportunities"]]).dropna(axis=1, how="all")
-        st.dataframe(df, hide_index=True, use_container_width=True)
+        st.dataframe(df, hide_index=True, width="stretch")
         excluded = r.get("excluded_by_sharia_screen") or []
         if excluded:
             with st.expander(f"مستبعد شرعياً ({len(excluded)})"):
                 for e in excluded:
                     st.markdown(f"- **{e['symbol']}** · {e['status']}: <span class='ltr'>{'; '.join(e['reasons'])}</span>",
                                 unsafe_allow_html=True)
+
+
+# ── proactive ideas ────────────────────────────────────────────
+with tab_ideas:
+    from agent import explorer, notify
+    st.markdown("## فرص اكتشفها الوكيل بنفسه")
+    st.caption(f"يمسح الأسواق تلقائياً كل {settings.explore_every_hours:g} ساعات أثناء تشغيل نافذة المراقب، "
+               f"ويدرس أفضل المرشحين بالذكاء الاصطناعي (الحد اليومي: {settings.explore_ai_max_per_day}). "
+               f"تيليجرام: {'مفعّل ✅' if notify.configured() else 'غير مفعّل'}. "
+               "لا يفتح أي صفقة: التنفيذ يبقى بموافقتك.")
+    c1, c2 = st.columns(2)
+    if c1.button("🔍 استكشف الآن (مع الذكاء الاصطناعي)", type="primary", width="stretch"):
+        with st.spinner("الوكيل يمسح الأسواق ويدرس المرشحين... قد يستغرق دقيقتين إلى أربع"):
+            explorer.explore(broker)
+        st.rerun()
+    if c2.button("⚡ مسح سريع مجاني", width="stretch"):
+        with st.spinner("جارٍ المسح..."):
+            explorer.explore(broker, use_ai=False)
+        st.rerun()
+    runs = explorer.history(15)
+    if not runs:
+        st.info("لا توجد جولات استكشاف بعد. اضغط «استكشف الآن» أو اترك نافذة المراقب تعمل.")
+    for i, run in enumerate(runs):
+        title = (f"{run['ts'][:16].replace('T', ' ')} UTC · {len(run['tradable'])} قابلة للتداول · "
+                 f"{len(run['research'])} للبحث · {'🤖 تحليل ذكي' if run['ai'] else '⚡ مسح فقط'}")
+        with st.expander(title, expanded=(i == 0)):
+            st.markdown(run.get("report") or run.get("telegram") or "-")
+            if run["tradable"] or run["research"]:
+                st.dataframe(pd.DataFrame(run["tradable"] + run["research"]), hide_index=True,
+                             width="stretch")
+
+
+# ── backtest ───────────────────────────────────────────────────
+with tab_bt:
+    from agent import backtest
+    st.markdown("## اختبار تاريخي لقواعد الوكيل")
+    st.caption("يطبّق نفس قواعد الماسح على بيانات السنوات الماضية: دخول عند افتتاح اليوم التالي، وقف بمسافة "
+               "ضعفي ATR، هدف ثابت، مخاطرة 1%، بلا رافعة، مع العمولات. لا يشمل الأخبار ولا حكم الذكاء "
+               "الاصطناعي. النتائج الماضية ليست ضماناً للمستقبل.")
+    c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
+    syms = c1.text_input("الرموز (افصل بفاصلة)", "BTC/USDT, ETH/USDT, BIMAS.IS")
+    years = c2.number_input("السنوات", 1, 8, 4)
+    min_score = c3.number_input("أقل درجة", 40, 100, 70, step=5)
+    rr = c4.number_input("العائد/المخاطرة", 1.0, 5.0, 2.0, step=0.5)
+    if st.button("▶️ شغّل الاختبار", type="primary"):
+        symbols = [x.strip().upper() for x in syms.split(",") if x.strip()][:6]
+        results = {}
+        with st.spinner("جارٍ تنزيل البيانات والاختبار..."):
+            for sym in symbols:
+                try:
+                    df = market_data.fetch_daily_history(sym, int(years))
+                    results[sym] = backtest.run(df, min_score=int(min_score), reward_risk=float(rr))
+                except Exception as e:
+                    results[sym] = {"error": f"{type(e).__name__}: {e}"}
+        ss.bt = results
+    for sym, res in (ss.get("bt") or {}).items():
+        st.markdown(f"### {sym}")
+        if "error" in res:
+            st.error(res["error"])
+            continue
+        stt = res["stats"]
+        m = st.columns(6)
+        m[0].metric("عدد الصفقات", stt["trades"])
+        m[1].metric("نسبة الربح", f"{stt['win_rate_pct']}%" if stt["win_rate_pct"] is not None else "-")
+        m[2].metric("متوسط R", stt["avg_r"] if stt["avg_r"] is not None else "-")
+        m[3].metric("عائد الاستراتيجية", f"{stt['total_return_pct']}%")
+        m[4].metric("أقصى تراجع", f"{stt['max_drawdown_pct']}%")
+        m[5].metric("الشراء والاحتفاظ", f"{stt['buy_and_hold_pct']}%")
+        if stt["trades"] < 30:
+            st.warning("عدد الصفقات أقل من 30: النتيجة غير موثوقة إحصائياً.")
+        st.caption("منحنى رأس المال (يبدأ من 10,000$)")
+        eq = res["equity_curve"].rename("equity").rename_axis("date").reset_index()
+        st.altair_chart(
+            alt.Chart(eq).mark_line(color=ACCENT, strokeWidth=2).encode(
+                x=alt.X("date:T", title=None),
+                y=alt.Y("equity:Q", title=None, scale=alt.Scale(zero=False), axis=alt.Axis(format="$,.0f")),
+                tooltip=[alt.Tooltip("date:T", title="التاريخ"),
+                         alt.Tooltip("equity:Q", title="رأس المال", format="$,.0f")],
+            ).properties(height=240),
+            width="stretch")
+        if res["trades"]:
+            with st.expander("آخر الصفقات"):
+                st.dataframe(pd.DataFrame(backtest._fmt(res["trades"][-20:])), hide_index=True,
+                             width="stretch")
 
 
 # ── account ────────────────────────────────────────────────────
@@ -259,7 +348,7 @@ with tab_acc:
                 "id": p["id"], "الرمز": p["symbol"], "الدخول": p["entry"], "السعر الحالي": p.get("current_price"),
                 "الوقف": p["stop_loss"], "الهدف": p["take_profit"], "ربح/خسارة $": p.get("unrealized_pnl"),
                 "R": p.get("r_multiple"), "الحماية": p.get("protection", "-"),
-            } for p in acc["open_positions"]]), hide_index=True, use_container_width=True)
+            } for p in acc["open_positions"]]), hide_index=True, width="stretch")
         else:
             st.caption("لا توجد صفقات مفتوحة.")
         h = broker.history(50)
@@ -273,7 +362,7 @@ with tab_acc:
             st.dataframe(pd.DataFrame([{
                 "الرمز": t["symbol"], "الدخول": t["entry"], "الخروج": t["exit"], "ربح $": t["pnl"],
                 "R": t.get("r_multiple"), "السبب": t["close_reason"], "التاريخ": t["closed_at"],
-            } for t in reversed(h["recent"])]), hide_index=True, use_container_width=True)
+            } for t in reversed(h["recent"])]), hide_index=True, width="stretch")
     except Exception as e:
         st.error(f"تعذّر قراءة الحساب: {e}")
 

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import ccxt
 
-from . import risk, sharia
+from . import notify, risk, sharia
 from .config import ROOT, settings
 from .market_data import asset_class
 from .paper_broker import PaperBroker, _now, _today
@@ -229,6 +229,7 @@ class BinanceBroker(PaperBroker):
                               "`python main.py --watch` running or set the stop manually on Binance.")
         self.state["positions"].append(pos)
         self._save()
+        notify.trade_opened(pos, f"binance-{self.env}")
         return pos
 
     def _record_close(self, pos: dict, qty: float, exit_px: float, reason: str) -> dict:
@@ -240,6 +241,7 @@ class BinanceBroker(PaperBroker):
                   "r_multiple": round(pnl / pos["risk_amount"], 2) if pos["risk_amount"] else None}
         self.state["history"].append(closed)
         self._save()
+        notify.trade_closed(closed, f"binance-{self.env}")
         return closed
 
     def close_position(self, position_id: str, reason: str, price: float | None = None) -> dict:
