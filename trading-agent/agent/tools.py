@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable
-
 import time
+import uuid
+from typing import Any, Callable
 
 from . import crypto_research, market_data, scanner, sharia
 from .config import settings
@@ -218,12 +218,46 @@ def validate_input(name: str, data: Any) -> str | None:
 
 
 class ToolExecutor:
-    """Runs client tools. `confirm` is the human-approval gate for anything that moves money."""
+    """Runs client tools. Anything that moves money passes a human-approval gate:
+    approval_mode="prompt"   -> `confirm(action, details)` is asked synchronously (terminal)
+    approval_mode="deferred" -> the order is queued in `self.pending` and the tool returns at once;
+                                the UI shows Approve/Reject and calls approve()/reject() (browser)
+    """
 
-    def __init__(self, broker, confirm: Callable[[str, dict], bool]):
+    def __init__(self, broker, confirm: Callable[[str, dict], bool] | None = None,
+                 approval_mode: str = "prompt"):
         self.broker = broker
         self.confirm = confirm
+        self.approval_mode = approval_mode
+        self.pending: list[dict] = []
         self.analysed_at: dict[str, float] = {}  # symbol -> time of last successful analysis
+
+    def _gate(self, action: str, details: dict, execute: Callable[[], dict]) -> dict:
+        if self.approval_mode == "deferred":
+            item = {"id": uuid.uuid4().hex[:6], "action": action, "details": details, "execute": execute}
+            self.pending.append(item)
+            return {"status": "awaiting_trader_approval", "approval_id": item["id"],
+                    "note": "Shown to the trader with Approve/Reject buttons. Do not call this tool "
+                            "again for the same order; summarise it and let them decide."}
+        if not self.confirm or not self.confirm(action, details):
+            raise PermissionError(f"Trader declined: {action}")
+        return execute()
+
+    def approve(self, approval_id: str) -> dict:
+        """Execute a queued order. Risk and Sharia rules are re-checked inside the broker call."""
+        item = self._pop(approval_id)
+        return {"action": item["action"], "result": item["execute"]()}
+
+    def reject(self, approval_id: str) -> dict:
+        item = self._pop(approval_id)
+        return {"action": item["action"], "result": "rejected by trader"}
+
+    def _pop(self, approval_id: str) -> dict:
+        for item in self.pending:
+            if item["id"] == approval_id:
+                self.pending.remove(item)
+                return item
+        raise ValueError(f"No pending approval {approval_id}")
 
     def run(self, name: str, args: dict) -> str:
         return json.dumps(getattr(self, f"_{name}")(**args), ensure_ascii=False, default=str)
@@ -273,19 +307,16 @@ class ToolExecutor:
         preview = self.broker.preview_order(**kw)
         if not preview["allowed"]:
             raise ValueError("Rejected: " + "; ".join(preview["violations"]))
-        if not self.confirm("OPEN TRADE", {**preview, "rationale": rationale}):
-            raise PermissionError("Trader declined this order.")
-        return {"opened": self.broker.open_position(rationale=rationale, **kw)}
+        return self._gate("OPEN TRADE", {**preview, "rationale": rationale},
+                          lambda: {"opened": self.broker.open_position(rationale=rationale, **kw)})
 
     def _modify_trade(self, position_id: str, **kw) -> dict:
-        if not self.confirm("MODIFY TRADE", {"position_id": position_id, **kw}):
-            raise PermissionError("Trader declined this modification.")
-        return {"modified": self.broker.modify_position(position_id, **kw)}
+        return self._gate("MODIFY TRADE", {"position_id": position_id, **kw},
+                          lambda: {"modified": self.broker.modify_position(position_id, **kw)})
 
     def _close_trade(self, position_id: str, reason: str) -> dict:
-        if not self.confirm("CLOSE TRADE", {"position_id": position_id, "reason": reason}):
-            raise PermissionError("Trader declined closing this position.")
-        return {"closed": self.broker.close_position(position_id, reason)}
+        return self._gate("CLOSE TRADE", {"position_id": position_id, "reason": reason},
+                          lambda: {"closed": self.broker.close_position(position_id, reason)})
 
     def _trade_history(self, limit: int = 20) -> dict:
         return self.broker.history(limit)

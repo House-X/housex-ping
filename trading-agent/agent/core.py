@@ -15,11 +15,13 @@ MAX_STEPS = 25  # safety cap on tool round-trips per user turn
 
 
 class TradingAgent:
-    def __init__(self, broker, confirm: Callable[[str, dict], bool],
+    def __init__(self, broker, confirm: Callable[[str, dict], bool] | None = None,
                  on_text: Callable[[str], None] = lambda t: print(t, end="", flush=True),
-                 on_tool: Callable[[str, dict], None] = lambda n, a: None):
+                 on_tool: Callable[[str, dict], None] = lambda n, a: None,
+                 approval_mode: str = "prompt"):
         self.client = anthropic.Anthropic()
-        self.executor = ToolExecutor(broker, confirm)
+        self.executor = ToolExecutor(broker, confirm, approval_mode)
+        self.notes: list[str] = []  # e.g. approval outcomes, delivered with the next user message
         self.on_text = on_text
         self.on_tool = on_tool
         self.messages: list[dict] = []
@@ -44,7 +46,9 @@ class TradingAgent:
     def ask(self, user_text: str) -> str:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         # The timestamp goes in the user turn, not the system prompt, so the prompt cache stays valid.
-        self.messages.append({"role": "user", "content": f"[{now}]\n{user_text}"})
+        notes = "".join(f"[{n}]\n" for n in self.notes)
+        self.notes.clear()
+        self.messages.append({"role": "user", "content": f"[{now}]\n{notes}{user_text}"})
 
         for _ in range(MAX_STEPS):
             response = self._request()
