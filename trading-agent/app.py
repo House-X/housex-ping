@@ -1,23 +1,22 @@
-"""HOUSE X Trading Desk - browser interface with proper Arabic (right-to-left) rendering.
+"""Personal Trading Desk - browser interface with proper Arabic (right-to-left) rendering.
 
     streamlit run app.py
 """
 from __future__ import annotations
 
-import base64
 import json
 
 import pandas as pd
 import streamlit as st
 
 from agent import scanner
-from agent.config import ROOT, settings
+from agent.config import settings
 from agent.sharia import universe
 
-st.set_page_config(page_title="HOUSE X · Trading Desk", page_icon=str(ROOT / "assets" / "x-icon-color.png"),
+st.set_page_config(page_title="مكتب التداول الشخصي", page_icon="📈",
                    layout="wide", initial_sidebar_state="expanded")
 
-NAVY, GOLD, RED = "#26247b", "#ffca05", "#ec1c24"
+BG, ACCENT, RED = "#0f172a", "#10b981", "#ef4444"
 st.markdown(f"""
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -28,14 +27,14 @@ html, body, [class*="st-"], .stMarkdown, .stChatMessage, button, input, textarea
 .stChatMessage, [data-testid="stChatMessageContent"], .stMarkdown {{ direction: rtl; text-align: right; }}
 pre, code, [data-testid="stDataFrame"], [data-testid="stJson"], .ltr {{ direction: ltr; text-align: left; }}
 [data-testid="stChatInput"] textarea {{ direction: rtl; text-align: right; }}
-h1, h2, h3 {{ color: {GOLD}; font-weight: 700; }}
+h1, h2, h3 {{ color: {ACCENT}; font-weight: 700; }}
 .hx-badge {{ display:inline-block; padding:2px 12px; border-radius:999px; font-weight:700; font-size:.85rem; }}
-.hx-paper {{ background:{GOLD}; color:{NAVY}; }}
+.hx-paper {{ background:{ACCENT}; color:{BG}; }}
 .hx-live {{ background:{RED}; color:#fff; }}
-.hx-card {{ border:2px solid {GOLD}; border-radius:12px; padding:14px 18px; margin:8px 0;
+.hx-card {{ border:2px solid {ACCENT}; border-radius:12px; padding:14px 18px; margin:8px 0;
            background:rgba(255,255,255,.04); }}
 .hx-tool {{ opacity:.7; font-size:.85rem; }}
-[data-testid="stMetricValue"] {{ color:{GOLD}; }}
+[data-testid="stMetricValue"] {{ color:{ACCENT}; }}
 .stMarkdown ul, .stMarkdown ol {{ padding-right: 1.4rem; padding-left: 0; margin-right: 0; }}
 .stMarkdown li {{ text-align: right; margin-left: 0; }}
 [data-baseweb="tab-list"] {{ direction: rtl; }}
@@ -87,9 +86,7 @@ except Exception as e:  # bad key, refused permissions, network
 
 # ── sidebar ────────────────────────────────────────────────────
 with st.sidebar:
-    logo = base64.b64encode((ROOT / "assets" / "logo-white-colorx.png").read_bytes()).decode()
-    st.markdown(f'<img src="data:image/png;base64,{logo}" style="width:180px;margin:4px auto 8px;display:block">',
-                unsafe_allow_html=True)
+    st.markdown("## 📈 مكتب التداول")
     live = settings.trading_mode == "live"
     st.markdown(f'<span class="hx-badge {"hx-live" if live else "hx-paper"}">{mode_label()}</span>',
                 unsafe_allow_html=True)
@@ -173,7 +170,7 @@ with tab_chat:
                     "- ما أفضل العملات المدرجة حديثاً على بينانس؟ وادرس أقواها\n"
                     "- هل عملة SOL متوافقة مع الشريعة؟")
     for m in ss.chat:
-        with st.chat_message(m["role"], avatar="🧑‍💼" if m["role"] == "user" else str(ROOT / "assets" / "x-icon-color.png")):
+        with st.chat_message(m["role"], avatar="🧑‍💼" if m["role"] == "user" else "🤖"):
             render_tools(m.get("tools", []))
             st.markdown(m["content"])
 
@@ -187,7 +184,7 @@ with tab_chat:
         ss.chat.append({"role": "user", "content": prompt, "tools": []})
         with st.chat_message("user", avatar="🧑‍💼"):
             st.markdown(prompt)
-        with st.chat_message("assistant", avatar=str(ROOT / "assets" / "x-icon-color.png")):
+        with st.chat_message("assistant", avatar="🤖"):
             tools_box, text_box = st.container(), st.empty()
             buf, tools = [], []
 

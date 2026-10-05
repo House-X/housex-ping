@@ -25,7 +25,7 @@ REVIEW_CATEGORIES = (
 
 def _get(path: str, **params) -> dict | list:
     url = f"{API}{path}" + (f"?{urllib.parse.urlencode(params)}" if params else "")
-    headers = {"accept": "application/json", "user-agent": "housex-trading-agent"}
+    headers = {"accept": "application/json", "user-agent": "personal-trading-agent"}
     if key := os.getenv("COINGECKO_API_KEY"):
         headers["x-cg-demo-api-key"] = key
     with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=20) as r:

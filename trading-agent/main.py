@@ -145,7 +145,7 @@ def main() -> None:
         return
 
     agent = TradingAgent(broker, confirm=confirm, on_tool=on_tool)
-    console.print(Panel(HELP, title="[bold]HOUSE X · Trading Desk Agent[/]", border_style="cyan"))
+    console.print(Panel(HELP, title="[bold]Personal Trading Desk[/]", border_style="cyan"))
 
     while True:
         try:
