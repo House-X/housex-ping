@@ -179,3 +179,16 @@ def test_turkish_stocks_are_backtested_in_usd():
 def test_backtest_reports_buy_and_hold_drawdown():
     s = backtest.run(synthetic_ohlcv(n=600, drift=0.001, seed=2), min_score=60)["stats"]
     assert s["buy_and_hold_max_drawdown_pct"] <= 0
+
+
+def test_time_in_market_counts_bars_not_calendar_days(monkeypatch):
+    # weekday-only index: a 3-bar holding across a weekend must count 3 bars, not 5 days
+    idx = pd.bdate_range("2024-01-04", periods=6, tz="UTC")  # Thu, Fri, Mon, Tue, Wed, Thu
+    df = pd.DataFrame([[100, 101, 99.5, 100, 1]] * 6, columns=["open", "high", "low", "close", "volume"], index=idx)
+    df.iloc[4] = [100, 103, 99.5, 102, 1]                     # target hit on bar 4
+    sig = pd.DataFrame({"score": [90, 0, 0, 0, 0, 0], "setup": [backtest.SETUP_BREAKOUT] + ["none"] * 5,
+                        "atr": [0.5] * 6}, index=idx)
+    monkeypatch.setattr(backtest, "score_frame", lambda d: sig)
+    r = backtest.run(df, warmup=0, fee=0)
+    assert r["trades"][0]["reason"] == "target"
+    assert r["stats"]["time_in_market_pct"] == pytest.approx(4 / 6 * 100, abs=0.1)   # bars 1-4

@@ -70,7 +70,9 @@ def run(df: pd.DataFrame, min_score: int = 70, setups: tuple = DEFAULT_SETUPS,
     pos = None
     trades, curve = [], []
 
+    bars_in_market = 0
     for i in range(warmup, len(df)):
+        active, n_trades = pos is not None, len(trades)
         # 1) manage an open position on this bar
         if pos is not None:
             exit_px = reason = None
@@ -122,6 +124,7 @@ def run(df: pd.DataFrame, min_score: int = 70, setups: tuple = DEFAULT_SETUPS,
 
         equity = cash + (pos["units"] * c[i] if pos else 0.0)
         curve.append((idx[i], equity))
+        bars_in_market += active or pos is not None or len(trades) > n_trades
 
     if pos is not None:  # mark the open position at the last close
         trades.append({"entry_date": pos["date"], "exit_date": idx[-1], "setup": pos["setup"],
@@ -131,6 +134,7 @@ def run(df: pd.DataFrame, min_score: int = 70, setups: tuple = DEFAULT_SETUPS,
 
     eq = pd.Series([e for _, e in curve], index=[d for d, _ in curve], dtype=float)
     stats = _stats(trades, eq, start_equity, c[warmup] if len(c) > warmup else np.nan, c[-1])
+    stats["time_in_market_pct"] = round(bars_in_market / max(len(eq), 1) * 100, 1)
     hold = df["close"].iloc[warmup:]
     stats["buy_and_hold_max_drawdown_pct"] = round(float(((hold / hold.cummax()) - 1).min() * 100), 1) \
         if len(hold) else None
@@ -145,7 +149,6 @@ def _stats(trades: list[dict], eq: pd.Series, start: float, first_close: float, 
     years = max((eq.index[-1] - eq.index[0]).days / 365.25, 1e-9) if len(eq) > 1 else 0
     final = float(eq.iloc[-1]) if len(eq) else start
     dd = float(((eq / eq.cummax()) - 1).min() * 100) if len(eq) else 0.0
-    in_market = sum((t["exit_date"] - t["entry_date"]).days + 1 for t in trades)
     return {
         "trades": len(trades),
         "win_rate_pct": round(len(wins) / len(trades) * 100, 1) if trades else None,
@@ -156,7 +159,7 @@ def _stats(trades: list[dict], eq: pd.Series, start: float, first_close: float, 
         "max_drawdown_pct": round(dd, 1),
         "buy_and_hold_pct": round(float(last_close / first_close - 1) * 100, 1)
                             if first_close and not np.isnan(first_close) else None,
-        "time_in_market_pct": round(min(in_market / max(len(eq), 1) * 100, 100), 1),
+        "time_in_market_pct": None,  # filled in by run(), which counts bars
         "years": round(years, 1),
     }
 
