@@ -112,8 +112,8 @@ def build_broker():
 
 
 def watch(broker) -> None:
-    from agent import explorer, notify
-    console.print(f"[dim]Watching positions every 30s. Explorer: "
+    from agent import alerts, explorer, notify
+    console.print(f"[dim]Watching positions and alerts every 30s. Explorer: "
                   f"{'every ' + str(settings.explore_every_hours) + 'h' if settings.explore_enabled else 'off'}"
                   f" · Telegram: {'on' if notify.configured() else 'off'}. Ctrl+C to stop.[/]")
     while True:
@@ -121,6 +121,9 @@ def watch(broker) -> None:
             for e in broker.check_stops():
                 console.print(f"[bold]{e['closed_at']}[/] {e['symbol']} — {e['close_reason']} — "
                               f"P&L {e['pnl']} ({e['r_multiple']}R)")
+            for a in alerts.check(broker):
+                console.print(f"[magenta]Alert {a['id']} {alerts.describe(a)} → {a['status']}: "
+                              f"{a.get('result') or ''}[/]")
             if settings.explore_enabled and explorer.due():
                 console.print("[cyan]Exploring markets for opportunities...[/]")
                 run = explorer.explore(broker)

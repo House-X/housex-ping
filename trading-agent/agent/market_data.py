@@ -157,3 +157,16 @@ def fetch_daily_history(symbol: str, years: int = 4) -> pd.DataFrame:
     df = raw.rename(columns=str.lower)[["open", "high", "low", "close", "volume"]].dropna()
     df.index = pd.to_datetime(df.index, utc=True)
     return df
+
+
+def last_completed_daily_close(symbol: str, now=None) -> float:
+    """Close of the most recent FINISHED daily bar (today's bar is still moving)."""
+    from datetime import datetime, timezone
+    now = now or datetime.now(timezone.utc)
+    df = fetch_ohlcv(symbol, "1d", 5)
+    if asset_class(symbol) == "crypto":  # exchange daily bars roll at 00:00 UTC; last one is live
+        return float(df["close"].iloc[-2])
+    close_utc = (15, 15) if symbol.upper().endswith(".IS") else (21, 15)  # BIST / US session end
+    last_is_today = df.index[-1].date() == now.date()
+    still_open = (now.hour, now.minute) < close_utc
+    return float(df["close"].iloc[-2] if last_is_today and still_open else df["close"].iloc[-1])

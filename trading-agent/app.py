@@ -128,8 +128,12 @@ with st.sidebar:
         st.rerun()
     st.caption("لا رافعة · لا بيع على المكشوف · حلال فقط · التحليل قبل التنفيذ")
 
-tab_chat, tab_ideas, tab_scan, tab_bt, tab_acc, tab_halal = st.tabs(
-    ["💬 المحادثة", "💡 فرص الوكيل", "🔎 المسح", "🧪 اختبار تاريخي", "📊 الحساب", "☪️ القائمة الشرعية"])
+from agent import alerts  # noqa: E402
+
+n_proposed = sum(a["status"] == "proposed" for a in alerts.active())
+tab_chat, tab_ideas, tab_alerts, tab_scan, tab_bt, tab_acc, tab_halal = st.tabs(
+    ["💬 المحادثة", "💡 فرص الوكيل", f"⏰ التنبيهات{f' ({n_proposed}🔴)' if n_proposed else ''}",
+     "🔎 المسح", "🧪 اختبار تاريخي", "📊 الحساب", "☪️ القائمة الشرعية"])
 
 
 # ── chat ───────────────────────────────────────────────────────
@@ -299,6 +303,86 @@ with tab_ideas:
                                             "وإن كانت مناسبة حسب قواعدي جهّز الصفقة لأوافق عليها.")
                         st.toast("أُرسلت للوكيل. افتح تبويب «المحادثة» لترى التحليل.", icon="💬")
                         st.rerun()
+
+
+# ── alerts & auto-buy plans ────────────────────────────────────
+STATUS_AR = {"proposed": "🟠 بانتظار موافقتك", "armed": "🟢 قيد المراقبة", "triggered": "🔔 تحقق",
+             "executed": "🤖✅ نُفّذ", "failed": "⚠️ لم يُنفّذ", "expired": "⌛ انتهت صلاحيته",
+             "cancelled": "✖️ أُلغي", "rejected": "✖️ مرفوض"}
+COND_OPTIONS = {"إغلاق يومي فوق": "close_above", "السعر فوق": "price_above",
+                "السعر تحت": "price_below", "إغلاق يومي تحت": "close_below"}
+
+with tab_alerts:
+    st.markdown("## التنبيهات والشراء التلقائي")
+    st.caption("🔔 تنبيه فقط: رسالة على تيليجرام عند تحقق الشرط. "
+               "🤖 شراء تلقائي: توافق مرة واحدة على الخطة، فيشتري عند تحقق الشرط بدون الرجوع إليك، "
+               "مع إعادة فحص القواعد الشرعية وقواعد المخاطرة لحظة التنفيذ. "
+               "يعمل فقط أثناء تشغيل نافذة المراقب.")
+    act = alerts.active()
+
+    proposed = [a for a in act if a["status"] == "proposed"]
+    if proposed:
+        st.markdown("### 🟠 خطط شراء تلقائي بانتظار موافقتك")
+    for a in proposed:
+        with st.container(border=True):
+            st.markdown(f"**{alerts.describe(a)}** · مصدرها: "
+                        f"{'المستكشف' if a['source'] == 'explorer' else 'المحادثة' if a['source'] == 'chat' else 'يدوي'}")
+            rr = (a["take_profit"] - a["level"]) / (a["level"] - a["stop_loss"])
+            st.markdown(f"عند تحقق الشرط **يشتري تلقائياً** · الوقف **{a['stop_loss']:g}** · "
+                        f"الهدف **{a['take_profit']:g}** · العائد/المخاطرة من مستوى الشرط **{rr:.1f}**")
+            if a.get("note"):
+                st.caption(a["note"])
+            c1, c2 = st.columns(2)
+            if c1.button("✅ أوافق: نفّذ تلقائياً عند تحقق الشرط", key=f"al_ok_{a['id']}", type="primary",
+                         width="stretch"):
+                alerts.approve(a["id"])
+                st.rerun()
+            if c2.button("✖️ رفض", key=f"al_no_{a['id']}", width="stretch"):
+                alerts.reject(a["id"])
+                st.rerun()
+
+    armed = [a for a in act if a["status"] == "armed"]
+    st.markdown("### 🟢 قيد المراقبة")
+    if not armed:
+        st.caption("لا توجد تنبيهات نشطة.")
+    for a in armed:
+        c1, c2 = st.columns([5, 1])
+        kind = "🤖 شراء تلقائي" if a["action"] == "auto_buy" else "🔔 تنبيه"
+        last = f" · آخر قيمة {a['last_value']:g}" if a.get("last_value") is not None else ""
+        c1.markdown(f"{kind} · **{alerts.describe(a)}**{last}" + (f" · {a['note']}" if a.get("note") else ""))
+        if c2.button("إلغاء", key=f"al_cancel_{a['id']}", width="stretch"):
+            alerts.cancel(a["id"])
+            st.rerun()
+
+    with st.expander("➕ إضافة تنبيه يدوياً"):
+        f1, f2, f3 = st.columns(3)
+        sym = f1.text_input("الرمز", "BTC/USDT", key="al_sym")
+        cond = f2.selectbox("الشرط", list(COND_OPTIONS), key="al_cond")
+        level = f3.number_input("المستوى", min_value=0.0, value=0.0, format="%.6g", key="al_level")
+        kind = st.radio("النوع", ["🔔 تنبيه فقط", "🤖 شراء تلقائي"], horizontal=True, key="al_kind")
+        stop = target = None
+        if kind.startswith("🤖"):
+            g1, g2 = st.columns(2)
+            stop = g1.number_input("وقف الخسارة", min_value=0.0, value=0.0, format="%.6g", key="al_stop")
+            target = g2.number_input("الهدف", min_value=0.0, value=0.0, format="%.6g", key="al_tp")
+        note = st.text_input("ملاحظة (اختياري)", key="al_note")
+        days = st.slider("الصلاحية بالأيام", 1, 30, settings.alert_expiry_days, key="al_days")
+        if st.button("حفظ التنبيه", type="primary"):
+            try:
+                created = alerts.create(sym, COND_OPTIONS[cond], level,
+                                        "auto_buy" if kind.startswith("🤖") else "notify",
+                                        stop or None, target or None, note, source="manual", expires_days=days)
+                st.success("تم الحفظ" + (" — وافق عليه بالأعلى ليصبح نشطاً" if created["status"] == "proposed" else ""))
+                st.rerun()
+            except ValueError as e:
+                st.error(str(e))
+
+    hist = alerts.history(20)
+    if hist:
+        with st.expander(f"السجل ({len(hist)})"):
+            for a in hist:
+                st.markdown(f"- {STATUS_AR.get(a['status'], a['status'])} · **{alerts.describe(a)}** · "
+                            f"{a.get('result') or ''}")
 
 
 # ── backtest ───────────────────────────────────────────────────

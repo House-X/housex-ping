@@ -32,6 +32,9 @@ The free scanners flagged these candidates (JSON below). Do NOT open, modify or 
 Research the best tradable candidates (max 3) and the most interesting research candidates (max 2):
 run analyze_market, check the news with web_search, and for coins use research_crypto.
 Be selective: "nothing worth buying today" is a perfectly good answer.
+For every WATCH item with a clear price trigger, call create_alert (action "notify") so the trader
+is told when it happens. For a strong TRADE IDEA on an approved coin with a clear trigger, you may
+also create an "auto_buy" proposal with stop and target - it waits for the trader's approval.
 
 Write the WHOLE report in simple Arabic for a non-specialist, using exactly this layout:
 
@@ -164,6 +167,7 @@ def explore(broker=None, use_ai: bool = True, send: bool = True, force: bool = F
                 from .core import TradingAgent
                 agent = TradingAgent(broker, approval_mode="deferred", effort="medium",
                                      on_text=lambda t: None)
+                agent.executor.alert_source = "explorer"
             payload = json.dumps({"tradable": tradable, "research_candidates": research},
                                  ensure_ascii=False)
             report = agent.ask(EXPLORE_PROMPT.format(start=TELEGRAM_START, end=TELEGRAM_END,

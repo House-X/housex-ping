@@ -6,7 +6,7 @@ import time
 import uuid
 from typing import Any, Callable
 
-from . import backtest, crypto_research, market_data, scanner, sharia
+from . import alerts, backtest, crypto_research, market_data, scanner, sharia
 from .config import settings
 from .indicators import snapshot
 
@@ -116,6 +116,47 @@ CLIENT_TOOLS: list[dict[str, Any]] = [
                 "reward_risk": {"type": "number", "minimum": 1, "maximum": 5},
             },
             "required": ["symbols"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "create_alert",
+        "description": (
+            "Watch a price condition and act when it is met. action='notify' sends the trader a "
+            "Telegram alert (armed immediately). action='auto_buy' is a complete pre-approved plan "
+            "(stop_loss and take_profit required, stop < level < target): it is saved as a PROPOSAL "
+            "that the trader must approve once in the Alerts tab; after that it buys automatically "
+            "when the condition is met, re-checking all risk and Sharia rules at that moment. "
+            "Use close_above/close_below for 'daily close' triggers. Plans expire (default 7 days)."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string"},
+                "condition": {"type": "string", "enum": ["price_above", "price_below", "close_above", "close_below"]},
+                "level": {"type": "number"},
+                "action": {"type": "string", "enum": ["notify", "auto_buy"]},
+                "stop_loss": {"type": "number"},
+                "take_profit": {"type": "number"},
+                "note": {"type": "string", "description": "Short Arabic reason shown in the alert"},
+                "expires_days": {"type": "integer", "minimum": 1, "maximum": 30},
+            },
+            "required": ["symbol", "condition", "level", "action"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "list_alerts",
+        "description": "Active alerts and auto-buy plans (proposed or armed) plus recent outcomes.",
+        "input_schema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+    {
+        "name": "cancel_alert",
+        "description": "Cancel an active alert or auto-buy plan by id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"alert_id": {"type": "string"}},
+            "required": ["alert_id"],
             "additionalProperties": False,
         },
     },
@@ -251,6 +292,7 @@ class ToolExecutor:
         self.confirm = confirm
         self.approval_mode = approval_mode
         self.pending: list[dict] = []
+        self.alert_source = "chat"
         self.analysed_at: dict[str, float] = {}  # symbol -> time of last successful analysis
 
     def _gate(self, action: str, details: dict, execute: Callable[[], dict]) -> dict:
@@ -320,6 +362,22 @@ class ToolExecutor:
     def _backtest_strategy(self, symbols: list[str], years: int = 4, min_score: int = 70,
                            reward_risk: float = 2.0) -> dict:
         return backtest.backtest(symbols[:6], years=years, min_score=min_score, reward_risk=reward_risk)
+
+    def _create_alert(self, symbol: str, condition: str, level: float, action: str,
+                      stop_loss: float | None = None, take_profit: float | None = None,
+                      note: str = "", expires_days: int | None = None) -> dict:
+        a = alerts.create(symbol, condition, level, action, stop_loss, take_profit, note,
+                          source=self.alert_source, expires_days=expires_days)
+        if action == "auto_buy" and not a.get("duplicate"):
+            a = {**a, "next_step": "Saved as a proposal. Tell the trader to approve it in the "
+                                   "Alerts tab; it will not execute before approval."}
+        return a
+
+    def _list_alerts(self) -> dict:
+        return {"active": alerts.active(), "recent": alerts.history(10)}
+
+    def _cancel_alert(self, alert_id: str) -> dict:
+        return alerts.cancel(alert_id)
 
     def _get_account(self) -> dict:
         return self.broker.account()

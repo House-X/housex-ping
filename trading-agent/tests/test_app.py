@@ -32,7 +32,7 @@ def app():
 
 def test_app_renders_without_errors(app):
     assert not app.exception
-    assert len(app.tabs) == 6
+    assert len(app.tabs) == 7
 
 
 def test_chat_then_approve(app):
@@ -78,3 +78,17 @@ def test_study_button_sends_candidate_to_chat(tmp_path, monkeypatch):
     study.click().run()
     assert not at.exception
     assert agent.prompts and "ETH/USDT" in agent.prompts[0] and "اختراق قمة جديدة" in agent.prompts[0]
+
+
+def test_alerts_tab_approves_auto_buy_plan(tmp_path, monkeypatch):
+    from agent import alerts, notify
+    monkeypatch.setattr(alerts, "STORE", tmp_path / "alerts.json")
+    monkeypatch.setattr(notify, "send", lambda t: True)
+    plan = alerts.create("ETH/USDT", "close_above", 2807, "auto_buy", stop_loss=2650, take_profit=3100)
+    at = AppTest.from_file("../app.py", default_timeout=30)
+    at.session_state["agent"] = FakeAgent()
+    at.run()
+    assert any("التنبيهات" in t.label and "🔴" in t.label for t in at.tabs)
+    next(b for b in at.button if b.key == f"al_ok_{plan['id']}").click().run()
+    assert not at.exception
+    assert alerts.active()[0]["status"] == "armed"

@@ -47,7 +47,8 @@ def send(text: str) -> bool:
 
 # ── trade events (called by the brokers) ──────────────────────
 def trade_opened(pos: dict, mode: str) -> None:
-    send(f"🟢 صفقة جديدة ({mode})\n"
+    auto = str(pos.get("rationale", "")).startswith("شراء تلقائي")
+    send(f"{'🤖✅ شراء تلقائي نُفّذ' if auto else '🟢 صفقة جديدة'} ({mode})\n"
          f"{pos['symbol']}\n"
          f"الدخول: {pos['entry']:.6g}\nالوقف: {pos['stop_loss']:.6g}\nالهدف: {pos['take_profit']:.6g}\n"
          f"التكلفة: {pos.get('cost', 0):.2f}$ · أقصى خسارة: {pos.get('risk_amount', 0):.2f}$\n"

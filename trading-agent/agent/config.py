@@ -43,6 +43,11 @@ class Settings:
     explore_ai_max_per_day: int = int(_f("EXPLORE_AI_MAX_PER_DAY", 2))
     explore_min_score: int = int(_f("EXPLORE_MIN_SCORE", 75))
 
+    # Alerts & pre-approved automatic buys
+    alert_expiry_days: int = int(_f("ALERT_EXPIRY_DAYS", 7))
+    auto_buy_max_chase_pct: float = _f("AUTO_BUY_MAX_CHASE_PCT", 1.5)  # skip if price ran this far past the trigger
+    auto_buy_live: bool = os.getenv("AUTO_BUY_LIVE", "false").lower() == "true"  # real-money auto-buys off by default
+
     state_file: Path = ROOT / "data" / "paper_state.json"
 
 
