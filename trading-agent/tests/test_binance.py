@@ -200,3 +200,11 @@ def test_live_key_with_dangerous_permissions_is_refused(tmp_path, restrictions, 
 def test_live_key_with_safe_permissions_passes(tmp_path):
     b = BinanceBroker(exchange=FakeBinance(), env="live", state_file=tmp_path / "l.json")
     assert b.verify_account()["usdt_free"] == 10_000
+
+
+def test_capped_preview_reports_consistent_sizing(broker):
+    """After the LIVE_MAX_ORDER_USD cap every sizing figure must describe the capped order."""
+    s = broker.preview_order("ETH/USDT", 90, 130)["sizing"]
+    assert s["cost"] <= 50.01
+    assert s["allocation_pct_of_equity"] == pytest.approx(s["cost"] / 10_000 * 100, abs=0.01)
+    assert s["risk_pct_of_equity"] == pytest.approx(s["risk_amount"] / 10_000 * 100, abs=0.001)

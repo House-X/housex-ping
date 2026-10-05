@@ -158,6 +158,8 @@ class BinanceBroker(PaperBroker):
             sizing.update(units=amount, cost=round(amount * entry, 2),
                           risk_amount=round(amount * (entry - stop_loss), 2),
                           risk_pct_of_equity=round(amount * (entry - stop_loss) / equity * 100, 3)
+                          if equity else None,
+                          allocation_pct_of_equity=round(amount * entry / equity * 100, 2)
                           if equity else None)
         return {
             "symbol": symbol, "side": "buy (spot)", "exchange": f"binance-{self.env}",
