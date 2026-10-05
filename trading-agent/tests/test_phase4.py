@@ -167,3 +167,15 @@ def test_explore_due_schedule(store):
     assert explorer.due()
     explorer.explore(scans={}, send=False)
     assert not explorer.due()
+
+
+def test_turkish_stocks_are_backtested_in_usd():
+    df = bars([[100, 110, 90, 100, 1], [200, 220, 180, 200, 1]])          # price doubles in TRY
+    fx = pd.Series([10.0, 20.0], index=df.index)                          # ...and so does USDTRY
+    usd = backtest.in_usd(df, fx)
+    assert list(usd["close"]) == [10.0, 10.0]                             # flat in USD
+
+
+def test_backtest_reports_buy_and_hold_drawdown():
+    s = backtest.run(synthetic_ohlcv(n=600, drift=0.001, seed=2), min_score=60)["stats"]
+    assert s["buy_and_hold_max_drawdown_pct"] <= 0

@@ -297,6 +297,8 @@ with tab_bt:
             for sym in symbols:
                 try:
                     df = market_data.fetch_daily_history(sym, int(years))
+                    if sym.endswith(".IS"):  # judge Turkish stocks in USD, not inflating lira
+                        df = backtest.in_usd(df, market_data.fetch_daily_history("USDTRY", int(years))["close"])
                     results[sym] = backtest.run(df, min_score=int(min_score), reward_risk=float(rr))
                 except Exception as e:
                     results[sym] = {"error": f"{type(e).__name__}: {e}"}
@@ -307,13 +309,17 @@ with tab_bt:
             st.error(res["error"])
             continue
         stt = res["stats"]
-        m = st.columns(6)
+        if sym.endswith(".IS"):
+            st.caption("💵 محسوب بالدولار، لأن الليرة التركية تضخّم العوائد الاسمية")
+        m = st.columns(4)
         m[0].metric("عدد الصفقات", stt["trades"])
         m[1].metric("نسبة الربح", f"{stt['win_rate_pct']}%" if stt["win_rate_pct"] is not None else "-")
         m[2].metric("متوسط R", stt["avg_r"] if stt["avg_r"] is not None else "-")
-        m[3].metric("عائد الاستراتيجية", f"{stt['total_return_pct']}%")
-        m[4].metric("أقصى تراجع", f"{stt['max_drawdown_pct']}%")
-        m[5].metric("الشراء والاحتفاظ", f"{stt['buy_and_hold_pct']}%")
+        m[3].metric("وقت داخل السوق", f"{stt['time_in_market_pct']}%")
+        st.table(pd.DataFrame({
+            "استراتيجية الوكيل": [f"{stt['total_return_pct']}%", f"{stt['max_drawdown_pct']}%"],
+            "الشراء والاحتفاظ": [f"{stt['buy_and_hold_pct']}%", f"{stt.get('buy_and_hold_max_drawdown_pct')}%"],
+        }, index=["العائد الإجمالي", "أقصى تراجع"]))
         if stt["trades"] < 30:
             st.warning("عدد الصفقات أقل من 30: النتيجة غير موثوقة إحصائياً.")
         st.caption("منحنى رأس المال (يبدأ من 10,000$)")

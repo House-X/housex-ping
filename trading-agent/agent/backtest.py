@@ -130,8 +130,11 @@ def run(df: pd.DataFrame, min_score: int = 70, setups: tuple = DEFAULT_SETUPS,
                        "r": (pos["units"] * c[-1] * (1 - fee) - pos["cost"]) / pos["risk"]})
 
     eq = pd.Series([e for _, e in curve], index=[d for d, _ in curve], dtype=float)
-    return {"stats": _stats(trades, eq, start_equity, c[warmup] if len(c) > warmup else np.nan, c[-1]),
-            "trades": trades, "equity_curve": eq}
+    stats = _stats(trades, eq, start_equity, c[warmup] if len(c) > warmup else np.nan, c[-1])
+    hold = df["close"].iloc[warmup:]
+    stats["buy_and_hold_max_drawdown_pct"] = round(float(((hold / hold.cummax()) - 1).min() * 100), 1) \
+        if len(hold) else None
+    return {"stats": stats, "trades": trades, "equity_curve": eq}
 
 
 def _stats(trades: list[dict], eq: pd.Series, start: float, first_close: float, last_close: float) -> dict:
@@ -158,12 +161,24 @@ def _stats(trades: list[dict], eq: pd.Series, start: float, first_close: float, 
     }
 
 
+def in_usd(df: pd.DataFrame, fx: pd.Series) -> pd.DataFrame:
+    """Convert a local-currency OHLC frame to USD with a daily USD/local rate (e.g. USDTRY).
+    Judging Borsa Istanbul in TRY overstates returns because of inflation."""
+    rate = fx.reindex(df.index, method="ffill").bfill()
+    out = df.copy()
+    for k in ("open", "high", "low", "close"):
+        out[k] = df[k] / rate
+    return out.dropna()
+
+
 def backtest(symbols: list[str], years: int = 4, fetch: Callable | None = None, **params) -> dict:
     fetch = fetch or market_data.fetch_daily_history
     results, all_trades = {}, []
     for s in symbols:
         try:
             df = fetch(s, years)
+            if s.upper().endswith(".IS"):  # measure Turkish stocks in USD, not inflating lira
+                df = in_usd(df, fetch("USDTRY", years)["close"])
             if len(df) < 260:
                 results[s] = {"error": f"only {len(df)} daily bars - need at least 260"}
                 continue
@@ -182,7 +197,8 @@ def backtest(symbols: list[str], years: int = 4, fetch: Callable | None = None, 
                       if all_trades else None,
                       "avg_r": round(float(np.mean(rs)), 2) if rs else None},
         "per_symbol": results,
-        "caveats": "Rules only: no news, AI judgement or Sharia filter; fees 0.1%/side; past results "
+        "caveats": "Rules only: no news, AI judgement or Sharia filter; fees 0.1%/side; .IS stocks are "
+                   "measured in USD; past results "
                    "are not a forecast. Few trades (<30) means the numbers are not statistically reliable.",
     }
 

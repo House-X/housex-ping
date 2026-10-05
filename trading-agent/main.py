@@ -145,15 +145,17 @@ def run_backtest(args: list[str]) -> None:
     with console.status(f"Backtesting {', '.join(symbols)} over {years} years..."):
         r = backtest.backtest(symbols, years=years)
     t = Table(title=f"Backtest — {years}y · min score {r['rules']['min_score']} · R:R {r['rules']['reward_risk']}")
-    for col in ("symbol", "trades", "win %", "avg R", "profit factor", "return %", "max DD %", "buy&hold %"):
+    for col in ("symbol", "trades", "win %", "avg R", "profit factor", "return %", "max DD %",
+                "buy&hold %", "B&H max DD %"):
         t.add_column(col)
     for sym, res in r["per_symbol"].items():
         if "error" in res:
-            t.add_row(sym, res["error"], *[""] * 6)
+            t.add_row(sym, res["error"], *[""] * 7)
             continue
         st = res["stats"]
         t.add_row(sym, str(st["trades"]), str(st["win_rate_pct"]), str(st["avg_r"]), str(st["profit_factor"]),
-                  str(st["total_return_pct"]), str(st["max_drawdown_pct"]), str(st["buy_and_hold_pct"]))
+                  str(st["total_return_pct"]), str(st["max_drawdown_pct"]), str(st["buy_and_hold_pct"]),
+                  str(st["buy_and_hold_max_drawdown_pct"]))
     console.print(t)
     console.print(f"[dim]{r['caveats']}[/]")
 
