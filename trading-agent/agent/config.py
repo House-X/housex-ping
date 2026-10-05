@@ -31,7 +31,10 @@ class Settings:
     crypto_exchange: str = os.getenv("CRYPTO_EXCHANGE", "binance")
     exchange_api_key: str = os.getenv("EXCHANGE_API_KEY", "")
     exchange_api_secret: str = os.getenv("EXCHANGE_API_SECRET", "")
-    exchange_testnet: bool = os.getenv("EXCHANGE_TESTNET", "true").lower() == "true"
+    # demo = Binance Demo Trading (real prices, fake funds) | testnet = spot testnet | live = real money
+    binance_env: str = os.getenv("BINANCE_ENV", "demo").lower()
+    live_max_order_usd: float = _f("LIVE_MAX_ORDER_USD", 50)  # hard cap per order while you build trust
+    require_ip_whitelist: bool = os.getenv("REQUIRE_IP_WHITELIST", "true").lower() == "true"
 
     state_file: Path = ROOT / "data" / "paper_state.json"
 

@@ -3,9 +3,12 @@
     python main.py            # chat with the agent
     python main.py --check    # just check SL/TP on open paper positions (for cron)
     python main.py --scan bist|crypto|new|trending   # print an opportunity scan, no AI cost
+    python main.py --verify   # check the Binance connection and API-key permissions
+    python main.py --watch    # keep syncing SL/TP exits every 30s (run in a second terminal)
 """
 import json
 import sys
+import time
 
 from rich.console import Console
 from rich.panel import Panel
@@ -42,7 +45,8 @@ HELP = """[bold]أوامر سريعة[/]
 def confirm(action: str, details: dict) -> bool:
     console.print()
     console.print(Panel(json.dumps(details, indent=2, ensure_ascii=False, default=str),
-                        title=f"[bold yellow]{action}[/] — mode: {settings.trading_mode}",
+                        title=f"[bold yellow]{action}[/] — mode: "
+                              f"{'paper' if settings.trading_mode == 'paper' else 'binance-' + settings.binance_env}",
                         border_style="yellow"))
     return Confirm.ask("[bold]Approve?[/]", default=False)
 
@@ -69,15 +73,70 @@ def run_scan(kind: str) -> None:
         console.print(f"[dim]✗ {e['symbol']}: {e['status']} — {'; '.join(e['reasons'])}[/]")
 
 
-def main() -> None:
-    if settings.trading_mode != "paper":
-        console.print("[red]Live mode is not wired up yet (step 3). Set TRADING_MODE=paper.[/]")
+def build_broker():
+    if settings.trading_mode == "paper":
+        return PaperBroker()
+    if settings.trading_mode != "live":
+        console.print("[red]TRADING_MODE must be paper or live[/]")
         sys.exit(1)
-    broker = PaperBroker()
 
+    import ccxt
+
+    from agent.binance_broker import BinanceBroker, SecurityError
+    try:
+        broker = BinanceBroker()
+        report = broker.verify_account()
+    except (SecurityError, ValueError) as e:
+        console.print(Panel(str(e), title="[bold red]Refusing to start[/]", border_style="red"))
+        sys.exit(1)
+    except (ccxt.AuthenticationError, ccxt.PermissionDenied) as e:
+        console.print(Panel(f"Binance rejected the API key ({e}).\nDemo keys only work with "
+                            "BINANCE_ENV=demo, real keys only with BINANCE_ENV=live.",
+                            title="[bold red]Authentication failed[/]", border_style="red"))
+        sys.exit(1)
+    except ccxt.NetworkError as e:
+        console.print(f"[red]Cannot reach Binance: {e}[/]")
+        sys.exit(1)
+    color = "red" if settings.binance_env == "live" else "green"
+    console.print(Panel("\n".join(f"✓ {c}" for c in report["checks"])
+                        + f"\nUSDT free: {report['usdt_free']:.2f} · max per order: {report['max_order_usd']} USD",
+                        title=f"[bold {color}]Binance {settings.binance_env.upper()}[/]", border_style=color))
+    if settings.binance_env == "live":
+        console.print("[bold red]REAL MONEY.[/] Type LIVE to continue: ", end="")
+        if input().strip() != "LIVE":
+            sys.exit(0)
+    return broker
+
+
+def watch(broker) -> None:
+    console.print("[dim]Watching positions every 30s. Ctrl+C to stop.[/]")
+    while True:
+        try:
+            for e in broker.check_stops():
+                console.print(f"[bold]{e['closed_at']}[/] {e['symbol']} — {e['close_reason']} — "
+                              f"P&L {e['pnl']} ({e['r_multiple']}R)")
+        except KeyboardInterrupt:
+            break
+        except Exception as e:  # network blips: log and keep watching
+            console.print(f"[red]{type(e).__name__}: {e}[/]")
+        try:
+            time.sleep(30)
+        except KeyboardInterrupt:
+            break
+
+
+def main() -> None:
     if "--scan" in sys.argv:
         idx = sys.argv.index("--scan")
         run_scan(sys.argv[idx + 1] if len(sys.argv) > idx + 1 else "bist")
+        return
+
+    broker = build_broker()
+    if "--verify" in sys.argv:
+        console.print_json(json.dumps(broker.account(), ensure_ascii=False, default=str))
+        return
+    if "--watch" in sys.argv:
+        watch(broker)
         return
 
     if "--check" in sys.argv:
