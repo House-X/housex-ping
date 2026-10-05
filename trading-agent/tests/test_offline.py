@@ -241,8 +241,9 @@ class FakeExchange:
     def load_markets(self):
         return self.markets
 
-    def fetch_tickers(self, syms):
-        return {s: {"quoteVolume": 1e8, "percentage": 1.0} for s in syms}
+    def fetch_tickers(self, syms=None):
+        assert syms is None, "must fetch all tickers in one call (long symbol lists break the URL)"
+        return {s: {"quoteVolume": 1e8, "percentage": 1.0} for s in self.markets}
 
 
 def _fake_ohlcv(sym, n):

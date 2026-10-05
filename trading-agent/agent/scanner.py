@@ -167,7 +167,9 @@ def scan_crypto(mode: str = "established", top_n: int = 10, candidates: int = 60
     blocked = set(universe().get("crypto_blocked_bases", []))
     markets = [m for m in _spot_usdt_markets(ex) if m.split("/")[0] not in blocked]
 
-    tickers = ex.fetch_tickers(markets)
+    # One request for every ticker (Binance rejects a URL listing hundreds of symbols), then filter.
+    all_tickers = ex.fetch_tickers()
+    tickers = {m: all_tickers[m] for m in markets if m in all_tickers}
     by_volume = sorted(markets, key=lambda s: (tickers.get(s) or {}).get("quoteVolume") or 0, reverse=True)
 
     if mode == "trending":
