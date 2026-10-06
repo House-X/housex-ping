@@ -12,7 +12,7 @@ from agent.paper_broker import PaperBroker
 def isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(alerts, "STORE", tmp_path / "alerts.json")
     sent = []
-    monkeypatch.setattr(notify, "send", lambda text: sent.append(text) or True)
+    monkeypatch.setattr(notify, "send", lambda text, **kw: sent.append(text) or True)
     return sent
 
 

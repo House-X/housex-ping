@@ -113,9 +113,19 @@ def build_broker():
 
 def watch(broker) -> None:
     from agent import alerts, explorer, notify
+    from agent.telegram_bot import PhoneDesk
     console.print(f"[dim]Watching positions and alerts every 30s. Explorer: "
                   f"{'every ' + str(settings.explore_every_hours) + 'h' if settings.explore_enabled else 'off'}"
-                  f" · Telegram: {'on' if notify.configured() else 'off'}. Ctrl+C to stop.[/]")
+                  f" · Telegram: {'on (buttons + commands)' if notify.configured() else 'off'}. Ctrl+C to stop.[/]")
+    desk = None
+    if notify.configured():
+        desk = PhoneDesk(broker, explore_fn=lambda: explorer.explore(broker, force=True))
+        try:
+            desk.start()
+            notify.send("🟢 المراقب يعمل. اكتب /help لأوامر الهاتف.")
+        except Exception as e:
+            console.print(f"[red]Telegram commands unavailable: {e}[/]")
+            desk = None
     while True:
         try:
             for e in broker.check_stops():
@@ -134,7 +144,12 @@ def watch(broker) -> None:
         except Exception as e:  # network blips: log and keep watching
             console.print(f"[red]{type(e).__name__}: {e}[/]")
         try:
-            time.sleep(30)
+            if desk:  # long-poll Telegram for ~30s: button taps are handled within a second
+                deadline = time.time() + 30
+                while time.time() < deadline:
+                    desk.poll(timeout=max(1, int(deadline - time.time())))
+            else:
+                time.sleep(30)
         except KeyboardInterrupt:
             break
 

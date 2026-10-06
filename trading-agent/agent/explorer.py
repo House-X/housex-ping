@@ -34,8 +34,10 @@ run analyze_market, check the news with web_search, and for coins use research_c
 Be selective: "nothing worth buying today" is a perfectly good answer.
 For every WATCH item on a TRADABLE (Sharia-compliant) candidate with a clear price trigger, call
 create_alert (action "notify") so the trader is told when it happens. Never create alerts for
-research candidates: they cannot be bought, so an alert on them is only noise. For a strong TRADE IDEA on an approved coin with a clear trigger, you may
-also create an "auto_buy" proposal with stop and target - it waits for the trader's approval.
+research candidates: they cannot be bought, so an alert on them is only noise. Every TRADE IDEA the current broker can execute (in
+Binance mode: approved */USDT coins) must become an "auto_buy" proposal with trigger, stop and target:
+the trader approves it with one tap on the phone and it then buys by itself. Trade ideas the broker
+cannot execute (stocks in Binance mode) get a "notify" alert at the entry trigger instead.
 
 Write the WHOLE report in simple Arabic for a non-specialist, using exactly this layout:
 

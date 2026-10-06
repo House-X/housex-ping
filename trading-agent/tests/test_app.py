@@ -83,7 +83,7 @@ def test_study_button_sends_candidate_to_chat(tmp_path, monkeypatch):
 def test_alerts_tab_approves_auto_buy_plan(tmp_path, monkeypatch):
     from agent import alerts, notify
     monkeypatch.setattr(alerts, "STORE", tmp_path / "alerts.json")
-    monkeypatch.setattr(notify, "send", lambda t: True)
+    monkeypatch.setattr(notify, "send", lambda t, **kw: True)
     plan = alerts.create("ETH/USDT", "close_above", 2807, "auto_buy", stop_loss=2650, take_profit=3100)
     at = AppTest.from_file("../app.py", default_timeout=30)
     at.session_state["agent"] = FakeAgent()

@@ -59,6 +59,18 @@ def describe(a: dict) -> str:
     return f"{a['symbol']} — {COND_AR.get(a['condition'], a['condition'])} {a['level']:g}"
 
 
+def plan_text(a: dict) -> str:
+    """Phone-friendly card for an auto-buy plan: the decision, the numbers that matter, the max loss."""
+    lvl, sl, tp = a["level"], a["stop_loss"], a["take_profit"]
+    rr = (tp - lvl) / (lvl - sl) if lvl > sl else 0
+    risk = a.get("risk_pct") or settings.risk_per_trade_pct
+    return (f"🤖 خطة شراء تلقائي بانتظار موافقتك\n{describe(a)}\n"
+            f"الوقف: {sl:g} ({(sl / lvl - 1) * 100:+.1f}%) · الهدف: {tp:g} ({(tp / lvl - 1) * 100:+.1f}%)\n"
+            f"العائد/المخاطرة: {rr:.1f} · أقصى خسارة: {risk:g}% من رأس المال\n"
+            f"{a.get('note') or ''}\n"
+            f"عند موافقتك أراقب الشرط وأشتري تلقائياً دون الرجوع إليك.").replace("\n\n", "\n")
+
+
 def create(symbol: str, condition: str, level: float, action: str = "notify",
            stop_loss: float | None = None, take_profit: float | None = None,
            note: str = "", source: str = "chat", expires_days: int | None = None,
@@ -93,11 +105,11 @@ def create(symbol: str, condition: str, level: float, action: str = "notify",
     _save(items)
     if send:
         if action == "auto_buy":
-            notify.send(f"🤖 خطة شراء تلقائي بانتظار موافقتك\n{describe(alert)}\n"
-                        f"الوقف: {stop_loss:g} · الهدف: {take_profit:g}\n"
-                        f"وافق عليها من تبويب «التنبيهات» في الواجهة.")
+            notify.send(plan_text(alert), buttons=[[("✅ وافق", f"al:ok:{alert['id']}"),
+                                                    ("❌ ارفض", f"al:no:{alert['id']}")]])
         else:
-            notify.send(f"🔔 تنبيه جديد قيد المراقبة\n{describe(alert)}\n{note}".strip())
+            notify.send(f"🔔 تنبيه جديد قيد المراقبة\n{describe(alert)}\n{note}".strip(),
+                        buttons=[[("🗑 إلغاء التنبيه", f"al:cx:{alert['id']}")]])
     return alert
 
 

@@ -25,24 +25,63 @@ def configured() -> bool:
     return bool(_token() and _chat_id())
 
 
-def _call(method: str, **params) -> dict:
+def _call(method: str, _timeout: float = 15, **params) -> dict:
     url = API.format(token=_token(), method=method)
     data = urllib.parse.urlencode(params).encode()
-    with urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=15) as r:
+    with urllib.request.urlopen(urllib.request.Request(url, data=data), timeout=_timeout) as r:
         return json.loads(r.read())
 
 
-def send(text: str) -> bool:
+def keyboard(rows: list[list[tuple[str, str]]]) -> str:
+    """Inline buttons: rows of (label, callback_data)."""
+    return json.dumps({"inline_keyboard": [[{"text": t, "callback_data": d} for t, d in row]
+                                           for row in rows]}, ensure_ascii=False)
+
+
+def send(text: str, buttons: list[list[tuple[str, str]]] | None = None) -> bool:
     if not configured():
         return False
     try:
-        for i in range(0, len(text), MAX_LEN):
-            _call("sendMessage", chat_id=_chat_id(), text=text[i:i + MAX_LEN],
-                  disable_web_page_preview="true")
+        chunks = [text[i:i + MAX_LEN] for i in range(0, len(text), MAX_LEN)] or [""]
+        for n, chunk in enumerate(chunks):
+            extra = {"reply_markup": keyboard(buttons)} if buttons and n == len(chunks) - 1 else {}
+            _call("sendMessage", chat_id=_chat_id(), text=chunk, disable_web_page_preview="true", **extra)
         return True
     except Exception as e:  # network, bad token, blocked bot...
         print(f"[telegram] send failed: {e}")
         return False
+
+
+# ── two-way: buttons and commands (used by agent/telegram_bot.py) ──
+def get_updates(offset: int | None, timeout: int = 25) -> list[dict]:
+    params = {"timeout": timeout, "allowed_updates": json.dumps(["message", "callback_query"])}
+    if offset is not None:
+        params["offset"] = offset
+    return _call("getUpdates", _timeout=timeout + 10, **params).get("result", [])
+
+
+def answer_button(callback_id: str, text: str = "") -> None:
+    try:
+        _call("answerCallbackQuery", callback_query_id=callback_id, text=text[:190])
+    except Exception as e:
+        print(f"[telegram] answer failed: {e}")
+
+
+def edit(message: dict, text: str) -> None:
+    """Replace a message's text and remove its buttons, so a plan can't be approved twice."""
+    try:
+        _call("editMessageText", chat_id=message["chat"]["id"], message_id=message["message_id"],
+              text=text[:MAX_LEN], disable_web_page_preview="true")
+    except Exception as e:
+        print(f"[telegram] edit failed: {e}")
+
+
+def set_commands(commands: list[tuple[str, str]]) -> None:
+    try:
+        _call("setMyCommands", commands=json.dumps([{"command": c, "description": d} for c, d in commands],
+                                                   ensure_ascii=False))
+    except Exception as e:
+        print(f"[telegram] setMyCommands failed: {e}")
 
 
 # ── trade events (called by the brokers) ──────────────────────

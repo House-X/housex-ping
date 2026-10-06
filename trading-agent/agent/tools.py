@@ -369,6 +369,10 @@ class ToolExecutor:
         if self.alert_source == "explorer" and sharia.check(symbol)["status"] != "compliant":
             return {"error": f"{symbol} is not approved as Sharia-compliant; the explorer only sets "
                              "alerts on tradable instruments. Mention it in the research section instead."}
+        if (action == "auto_buy" and getattr(self.broker, "env", None)
+                and not symbol.upper().strip().endswith("/USDT")):
+            return {"error": "Binance can only auto-buy approved */USDT coins. For stocks create a "
+                             "notify alert and give the plan for the trader's stock broker."}
         a = alerts.create(symbol, condition, level, action, stop_loss, take_profit, note,
                           source=self.alert_source, expires_days=expires_days)
         if action == "auto_buy" and not a.get("duplicate"):
