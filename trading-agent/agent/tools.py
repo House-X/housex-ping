@@ -366,6 +366,9 @@ class ToolExecutor:
     def _create_alert(self, symbol: str, condition: str, level: float, action: str,
                       stop_loss: float | None = None, take_profit: float | None = None,
                       note: str = "", expires_days: int | None = None) -> dict:
+        if self.alert_source == "explorer" and sharia.check(symbol)["status"] != "compliant":
+            return {"error": f"{symbol} is not approved as Sharia-compliant; the explorer only sets "
+                             "alerts on tradable instruments. Mention it in the research section instead."}
         a = alerts.create(symbol, condition, level, action, stop_loss, take_profit, note,
                           source=self.alert_source, expires_days=expires_days)
         if action == "auto_buy" and not a.get("duplicate"):

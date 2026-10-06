@@ -205,3 +205,20 @@ def test_saved_candidates_are_capped(store):
                                                 + [opp(f"R{i}/USDT", 90, sharia="review_required") for i in range(9)]}}
     run = explorer.explore(scans=many, use_ai=False, send=False)
     assert len(run["tradable"]) == 6 and len(run["research"]) == 4
+
+
+def test_scanner_only_summary_is_arabic_and_quiet_without_tradables(store, telegram):
+    run = explorer.explore(scans=SCANS, use_ai=False)
+    assert "تراجع مؤقت" in run["telegram"] or "اختراق" in run["telegram"] or "استمرار" in run["telegram"]
+    assert "EMA20" not in run["telegram"]
+    assert len(telegram) == 1
+    research_only = {"crypto": lambda: {"opportunities": [opp("ZZZ/USDT", 90, sharia="review_required")]}}
+    explorer.explore(scans=research_only, use_ai=False)
+    assert len(telegram) == 1                                          # nothing tradable -> no push
+
+
+def test_tokenized_stocks_and_memes_are_filtered():
+    from agent import scanner, sharia
+    assert scanner.is_tokenized_stock("TSLAB") and scanner.is_tokenized_stock("GOOGLB")
+    assert not scanner.is_tokenized_stock("BNB") and not scanner.is_tokenized_stock("ARB")
+    assert sharia.check("PENGU/USDT")["status"] == "not_compliant"

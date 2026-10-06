@@ -32,8 +32,9 @@ The free scanners flagged these candidates (JSON below). Do NOT open, modify or 
 Research the best tradable candidates (max 3) and the most interesting research candidates (max 2):
 run analyze_market, check the news with web_search, and for coins use research_crypto.
 Be selective: "nothing worth buying today" is a perfectly good answer.
-For every WATCH item with a clear price trigger, call create_alert (action "notify") so the trader
-is told when it happens. For a strong TRADE IDEA on an approved coin with a clear trigger, you may
+For every WATCH item on a TRADABLE (Sharia-compliant) candidate with a clear price trigger, call
+create_alert (action "notify") so the trader is told when it happens. Never create alerts for
+research candidates: they cannot be bought, so an alert on them is only noise. For a strong TRADE IDEA on an approved coin with a clear trigger, you may
 also create an "auto_buy" proposal with stop and target - it waits for the trader's approval.
 
 Write the WHOLE report in simple Arabic for a non-specialist, using exactly this layout:
@@ -126,7 +127,7 @@ def collect_candidates(scans: dict[str, Callable[[], dict]] | None = None) -> tu
 def _scanner_summary(tradable: list, research: list) -> str:
     lines = ["🔎 فرص جديدة من الماسح (بدون تحليل الذكاء الاصطناعي):"]
     for c in tradable[:6]:
-        lines.append(f"• {c['symbol']} — {c['score']}/100 — {c['setup']}")
+        lines.append(f"• {c['symbol']} — {c['score']}/100 — {scanner.SETUP_AR.get(c['setup'], c['setup'])}")
     if research:
         lines.append("\n🧪 مرشحون للبحث (غير معتمدين شرعياً بعد):")
         lines += [f"• {c['symbol']} — {c['score']}/100" for c in research[:4]]
@@ -193,6 +194,7 @@ def explore(broker=None, use_ai: bool = True, send: bool = True, force: bool = F
     state["seen"] = seen
     state["runs"].append(run)
     _save(state)
-    if send:
+    # A scanner-only round with nothing tradable is kept in the browser but not pushed to the phone.
+    if send and (run["ai"] or tradable):
         run["sent"] = notify.send(f"💡 مستكشف الفرص\n\n{run['telegram']}")
     return run

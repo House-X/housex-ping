@@ -138,3 +138,11 @@ def test_agent_tool_creates_proposal_and_explains_next_step():
     out = json.loads(ex.run("create_alert", {"symbol": "ETH/USDT", "condition": "close_above", "level": 105,
                                              "action": "auto_buy", "stop_loss": 95, "take_profit": 130}))
     assert out["status"] == "proposed" and "approve" in out["next_step"]
+
+
+def test_explorer_cannot_alert_on_unapproved_coins(broker):
+    from agent.tools import ToolExecutor
+    ex = ToolExecutor(broker)
+    ex.alert_source = "explorer"
+    assert "error" in ex._create_alert("SOL/USDT", "price_above", 125, "notify")
+    assert "id" in ex._create_alert("BTC/USDT", "price_above", 90000, "notify")

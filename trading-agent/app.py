@@ -13,6 +13,7 @@ import streamlit as st
 from agent import market_data, scanner
 from agent.config import settings
 from agent.sharia import universe
+from agent.scanner import SETUP_AR
 
 st.set_page_config(page_title="مكتب التداول الشخصي", page_icon="📈",
                    layout="wide", initial_sidebar_state="expanded")
@@ -55,13 +56,6 @@ TOOL_LABELS = {
     "cancel_alert": "إلغاء تنبيه",
 }
 ACTION_LABELS = {"OPEN TRADE": "فتح صفقة", "MODIFY TRADE": "تعديل صفقة", "CLOSE TRADE": "إغلاق صفقة"}
-SETUP_AR = {
-    "breakout / new highs": "اختراق قمة جديدة",
-    "pullback to EMA20 in uptrend": "تراجع مؤقت داخل اتجاه صاعد",
-    "trend continuation": "استمرار اتجاه صاعد",
-    "early reversal (above EMA50, fresh MACD turn)": "بداية انعكاس للصعود",
-    "none": "لا توجد فرصة واضحة",
-}
 SHARIA_AR = {"compliant": "✅ متوافق", "not_compliant": "❌ غير متوافق", "review_required": "⏸ يحتاج مراجعة"}
 MARKET_AR = {"crypto": "عملات رقمية", "new_listings": "عملات حديثة الإدراج", "bist": "البورصة التركية"}
 

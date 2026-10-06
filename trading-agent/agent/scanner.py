@@ -17,6 +17,24 @@ from .indicators import adx, atr, ema, macd, rsi
 STABLE_BASES = {"USDC", "FDUSD", "TUSD", "DAI", "USDP", "BUSD", "EUR", "USDE", "PYUSD", "AEUR",
                 "EURI", "XUSD", "USD1", "BFUSD", "TRY", "BRL"}
 LEVERAGED_SUFFIXES = ("UP", "DOWN", "BULL", "BEAR")
+# Tokenized US stocks listed as coins (e.g. TSLAB, GOOGLB): not crypto projects, and the stock itself
+# needs its own Sharia screen - leave them out of crypto scans.
+TOKENIZED_STOCKS = {"TSLA", "GOOGL", "GOOG", "AAPL", "NVDA", "MSFT", "AMZN", "META", "NFLX", "AMD",
+                    "COIN", "MSTR", "HOOD", "CRCL", "SPY", "QQQ", "PLTR", "INTC", "BABA", "ORCL"}
+
+SETUP_AR = {
+    "breakout / new highs": "اختراق قمة جديدة",
+    "pullback to EMA20 in uptrend": "تراجع مؤقت داخل اتجاه صاعد",
+    "trend continuation": "استمرار اتجاه صاعد",
+    "early reversal (above EMA50, fresh MACD turn)": "بداية انعكاس للصعود",
+    "none": "لا توجد فرصة واضحة",
+}
+
+
+def is_tokenized_stock(base: str) -> bool:
+    base = base.upper()
+    return base in TOKENIZED_STOCKS or (base.endswith(("B", "X", "ON")) and
+                                         (base[:-1] in TOKENIZED_STOCKS or base[:-2] in TOKENIZED_STOCKS))
 
 
 def technical_score(df: pd.DataFrame, benchmark: pd.Series | None = None) -> dict:
@@ -149,7 +167,8 @@ def _spot_usdt_markets(ex) -> list[str]:
     for sym, m in ex.markets.items():
         base = m.get("base", "")
         if (m.get("spot") and m.get("active") and m.get("quote") == "USDT" and ":" not in sym
-                and base not in STABLE_BASES and not base.endswith(LEVERAGED_SUFFIXES)):
+                and base not in STABLE_BASES and not base.endswith(LEVERAGED_SUFFIXES)
+                and not is_tokenized_stock(base)):
             out.append(sym)
     return out
 
