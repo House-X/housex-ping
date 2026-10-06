@@ -486,6 +486,57 @@ with tab_bt:
             st.caption(f"فترة الاختبار: {r0['test_from']} ← {r0['test_to']} · عدد الشموع: {v['bars']:,}. "
                        "معامل الربح = الأرباح ÷ الخسائر (أعلى من 1.3 جيد). ")
 
+    st.divider()
+    st.markdown("## 🌊 ركوب الموجة: الاتجاهات الطويلة مع وقف متحرك")
+    st.caption("صفقات قليلة تدوم أسابيع: دخول عند بداية الاتجاه الصاعد، ووقف يرتفع مع السعر ولا ينزل أبداً، "
+               "بلا هدف ثابت حتى يكبر الربح. السؤال هنا: هل تحتفظ بأغلب الصعود وتتجنب الانهيارات الكبيرة؟ "
+               "الحكم على آخر 30% من التاريخ، ومعه النتيجة على كامل التاريخ (تشمل انهيارَي 2018 و2022).")
+    from agent import swing
+    w1, w2, w3 = st.columns([3, 1, 1])
+    sw_syms = w1.text_input("العملات", "BTC/USDT, ETH/USDT", key="sw_syms")
+    sw_tf = w2.selectbox("الإطار الزمني", ["1d", "4h"], key="sw_tf",
+                         format_func=lambda x: {"1d": "يومي", "4h": "4 ساعات"}[x])
+    sw_years = w3.selectbox("السنوات", [8, 5, 3], key="sw_years")
+    if st.button("🌊 اختبر ركوب الموجة", type="primary"):
+        symbols = [x.strip().upper() for x in sw_syms.split(",") if x.strip()][:4]
+        with st.spinner("جارٍ تنزيل سنوات من البيانات واختبار 12 تركيبة لكل عملة..."):
+            ss.sw_res = swing.research(symbols, timeframe=sw_tf, years=int(sw_years))
+    res = ss.get("sw_res")
+    if res:
+        icon = {"promising": "🟢", "weak": "🟡", "fails": "🔴", "insufficient": "⚪"}
+        if res["promising"]:
+            st.success("واعدة: " + " · ".join(res["promising"]))
+        for sym, v in res["per_symbol"].items():
+            st.markdown(f"### {sym}")
+            if "error" in v:
+                st.error(v["error"])
+                continue
+            rows = []
+            for r in v["results"]:
+                t, w = r["test"], r["whole"]
+                rows.append({
+                    "الاستراتيجية": r["strategy_ar"],
+                    "الحكم": f"{icon[r['verdict']]} {r['verdict_ar'].split(':')[0].split('—')[0].strip()}",
+                    "صفقات الاختبار": t["trades"], "عائد الاختبار %": t["total_return_pct"],
+                    "تراجع الاختبار %": t["max_drawdown_pct"], "احتفاظ: عائد %": t["buy_and_hold_pct"],
+                    "احتفاظ: تراجع %": t["buy_and_hold_max_drawdown_pct"],
+                    "كامل التاريخ: عائد %": w["total_return_pct"], "كامل التاريخ: تراجع %": w["max_drawdown_pct"],
+                    "احتفاظ كامل: عائد %": w["buy_and_hold_pct"],
+                    "احتفاظ كامل: تراجع %": w["buy_and_hold_max_drawdown_pct"],
+                    "داخل السوق %": w["time_in_market_pct"],
+                })
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+            r0 = v["results"][0]
+            st.caption(f"الاختبار: {r0['test_from']} ← {r0['test_to']} · كامل التاريخ من {r0['whole_from']}. "
+                       "التراجع = أكبر هبوط من قمة رأس المال، وكلما صغر كان أفضل.")
+            best = max(v["results"], key=lambda r: r["whole"]["total_return_pct"])
+            eq = best["equity_whole"].rename("equity").rename_axis("date").reset_index()
+            st.caption(f"منحنى رأس المال على كامل التاريخ: {best['strategy_ar']} (يبدأ من 10,000$)")
+            st.altair_chart(alt.Chart(eq).mark_line(color=ACCENT, strokeWidth=2).encode(
+                x=alt.X("date:T", title=None),
+                y=alt.Y("equity:Q", title=None, scale=alt.Scale(type="log"), axis=alt.Axis(format="$,.0f")),
+            ).properties(height=220), width="stretch")
+
 # ── account ────────────────────────────────────────────────────
 with tab_acc:
     st.markdown("## الحساب")
@@ -519,6 +570,28 @@ with tab_acc:
             } for t in reversed(h["recent"])]), hide_index=True, width="stretch")
     except Exception as e:
         st.error(f"تعذّر قراءة الحساب: {e}")
+
+    from agent import dca
+    st.markdown("### 🟢 النواة: الشراء الدوري الأسبوعي")
+    plan = " · ".join(f"{sym} {w * settings.dca_weekly_usd:.0f}$" for sym, w in dca.allocation().items())
+    st.caption(f"{'مفعّل' if settings.dca_enabled else 'متوقف'} · {plan} كل أسبوع · الدفعة القادمة: "
+               f"{dca.next_run()} · الوكيل لا يبيع النواة أبداً، القرار لك.")
+    try:
+        core = dca.holdings()
+        if core["positions"]:
+            c = st.columns(3)
+            c[0].metric("المستثمر", f"${core['invested']:,.2f}")
+            c[1].metric("القيمة الآن", f"${core['value']:,.2f}")
+            c[2].metric("الربح/الخسارة", f"${core['pnl']:,.2f}", f"{core['pnl_pct']:+.1f}%")
+            st.dataframe(pd.DataFrame([{
+                "الرمز": r["symbol"], "عدد الدفعات": r["buys"], "الكمية": round(r["units"], 6),
+                "متوسط السعر": round(r["avg_price"], 2), "السعر الآن": r["price"],
+                "المستثمر $": round(r["invested"], 2), "القيمة $": r["value"], "التغير %": r["pnl_pct"],
+            } for r in core["positions"]]), hide_index=True, width="stretch")
+        else:
+            st.caption("لا توجد مشتريات بعد.")
+    except Exception as e:
+        st.error(f"تعذّر قراءة النواة: {e}")
 
 
 # ── halal list ─────────────────────────────────────────────────

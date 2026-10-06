@@ -148,3 +148,18 @@ def test_poll_never_raises_on_network_errors(desk, monkeypatch):
     monkeypatch.setattr(notify, "get_updates", lambda *a, **k: 1 / 0)
     monkeypatch.setattr(telegram_bot.time, "sleep", lambda s: None)
     assert desk.poll(0) == 0
+
+
+def test_core_command_and_buy_now_needs_confirmation(desk, tg, tmp_path, monkeypatch):
+    from agent import dca
+    monkeypatch.setattr(dca, "STORE", tmp_path / "dca.json")
+    monkeypatch.setattr(dca, "trend_note", lambda symbol="BTC/USDT": "")
+    tg.updates = [text("/core")]
+    desk.poll(0)
+    assert "dc:ask" in tg.sent()[-1]["reply_markup"]
+    tg.updates = [button("dc:ask", uid=2)]
+    desk.poll(0)
+    assert not dca.holdings(price_fn=lambda s: 100.0)["positions"]    # asking buys nothing
+    tg.updates = [button("dc:yes", uid=3)]
+    desk.poll(0)
+    assert dca.holdings(price_fn=lambda s: 100.0)["invested"] > 0

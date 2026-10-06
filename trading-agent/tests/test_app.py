@@ -113,3 +113,16 @@ def test_shortterm_section_runs_and_shows_verdicts(monkeypatch):
     res = at.session_state["st_res"]
     assert len(res["per_symbol"]["BTC/USDT"]["results"]) == 3
     assert any("الحكم" in df.value.columns for df in at.dataframe)
+
+
+def test_swing_section_runs(monkeypatch):
+    from agent import market_data
+    from test_offline import synthetic_ohlcv
+    monkeypatch.setattr(market_data, "fetch_daily_history",
+                        lambda s, years: synthetic_ohlcv(n=2000, drift=0.0008, seed=6))
+    at = AppTest.from_file("../app.py", default_timeout=60)
+    at.session_state["agent"] = FakeAgent()
+    at.run()
+    next(b for b in at.button if "ركوب الموجة" in b.label).click().run()
+    assert not at.exception
+    assert len(at.session_state["sw_res"]["per_symbol"]["BTC/USDT"]["results"]) == 2

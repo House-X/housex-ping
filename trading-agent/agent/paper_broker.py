@@ -88,6 +88,16 @@ class PaperBroker:
             "risk_rules": risk.rules_summary(),
         }
 
+    def buy_core(self, symbol: str, usd: float, fee: float = 0.001) -> dict:
+        """Long-term core purchase (weekly DCA): no stop, kept outside the trading positions."""
+        usd = float(usd)
+        if usd > self.free_cash():
+            raise ValueError(f"Not enough free cash for {usd:.2f}$ (free {self.free_cash():.2f}$)")
+        px = self.price(symbol) * self.fx(currency_of(symbol))
+        self.state["balance"] -= usd
+        self._save()
+        return {"symbol": symbol.upper(), "units": usd * (1 - fee) / px, "price": px, "cost": usd}
+
     def free_cash(self) -> float:
         """Cash not tied up in open positions. Spot only: we can never spend more than this."""
         return self.state["balance"] - sum(p["cost"] for p in self.state["positions"])

@@ -48,6 +48,14 @@ class Settings:
     auto_buy_max_chase_pct: float = _f("AUTO_BUY_MAX_CHASE_PCT", 1.5)  # skip if price ran this far past the trigger
     auto_buy_live: bool = os.getenv("AUTO_BUY_LIVE", "false").lower() == "true"  # real-money auto-buys off by default
 
+    # Core: fixed weekly buys of approved assets, held long term (no stops, no selling by the bot)
+    dca_enabled: bool = os.getenv("DCA_ENABLED", "true").lower() == "true"
+    dca_weekly_usd: float = _f("DCA_WEEKLY_USD", 100)
+    dca_allocation: str = os.getenv("DCA_ALLOCATION", "BTC/USDT:60,ETH/USDT:40")
+    dca_weekday: int = int(_f("DCA_WEEKDAY", 0))        # 0 = Monday
+    dca_hour_utc: int = int(_f("DCA_HOUR_UTC", 9))      # 09:00 UTC = 12:00 Istanbul
+    dca_live: bool = os.getenv("DCA_LIVE", "false").lower() == "true"  # real-money DCA off by default
+
     state_file: Path = ROOT / "data" / "paper_state.json"
 
 

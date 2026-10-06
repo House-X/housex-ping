@@ -8,6 +8,7 @@
     python main.py --explore  # run one exploration cycle now
     python main.py --backtest BTC/USDT ETH/USDT [--years 4]   # historical test of the scanner rules
     python main.py --shortterm BTC/USDT ETH/USDT [--tf 1h] [--days 730]   # test quick in-and-out strategies
+    python main.py --swing BTC/USDT ETH/USDT [--tf 1d|4h] [--years 8]   # trend-riding with a trailing stop
     python main.py --telegram-setup   # link your Telegram bot (after messaging it once)
 """
 import json
@@ -113,7 +114,7 @@ def build_broker():
 
 
 def watch(broker) -> None:
-    from agent import alerts, explorer, notify
+    from agent import alerts, dca, explorer, notify
     from agent.telegram_bot import PhoneDesk
     console.print(f"[dim]Watching positions and alerts every 30s. Explorer: "
                   f"{'every ' + str(settings.explore_every_hours) + 'h' if settings.explore_enabled else 'off'}"
@@ -135,6 +136,9 @@ def watch(broker) -> None:
             for a in alerts.check(broker):
                 console.print(f"[magenta]Alert {a['id']} {alerts.describe(a)} → {a['status']}: "
                               f"{a.get('result') or ''}[/]")
+            if settings.dca_enabled and dca.due():
+                b = dca.run(broker)
+                console.print(f"[green]Core DCA: {len(b['buys'])} buys, {len(b['skipped'])} skipped[/]")
             if settings.explore_enabled and explorer.due():
                 console.print("[cyan]Exploring markets for opportunities...[/]")
                 run = explorer.explore(broker)
@@ -205,10 +209,39 @@ def run_shortterm(args: list[str]) -> None:
     console.print(f"[dim]{r['rules']}[/]")
 
 
+def run_swing(args: list[str]) -> None:
+    from agent import swing
+    tf = args[args.index("--tf") + 1] if "--tf" in args else "1d"
+    years = int(args[args.index("--years") + 1]) if "--years" in args else 8
+    symbols = [a for a in args if "/" in a or "." in a] or ["BTC/USDT", "ETH/USDT"]
+    with console.status(f"Testing swing strategies on {', '.join(symbols)} ({tf}, {years}y)..."):
+        r = swing.research(symbols, timeframe=tf, years=years)
+    t = Table(title=f"Swing · {tf} · {years}y · verdict on the last 30%")
+    for col in ("symbol", "strategy", "verdict", "test trades", "test return %", "test max DD %",
+                "B&H %", "B&H DD %", "whole return %", "whole DD %", "whole B&H %", "whole B&H DD %"):
+        t.add_column(col)
+    for sym, v in r["per_symbol"].items():
+        if "error" in v:
+            t.add_row(sym, v["error"], *[""] * 10)
+            continue
+        for x in v["results"]:
+            a, w = x["test"], x["whole"]
+            t.add_row(sym, x["strategy"], x["verdict"], str(a["trades"]), str(a["total_return_pct"]),
+                      str(a["max_drawdown_pct"]), str(a["buy_and_hold_pct"]),
+                      str(a["buy_and_hold_max_drawdown_pct"]), str(w["total_return_pct"]),
+                      str(w["max_drawdown_pct"]), str(w["buy_and_hold_pct"]),
+                      str(w["buy_and_hold_max_drawdown_pct"]))
+    console.print(t)
+    console.print(f"[dim]{r['rules']}[/]")
+
+
 def main() -> None:
     if "--telegram-setup" in sys.argv:
         from agent import notify
         console.print(notify.setup_chat_id())
+        return
+    if "--swing" in sys.argv:
+        run_swing(sys.argv[sys.argv.index("--swing") + 1:])
         return
     if "--shortterm" in sys.argv:
         run_shortterm(sys.argv[sys.argv.index("--shortterm") + 1:])

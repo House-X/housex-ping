@@ -62,6 +62,12 @@ class FakeBinance:
         self.orders[oid] = {"id": oid, "status": "closed", "filled": amount, "average": self.px}
         return self.orders[oid]
 
+    def cost_to_precision(self, s, x):
+        return f"{x:.2f}"
+
+    def create_market_buy_order_with_cost(self, s, cost, params=None):
+        return self.create_order(s, "market", "buy", cost / self.px, params)
+
     def private_post_orderlist_oco(self, p):
         q = float(p["quantity"])
         self.bal["ETH"] -= q
@@ -208,3 +214,18 @@ def test_capped_preview_reports_consistent_sizing(broker):
     assert s["cost"] <= 50.01
     assert s["allocation_pct_of_equity"] == pytest.approx(s["cost"] / 10_000 * 100, abs=0.01)
     assert s["risk_pct_of_equity"] == pytest.approx(s["risk_amount"] / 10_000 * 100, abs=0.001)
+
+
+def test_core_buy_is_separate_from_trading_positions(broker, ex):
+    fill = broker.buy_core("ETH/USDT", 40)
+    assert fill["cost"] == pytest.approx(40) and not broker.state["positions"]
+    pos = broker.open_position("ETH/USDT", stop_loss=95, take_profit=110, rationale="t")
+    broker.close_position(pos["id"], reason="test")
+    assert ex.bal["ETH"] == pytest.approx(fill["units"] * (1 - ex.fee), rel=0.02)  # core coins stay
+
+
+def test_core_buy_refuses_non_usdt_and_too_much(broker):
+    with pytest.raises(ValueError):
+        broker.buy_core("BIMAS.IS", 40)
+    with pytest.raises(ValueError):
+        broker.buy_core("ETH/USDT", 10**9)

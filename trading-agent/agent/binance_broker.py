@@ -232,6 +232,26 @@ class BinanceBroker(PaperBroker):
         notify.trade_opened(pos, f"binance-{self.env}")
         return pos
 
+    def buy_core(self, symbol: str, usd: float) -> dict:
+        """Long-term core purchase (weekly DCA) by dollar amount. Not tracked as a trading position,
+        so no OCO and the risk limits for trades don't apply; the coins simply stay in the wallet."""
+        symbol = symbol.upper()
+        if not symbol.endswith("/USDT") or symbol not in self.ex.markets:
+            raise ValueError(f"{symbol} is not a Binance spot */USDT market")
+        if self.env == "live" and usd > settings.live_max_order_usd:
+            raise ValueError(f"{usd:.2f}$ is above LIVE_MAX_ORDER_USD ({settings.live_max_order_usd}$)")
+        if usd > self.free_cash():
+            raise ValueError(f"Not enough free USDT for {usd:.2f}$")
+        order = self.ex.create_market_buy_order_with_cost(
+            symbol, float(self.ex.cost_to_precision(symbol, usd)),
+            params={"newClientOrderId": f"hx-core-{uuid.uuid4().hex[:10]}"})
+        filled = float(order.get("filled") or 0)
+        if filled <= 0:
+            raise RuntimeError(f"Core buy not filled: {order.get('status')}")
+        avg = float(order.get("average") or order.get("price") or self.price(symbol))
+        return {"symbol": symbol, "units": filled, "price": avg,
+                "cost": float(order.get("cost") or filled * avg), "order_id": order.get("id")}
+
     def _record_close(self, pos: dict, qty: float, exit_px: float, reason: str) -> dict:
         pnl = qty * (exit_px - pos["entry"])
         self.state["positions"].remove(pos)

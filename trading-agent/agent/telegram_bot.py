@@ -16,7 +16,7 @@ import time
 from typing import Callable
 
 from . import alerts, notify
-from .config import ROOT
+from .config import ROOT, settings
 
 OFFSET_FILE = ROOT / "data" / "telegram_offset.json"
 
@@ -24,6 +24,7 @@ COMMANDS = [
     ("status", "الرصيد والصفقات المفتوحة"),
     ("plans", "الخطط والتنبيهات الفعّالة"),
     ("positions", "الصفقات المفتوحة مع زر إغلاق"),
+    ("core", "النواة: الشراء الدوري والاستثمار الطويل"),
     ("explore", "ابحث عن فرص الآن"),
     ("new", "محادثة جديدة مع الوكيل"),
     ("help", "طريقة الاستخدام"),
@@ -35,6 +36,7 @@ HELP = """📱 مكتبك على الهاتف
 /status — الرصيد والصفقات
 /plans — الخطط والتنبيهات (موافقة / إلغاء)
 /positions — الصفقات المفتوحة (إغلاق)
+/core — النواة: الشراء الدوري الأسبوعي
 /explore — ابحث عن فرص الآن
 /new — ابدأ محادثة جديدة
 
@@ -123,6 +125,8 @@ class PhoneDesk:
                 result = self._alert_button(verb, ident)
             elif kind == "ps":
                 result = self._position_button(verb, ident)
+            elif kind == "dc":
+                result = self._dca_button(verb)
             elif kind == "ag":
                 result = self._agent_button(verb, ident)
             else:
@@ -157,6 +161,20 @@ class PhoneDesk:
             return "👍 الصفقة باقية كما هي."
         return "زر غير معروف"
 
+    def _dca_button(self, verb: str) -> str:
+        from . import dca
+        if verb == "ask":
+            plan = " · ".join(f"{s} {w * settings.dca_weekly_usd:.0f}$" for s, w in dca.allocation().items())
+            notify.send(f"🛒 تأكيد شراء دفعة النواة الآن؟\n{plan}",
+                        buttons=[[("نعم، اشترِ", "dc:yes"), ("لا", "dc:no")]])
+            return ""
+        if verb == "yes":
+            b = dca.run(self.broker, reason="manual")
+            return f"✅ نُفّذت {len(b['buys'])} عمليات شراء" + (f"، وتُخطّيت {len(b['skipped'])}" if b["skipped"] else "")
+        if verb == "no":
+            return "👍 لم يُشترَ شيء."
+        return "زر غير معروف"
+
     def _agent_button(self, verb: str, ident: str) -> str:
         if not self.agent:
             return "انتهت المحادثة؛ اطلب الصفقة من جديد."
@@ -186,6 +204,9 @@ class PhoneDesk:
             self.send_plans()
         elif cmd in ("/positions", "الصفقات"):
             self.send_positions()
+        elif cmd in ("/core", "النواة"):
+            from . import dca
+            notify.send(dca.holdings_text(), buttons=[[("🛒 اشترِ دفعة الآن", "dc:ask")]])
         elif cmd in ("/explore", "استكشف"):
             notify.send("🔎 أبحث عن فرص الآن... قد يستغرق ذلك بضع دقائق.")
             run = self.explore_fn() if self.explore_fn else None
