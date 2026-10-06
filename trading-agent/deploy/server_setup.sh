@@ -12,6 +12,12 @@ apt-get update -qq
 apt-get install -y -qq python3 python3-venv python3-pip unattended-upgrades ufw >/dev/null
 timedatectl set-timezone UTC
 
+echo "==> 2 GB swap file, so a small (2 GB RAM) server never runs out of memory"
+if ! swapon --show | grep -q /swapfile; then
+  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
+  grep -q /swapfile /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
 echo "==> Firewall: only SSH is open (the browser interface is reached through an SSH tunnel)"
 ufw allow OpenSSH >/dev/null
 ufw --force enable >/dev/null
