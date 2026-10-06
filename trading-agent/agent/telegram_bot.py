@@ -245,10 +245,20 @@ class PhoneDesk:
             self.ask_agent(text)
 
     def status_text(self) -> str:
+        from . import dca
         acc = self.broker.account()
-        lines = [f"📊 الحساب ({acc.get('mode')})",
-                 f"القيمة الإجمالية: {acc.get('equity', 0):,.2f}$",
-                 f"النقد المتاح: {acc.get('free_cash', 0):,.2f}$",
+        try:
+            core = dca.holdings()
+        except Exception:
+            core = {"positions": [], "value": 0.0}
+        lines = [f"📊 الحساب ({acc.get('mode')})"]
+        if core["positions"]:  # core coins sit in the wallet but outside the trading account
+            lines += [f"💼 الإجمالي مع النواة: {acc.get('equity', 0) + core['value']:,.2f}$",
+                      f"🟢 النواة: {core['value']:,.2f}$ ({core['pnl_pct']:+.1f}%)",
+                      f"📈 حساب التداول: {acc.get('equity', 0):,.2f}$"]
+        else:
+            lines.append(f"القيمة الإجمالية: {acc.get('equity', 0):,.2f}$")
+        lines += [f"النقد المتاح: {acc.get('free_cash', 0):,.2f}$",
                  f"ربح غير محقق: {acc.get('unrealized_pnl', 0):+,.2f}$ · ربح اليوم: "
                  f"{acc.get('today_realized_pnl', 0):+,.2f}$"]
         pos = acc.get("open_positions") or []

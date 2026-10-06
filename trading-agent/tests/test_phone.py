@@ -188,3 +188,12 @@ def test_second_watcher_conflict_warns_once(desk, tg, monkeypatch):
     desk.poll(0)
     warnings = [m for m in tg.sent() if "مراقب آخر" in m["text"]]
     assert len(warnings) == 1
+
+
+def test_status_includes_core_holdings(desk, tg, tmp_path, monkeypatch):
+    from agent import dca
+    monkeypatch.setattr(dca, "STORE", tmp_path / "dca.json")
+    monkeypatch.setattr(dca, "holdings", lambda price_fn=None: {
+        "positions": [{"symbol": "BTC/USDT"}], "value": 100.0, "invested": 99.0, "pnl": 1.0, "pnl_pct": 1.0})
+    text = desk.status_text()
+    assert "الإجمالي مع النواة" in text and "النواة: 100.00$" in text
