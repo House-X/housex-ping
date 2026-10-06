@@ -25,6 +25,7 @@ COMMANDS = [
     ("plans", "الخطط والتنبيهات الفعّالة"),
     ("positions", "الصفقات المفتوحة مع زر إغلاق"),
     ("core", "النواة: الشراء الدوري والاستثمار الطويل"),
+    ("swing", "ركوب الموجة: الإشارات والوقف المتحرك"),
     ("explore", "ابحث عن فرص الآن"),
     ("new", "محادثة جديدة مع الوكيل"),
     ("help", "طريقة الاستخدام"),
@@ -37,6 +38,7 @@ HELP = """📱 مكتبك على الهاتف
 /plans — الخطط والتنبيهات (موافقة / إلغاء)
 /positions — الصفقات المفتوحة (إغلاق)
 /core — النواة: الشراء الدوري الأسبوعي
+/swing — ركوب الموجة: الإشارات والوقف المتحرك
 /explore — ابحث عن فرص الآن
 /new — ابدأ محادثة جديدة
 
@@ -125,6 +127,8 @@ class PhoneDesk:
                 result = self._alert_button(verb, ident)
             elif kind == "ps":
                 result = self._position_button(verb, ident)
+            elif kind == "sw":
+                result = self._swing_button(verb, ident)
             elif kind == "dc":
                 result = self._dca_button(verb)
             elif kind == "ag":
@@ -159,6 +163,17 @@ class PhoneDesk:
             return f"✅ أُغلقت. الربح/الخسارة: {c.get('pnl', 0):+.2f}$"
         if verb == "keep":
             return "👍 الصفقة باقية كما هي."
+        return "زر غير معروف"
+
+    def _swing_button(self, verb: str, ident: str) -> str:
+        from . import swing_live
+        if verb == "ok":
+            pos = swing_live.approve(self.broker, ident)
+            return (f"✅ اشتريت {pos['symbol']} بسعر {pos['entry']:,.2f}\n"
+                    f"الوقف المبدئي {pos['stop_loss']:,.2f}، وسأرفعه كل يوم مع السعر.")
+        if verb == "no":
+            swing_live.reject(ident)
+            return "❌ تجاهلت الإشارة."
         return "زر غير معروف"
 
     def _dca_button(self, verb: str) -> str:
@@ -207,6 +222,9 @@ class PhoneDesk:
         elif cmd in ("/core", "النواة"):
             from . import dca
             notify.send(dca.holdings_text(), buttons=[[("🛒 اشترِ دفعة الآن", "dc:ask")]])
+        elif cmd in ("/swing", "الموجة"):
+            from . import swing_live
+            notify.send(swing_live.status_text(self.broker))
         elif cmd in ("/explore", "استكشف"):
             notify.send("🔎 أبحث عن فرص الآن... قد يستغرق ذلك بضع دقائق.")
             run = self.explore_fn() if self.explore_fn else None

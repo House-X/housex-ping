@@ -114,7 +114,7 @@ def build_broker():
 
 
 def watch(broker) -> None:
-    from agent import alerts, dca, explorer, notify
+    from agent import alerts, dca, explorer, notify, swing_live
     from agent.telegram_bot import PhoneDesk
     console.print(f"[dim]Watching positions and alerts every 30s. Explorer: "
                   f"{'every ' + str(settings.explore_every_hours) + 'h' if settings.explore_enabled else 'off'}"
@@ -139,6 +139,10 @@ def watch(broker) -> None:
             if settings.dca_enabled and dca.due():
                 b = dca.run(broker)
                 console.print(f"[green]Core DCA: {len(b['buys'])} buys, {len(b['skipped'])} skipped[/]")
+            if settings.swing_enabled and swing_live.due():
+                r = swing_live.run(broker)
+                console.print(f"[blue]Swing: {len(r['proposals'])} signals, {len(r['raised'])} stops raised"
+                              f"{', errors: ' + '; '.join(r['errors']) if r['errors'] else ''}[/]")
             if settings.explore_enabled and explorer.due():
                 console.print("[cyan]Exploring markets for opportunities...[/]")
                 run = explorer.explore(broker)

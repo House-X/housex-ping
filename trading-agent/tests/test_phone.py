@@ -163,3 +163,17 @@ def test_core_command_and_buy_now_needs_confirmation(desk, tg, tmp_path, monkeyp
     tg.updates = [button("dc:yes", uid=3)]
     desk.poll(0)
     assert dca.holdings(price_fn=lambda s: 100.0)["invested"] > 0
+
+
+def test_swing_buttons_and_status(desk, tg, tmp_path, monkeypatch):
+    from agent import swing_live
+    monkeypatch.setattr(swing_live, "STORE", tmp_path / "swing.json")
+    opened = []
+    monkeypatch.setattr(swing_live, "approve",
+                        lambda broker, i: opened.append(i) or {"symbol": "ETH/USDT", "entry": 100.0, "stop_loss": 90.0})
+    tg.updates = [button("sw:ok:abc")]
+    desk.poll(0)
+    assert opened == ["abc"] and "اشتريت" in tg.edits()[-1]
+    tg.updates = [text("/swing", uid=2)]
+    desk.poll(0)
+    assert "ركوب الموجة" in tg.sent()[-1]["text"]

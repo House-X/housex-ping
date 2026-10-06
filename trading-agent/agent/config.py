@@ -56,6 +56,11 @@ class Settings:
     dca_hour_utc: int = int(_f("DCA_HOUR_UTC", 9))      # 09:00 UTC = 12:00 Istanbul
     dca_live: bool = os.getenv("DCA_LIVE", "false").lower() == "true"  # real-money DCA off by default
 
+    # Swing ("the wave"): daily breakout + trailing stop, only on symbols that passed the swing lab
+    swing_enabled: bool = os.getenv("SWING_ENABLED", "true").lower() == "true"
+    swing_symbols: str = os.getenv("SWING_SYMBOLS", "ETH/USDT")
+    swing_max_chase_pct: float = _f("SWING_MAX_CHASE_PCT", 3)
+
     state_file: Path = ROOT / "data" / "paper_state.json"
 
 
