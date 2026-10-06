@@ -12,10 +12,10 @@ set IP=%IP: =%
 
 if /i "%1"=="first" (
   echo Packing code, .env and data...
-  tar -czf "%TEMP%\agent.tgz" --exclude=.venv --exclude=__pycache__ --exclude=.pytest_cache --exclude=deploy/server_ip.txt .
+  tar -czf "%TEMP%\agent.tgz" --exclude=__pycache__ --exclude=deploy/server_ip.txt agent app.py main.py requirements.txt sharia_universe.json universes .streamlit deploy README.md .env data
 ) else (
   echo Packing code only...
-  tar -czf "%TEMP%\agent.tgz" --exclude=.venv --exclude=__pycache__ --exclude=.pytest_cache --exclude=deploy/server_ip.txt --exclude=.env --exclude=data .
+  tar -czf "%TEMP%\agent.tgz" --exclude=__pycache__ --exclude=deploy/server_ip.txt agent app.py main.py requirements.txt sharia_universe.json universes .streamlit deploy README.md
 )
 if errorlevel 1 goto :fail
 echo Uploading to %IP% ...
