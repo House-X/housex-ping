@@ -98,3 +98,18 @@ def test_every_tool_has_an_arabic_label():
     from agent.tools import CLIENT_TOOLS
     src = (__import__("pathlib").Path(__file__).parent.parent / "app.py").read_text(encoding="utf-8")
     assert [t["name"] for t in CLIENT_TOOLS if f'"{t["name"]}":' not in src] == []
+
+
+def test_shortterm_section_runs_and_shows_verdicts(monkeypatch):
+    from agent import market_data
+    from test_offline import synthetic_ohlcv
+    monkeypatch.setattr(market_data, "fetch_intraday_history",
+                        lambda s, tf, days: synthetic_ohlcv(n=2500, drift=0.0002, seed=5))
+    at = AppTest.from_file("../app.py", default_timeout=60)
+    at.session_state["agent"] = FakeAgent()
+    at.run()
+    next(b for b in at.button if "المضاربة السريعة" in b.label).click().run()
+    assert not at.exception
+    res = at.session_state["st_res"]
+    assert len(res["per_symbol"]["BTC/USDT"]["results"]) == 3
+    assert any("الحكم" in df.value.columns for df in at.dataframe)

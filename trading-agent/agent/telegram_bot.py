@@ -207,8 +207,9 @@ class PhoneDesk:
         pos = acc.get("open_positions") or []
         lines.append(f"\nالصفقات المفتوحة: {len(pos)}")
         for p in pos:
-            lines.append(f"• {p['symbol']} — الدخول {_n(p['entry'])} · الآن {_n(p.get('current_price'))} · "
-                         f"{p.get('unrealized_pnl', 0):+.2f}$")
+            lines += [f"• {p['symbol']}", f"   الدخول: {_n(p['entry'])}",
+                      f"   الآن: {_n(p.get('current_price'))}",
+                      f"   الربح/الخسارة: {p.get('unrealized_pnl', 0):+.2f}$"]
         act = alerts.active()
         lines.append(f"\nخطط بانتظار موافقتك: {sum(a['status'] == 'proposed' for a in act)} · "
                      f"قيد المراقبة: {sum(a['status'] == 'armed' for a in act)}")

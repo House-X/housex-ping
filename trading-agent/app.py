@@ -441,6 +441,51 @@ with tab_bt:
                              width="stretch")
 
 
+    st.divider()
+    st.markdown("## ⚡ المضاربة قصيرة المدى: هل تربح فعلاً؟")
+    st.caption("ثلاث استراتيجيات شراء سريعة (دخول وخروج خلال ساعات) تعمل فقط مع الاتجاه الصاعد. تُختار "
+               "إعداداتها على أول 70% من التاريخ، ثم تُحكم على آخر 30% لم ترها أبداً، بعد خصم الرسوم "
+               "(0.1% لكل جهة) والانزلاق السعري. الحكم يعتمد على فترة الاختبار فقط.")
+    from agent import shortterm
+    d1, d2, d3 = st.columns([3, 1, 1])
+    st_syms = d1.text_input("العملات", "BTC/USDT, ETH/USDT", key="st_syms")
+    tf = d2.selectbox("الإطار الزمني", ["1h", "15m"], key="st_tf",
+                      format_func=lambda x: {"1h": "ساعة", "15m": "15 دقيقة"}[x])
+    days = d3.selectbox("المدة", [730, 365, 180], key="st_days", format_func=lambda x: f"{x} يوماً")
+    if st.button("⚡ اختبر المضاربة السريعة", type="primary"):
+        symbols = [x.strip().upper() for x in st_syms.split(",") if x.strip()][:4]
+        with st.spinner("جارٍ تنزيل آلاف الشموع واختبار 27 تركيبة لكل عملة... قد يستغرق دقيقة"):
+            ss.st_res = shortterm.research(symbols, timeframe=tf, days=int(days))
+    res = ss.get("st_res")
+    if res:
+        icon = {"promising": "🟢", "weak": "🟡", "fails": "🔴", "insufficient": "⚪"}
+        if res["promising"]:
+            st.success("استراتيجيات واعدة: " + " · ".join(res["promising"]))
+        else:
+            st.info("لا توجد استراتيجية واعدة بعد الرسوم في هذه الفترة. الاحتفاظ بالنقد أو الاستثمار "
+                    "طويل المدى أفضل من مضاربة خاسرة.")
+        for sym, v in res["per_symbol"].items():
+            st.markdown(f"### {sym}")
+            if "error" in v:
+                st.error(v["error"])
+                continue
+            rows = []
+            for r in v["results"]:
+                t = r["test"]
+                rows.append({
+                    "الاستراتيجية": r["strategy_ar"], "الحكم": f"{icon[r['verdict']]} {r['verdict_ar'].split(':')[0].split('—')[0].strip()}",
+                    "صفقات الاختبار": t["trades"], "صفقات/أسبوع": t["trades_per_week"],
+                    "نسبة الربح %": t["win_rate_pct"], "معامل الربح": t["profit_factor"],
+                    "العائد %": t["total_return_pct"], "أقصى تراجع %": t["max_drawdown_pct"],
+                    "الشراء والاحتفاظ %": t["buy_and_hold_pct"],
+                    "الرسوم من الأرباح %": t["fees_vs_gross_profit_pct"],
+                    "الإعدادات": f"هدف {r['params']['reward_risk']}R · خروج بعد {r['params']['time_stop_bars']} شمعة",
+                })
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+            r0 = v["results"][0]
+            st.caption(f"فترة الاختبار: {r0['test_from']} ← {r0['test_to']} · عدد الشموع: {v['bars']:,}. "
+                       "معامل الربح = الأرباح ÷ الخسائر (أعلى من 1.3 جيد). ")
+
 # ── account ────────────────────────────────────────────────────
 with tab_acc:
     st.markdown("## الحساب")

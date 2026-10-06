@@ -7,6 +7,7 @@
     python main.py --watch    # sync SL/TP exits every 30s + run the opportunity explorer on schedule
     python main.py --explore  # run one exploration cycle now
     python main.py --backtest BTC/USDT ETH/USDT [--years 4]   # historical test of the scanner rules
+    python main.py --shortterm BTC/USDT ETH/USDT [--tf 1h] [--days 730]   # test quick in-and-out strategies
     python main.py --telegram-setup   # link your Telegram bot (after messaging it once)
 """
 import json
@@ -178,10 +179,39 @@ def run_backtest(args: list[str]) -> None:
     console.print(f"[dim]{r['caveats']}[/]")
 
 
+def run_shortterm(args: list[str]) -> None:
+    from agent import shortterm
+    tf = args[args.index("--tf") + 1] if "--tf" in args else "1h"
+    days = int(args[args.index("--days") + 1]) if "--days" in args else 730
+    symbols = [a for a in args if "/" in a or "." in a] or ["BTC/USDT", "ETH/USDT"]
+    with console.status(f"Testing short-term strategies on {', '.join(symbols)} ({tf}, {days}d)..."):
+        r = shortterm.research(symbols, timeframe=tf, days=days)
+    t = Table(title=f"Short-term · {tf} · {days}d · judged on the last 30% only")
+    for col in ("symbol", "strategy", "verdict", "trades", "per week", "win %", "PF", "return %",
+                "max DD %", "B&H %", "fees/profit %", "RR · time stop"):
+        t.add_column(col)
+    for sym, v in r["per_symbol"].items():
+        if "error" in v:
+            t.add_row(sym, v["error"], *[""] * 10)
+            continue
+        for x in v["results"]:
+            s = x["test"]
+            t.add_row(sym, x["strategy"], x["verdict"], str(s["trades"]), str(s["trades_per_week"]),
+                      str(s["win_rate_pct"]), str(s["profit_factor"]), str(s["total_return_pct"]),
+                      str(s["max_drawdown_pct"]), str(s["buy_and_hold_pct"]),
+                      str(s["fees_vs_gross_profit_pct"]),
+                      f"{x['params']['reward_risk']} · {x['params']['time_stop_bars']}")
+    console.print(t)
+    console.print(f"[dim]{r['rules']}[/]")
+
+
 def main() -> None:
     if "--telegram-setup" in sys.argv:
         from agent import notify
         console.print(notify.setup_chat_id())
+        return
+    if "--shortterm" in sys.argv:
+        run_shortterm(sys.argv[sys.argv.index("--shortterm") + 1:])
         return
     if "--backtest" in sys.argv:
         run_backtest(sys.argv[sys.argv.index("--backtest") + 1:])
