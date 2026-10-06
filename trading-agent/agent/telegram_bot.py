@@ -76,6 +76,7 @@ class PhoneDesk:
         self.explore_fn = explore_fn
         self.agent = None
         self.offset = _load_offset()
+        self.conflict_warned = False
 
     # ── polling ────────────────────────────────────────────
     def start(self) -> None:
@@ -95,6 +96,13 @@ class PhoneDesk:
             updates = notify.get_updates(self.offset, timeout=timeout)
         except Exception as e:
             print(f"[telegram] poll failed: {e}")
+            if "409" in str(e) and not self.conflict_warned:
+                # Telegram allows one reader per bot: another watcher (laptop + server?) is running,
+                # and two watchers would also double the weekly core buys.
+                self.conflict_warned = True
+                notify.send("⚠️ يوجد مراقب آخر يعمل على جهاز ثانٍ بنفس البوت.\n"
+                            "شغّل مراقباً واحداً فقط (السيرفر)، وأغلق نافذة المراقب على اللاب توب، "
+                            "وإلا قد تتكرر عمليات الشراء.")
             time.sleep(min(timeout, 5))
             return 0
         for u in updates:

@@ -1,6 +1,11 @@
 @echo off
 REM One-click start: browser interface + position watcher (Windows)
 cd /d "%~dp0"
+if exist "deploy\server_ip.txt" (
+  REM The agent lives on the server now: open the desk there instead of starting a 2nd watcher.
+  call deploy\open_desk.bat
+  exit /b 0
+)
 if not exist ".venv\Scripts\activate.bat" (
   echo Virtual environment not found. Run the setup steps in README first.
   pause

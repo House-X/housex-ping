@@ -3,3 +3,4 @@ data/*.json
 __pycache__/
 *.pyc
 .venv/
+deploy/server_ip.txt

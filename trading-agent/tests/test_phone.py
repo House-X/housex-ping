@@ -177,3 +177,14 @@ def test_swing_buttons_and_status(desk, tg, tmp_path, monkeypatch):
     tg.updates = [text("/swing", uid=2)]
     desk.poll(0)
     assert "ركوب الموجة" in tg.sent()[-1]["text"]
+
+
+def test_second_watcher_conflict_warns_once(desk, tg, monkeypatch):
+    def conflict(*a, **k):
+        raise RuntimeError("HTTP Error 409: Conflict")
+    monkeypatch.setattr(notify, "get_updates", conflict)
+    monkeypatch.setattr(telegram_bot.time, "sleep", lambda s: None)
+    desk.poll(0)
+    desk.poll(0)
+    warnings = [m for m in tg.sent() if "مراقب آخر" in m["text"]]
+    assert len(warnings) == 1

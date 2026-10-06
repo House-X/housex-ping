@@ -107,6 +107,12 @@ def build_broker():
                         + f"\nUSDT free: {report['usdt_free']:.2f} · max per order: {report['max_order_usd']} USD",
                         title=f"[bold {color}]Binance {settings.binance_env.upper()}[/]", border_style=color))
     if settings.binance_env == "live":
+        import os
+        if not sys.stdin.isatty():  # a background service can't type LIVE: it needs an explicit flag
+            if os.getenv("LIVE_CONFIRMED", "").strip() != "LIVE":
+                console.print("[red]Real money in a background service needs LIVE_CONFIRMED=LIVE in .env[/]")
+                sys.exit(1)
+            return broker
         console.print("[bold red]REAL MONEY.[/] Type LIVE to continue: ", end="")
         if input().strip() != "LIVE":
             sys.exit(0)
