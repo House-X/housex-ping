@@ -107,3 +107,5 @@ def test_swing_research_reports_test_and_whole_history():
     res = r["per_symbol"]["BTC/USDT"]["results"]
     assert len(res) == 2 and all(x["verdict"] in ("promising", "weak", "fails", "insufficient") for x in res)
     assert all("whole" in x and "test" in x for x in res)
+    rb = res[0]["robustness"]
+    assert rb["settings"] == len(swing.GRIDS["breakout"]) and 0 <= rb["profitable"] <= rb["settings"]

@@ -496,7 +496,7 @@ with tab_bt:
     sw_syms = w1.text_input("العملات", "BTC/USDT, ETH/USDT", key="sw_syms")
     sw_tf = w2.selectbox("الإطار الزمني", ["1d", "4h"], key="sw_tf",
                          format_func=lambda x: {"1d": "يومي", "4h": "4 ساعات"}[x])
-    sw_years = w3.selectbox("السنوات", [8, 5, 3], key="sw_years")
+    sw_years = w3.selectbox("السنوات", [9, 5, 3], key="sw_years")
     if st.button("🌊 اختبر ركوب الموجة", type="primary"):
         symbols = [x.strip().upper() for x in sw_syms.split(",") if x.strip()][:4]
         with st.spinner("جارٍ تنزيل سنوات من البيانات واختبار 12 تركيبة لكل عملة..."):
@@ -526,6 +526,12 @@ with tab_bt:
                     "داخل السوق %": w["time_in_market_pct"],
                 })
             st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+            for r in v["results"]:
+                rb = r["robustness"]
+                st.caption(f"🧱 ثبات «{r['strategy_ar']}»: من {rb['settings']} إعدادات مختلفة، ربحت "
+                           f"{rb['profitable']}، وكان هبوطها أقل من الاحتفاظ في {rb['smaller_drawdown']}، "
+                           f"وتفوقت على عائد الاحتفاظ في {rb['beat_hold_return']} · الوسيط: عائد "
+                           f"{rb['median_return_pct']}% وتراجع {rb['median_drawdown_pct']}%")
             r0 = v["results"][0]
             st.caption(f"الاختبار: {r0['test_from']} ← {r0['test_to']} · كامل التاريخ من {r0['whole_from']}. "
                        "التراجع = أكبر هبوط من قمة رأس المال، وكلما صغر كان أفضل.")

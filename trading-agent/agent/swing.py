@@ -143,13 +143,22 @@ def evaluate(df: pd.DataFrame, strategy: str, split: float = 0.7) -> dict:
     test = simulate(test_df, entries.iloc[cut - WARMUP:], best["trail_atr"])
     whole = simulate(df, entries, best["trail_atr"])
     code, text = verdict(test["stats"])
+    # Robustness: a real edge should hold for the neighbouring settings too, not just the best one.
+    alt = [simulate(df, signals(df, strategy, p), p["trail_atr"])["stats"] for p in GRIDS[strategy]]
+    robust = {"settings": len(alt),
+              "profitable": sum(a["total_return_pct"] > 0 for a in alt),
+              "smaller_drawdown": sum(abs(a["max_drawdown_pct"]) < abs(a["buy_and_hold_max_drawdown_pct"])
+                                      for a in alt),
+              "beat_hold_return": sum(a["total_return_pct"] > a["buy_and_hold_pct"] for a in alt),
+              "median_return_pct": round(float(np.median([a["total_return_pct"] for a in alt])), 1),
+              "median_drawdown_pct": round(float(np.median([a["max_drawdown_pct"] for a in alt])), 1)}
     fmt = lambda ts: [{**t, "entry_date": str(t["entry_date"])[:10], "exit_date": str(t["exit_date"])[:10],  # noqa: E731
                        "return_pct": round(t["return_pct"], 1), "pnl": round(t["pnl"], 2)} for t in ts]
     return {"strategy": strategy, "strategy_ar": STRATEGIES_AR[strategy], "params": best,
             "test": test["stats"], "whole": whole["stats"], "verdict": code, "verdict_ar": text,
             "test_from": str(df.index[cut])[:10], "test_to": str(df.index[-1])[:10],
             "whole_from": str(df.index[WARMUP])[:10],
-            "equity_whole": whole["equity_curve"], "last_trades": fmt(whole["trades"][-8:])}
+            "robustness": robust, "equity_whole": whole["equity_curve"], "last_trades": fmt(whole["trades"][-8:])}
 
 
 def _fetch(symbol: str, timeframe: str, years: int) -> pd.DataFrame:
@@ -158,7 +167,7 @@ def _fetch(symbol: str, timeframe: str, years: int) -> pd.DataFrame:
     return market_data.fetch_intraday_history(symbol, timeframe, int(years * 365))
 
 
-def research(symbols: list[str], timeframe: str = "1d", years: int = 8,
+def research(symbols: list[str], timeframe: str = "1d", years: int = 9,
              fetch: Callable | None = None) -> dict:
     fetch = fetch or _fetch
     out = {}

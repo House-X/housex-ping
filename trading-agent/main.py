@@ -212,7 +212,7 @@ def run_shortterm(args: list[str]) -> None:
 def run_swing(args: list[str]) -> None:
     from agent import swing
     tf = args[args.index("--tf") + 1] if "--tf" in args else "1d"
-    years = int(args[args.index("--years") + 1]) if "--years" in args else 8
+    years = int(args[args.index("--years") + 1]) if "--years" in args else 9
     symbols = [a for a in args if "/" in a or "." in a] or ["BTC/USDT", "ETH/USDT"]
     with console.status(f"Testing swing strategies on {', '.join(symbols)} ({tf}, {years}y)..."):
         r = swing.research(symbols, timeframe=tf, years=years)
@@ -232,6 +232,13 @@ def run_swing(args: list[str]) -> None:
                       str(w["max_drawdown_pct"]), str(w["buy_and_hold_pct"]),
                       str(w["buy_and_hold_max_drawdown_pct"]))
     console.print(t)
+    for sym, v in r["per_symbol"].items():
+        for x in v.get("results", []):
+            rb = x["robustness"]
+            console.print(f"{sym} {x['strategy']}: {rb['profitable']}/{rb['settings']} settings profitable, "
+                          f"{rb['smaller_drawdown']} with a smaller drawdown than holding, "
+                          f"{rb['beat_hold_return']} beat holding · median {rb['median_return_pct']}% / "
+                          f"DD {rb['median_drawdown_pct']}%")
     console.print(f"[dim]{r['rules']}[/]")
 
 
