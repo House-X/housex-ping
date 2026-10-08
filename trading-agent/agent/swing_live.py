@@ -50,7 +50,21 @@ def _save(state: dict) -> None:
 
 
 def symbols() -> list[str]:
+    """Coins chosen from the robustness lab (saved on the server) override SWING_SYMBOLS."""
+    chosen = _load().get("symbols")
+    if chosen:
+        return chosen
     return [s.strip().upper() for s in settings.swing_symbols.split(",") if s.strip()]
+
+
+def set_symbols(new: list[str]) -> list[str]:
+    """Save the swing list. Only Sharia-approved coins are kept; open trades are not touched."""
+    from .sharia import check
+    keep = [s.upper() for s in dict.fromkeys(new) if check(s)["status"] == "compliant"]
+    state = _load()
+    state["symbols"] = keep
+    _save(state)
+    return keep
 
 
 def due(now: datetime | None = None) -> bool:
@@ -88,7 +102,9 @@ def run(broker, now: datetime | None = None, fetch: Callable | None = None, send
     state = _load()
     _sync_closed(state, broker)
     report = {"proposals": [], "raised": [], "errors": []}
-    for sym in symbols():
+    watch = symbols()
+    held = [t["symbol"] for t in state["positions"].values()]
+    for sym in dict.fromkeys(watch + held):  # a coin dropped from the list keeps its stop managed
         try:
             df = _completed(fetch(sym), now)
             p = _params(state, sym, df, now.timestamp())
@@ -109,7 +125,7 @@ def run(broker, now: datetime | None = None, fetch: Callable | None = None, send
                                     f"أعلى إغلاق منذ الدخول: {t['peak']:,.2f}\n"
                                     f"إذا نزل السعر إلى الوقف تُغلق الصفقة تلقائياً.")
                 continue
-            if any(x["symbol"] == sym for x in state["proposals"].values()):
+            if sym not in watch or any(x["symbol"] == sym for x in state["proposals"].values()):
                 continue
             if swing.signals(df, "breakout", p).iloc[-1]:
                 level = float(df["high"].iloc[-p["lookback"] - 1:-1].max())

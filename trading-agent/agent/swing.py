@@ -186,3 +186,55 @@ def research(symbols: list[str], timeframe: str = "1d", years: int = 9,
             "rules": f"long only, whole swing budget per trade, no leverage, fees {FEE * 100:.1f}%/side + "
                      f"slippage {SLIPPAGE * 100:.2f}%, chandelier trailing stop, params chosen on the "
                      "first 70%, judged on the last 30%"}
+
+
+# ── universe-wide robustness lab ────────────────────────────────
+PASS_MIN_YEARS = 3.0  # fewer than ~3 years misses a full bull/bear cycle
+
+
+def classify(r: dict, years: float) -> tuple[str, str]:
+    """pass / borderline / fail / young, from the robustness counts and the untouched test period."""
+    rb, t = r["robustness"], r["test"]
+    n = rb["settings"]
+    if years < PASS_MIN_YEARS:
+        return "young", f"تاريخ قصير ({years:.1f} سنة): أقل من دورة سوق كاملة، لا يُحكم عليها بعد"
+    test_ok = t["total_return_pct"] > 0 and (t["profit_factor"] or 0) >= 1.2
+    if rb["profitable"] >= n - 1 and rb["smaller_drawdown"] >= n - 1 and test_ok:
+        return "pass", "ناجحة: ربحت في أغلب الإعدادات وبهبوط أقل من الاحتفاظ، ونجحت على بيانات لم ترها"
+    if rb["profitable"] >= n - 2:
+        return "borderline", "على الحدود: نتائج مختلطة، نراقبها ونعيد اختبارها بعد 3 أشهر"
+    return "fail", "فاشلة: الاستراتيجية لا تعمل عليها بثبات"
+
+
+def scan_universe(symbols: list[str] | None = None, years: int = 9, fetch: Callable | None = None,
+                  progress: Callable[[int, int, str], None] | None = None) -> dict:
+    """Run the live breakout + trailing-stop rule on every approved coin and rank them."""
+    from .sharia import universe
+    if symbols is None:
+        symbols = [f"{b}/USDT" for b in universe().get("crypto_spot_bases", [])]
+    fetch = fetch or (lambda s: market_data.fetch_daily_history(s, years))
+    rows, skipped = [], []
+    for i, sym in enumerate(symbols):
+        if progress:
+            progress(i, len(symbols), sym)
+        try:
+            df = fetch(sym)
+        except Exception as e:
+            skipped.append({"symbol": sym, "why": f"{type(e).__name__}: {str(e)[:80]}"})
+            continue
+        if len(df) < WARMUP * 3:
+            skipped.append({"symbol": sym, "why": f"تاريخ قصير جداً ({len(df)} يوماً)"})
+            continue
+        r = evaluate(df, "breakout")
+        hist_years = (df.index[-1] - df.index[0]).days / 365.25
+        code, text = classify(r, hist_years)
+        rows.append({"symbol": sym, "class": code, "class_ar": text, "years": round(hist_years, 1),
+                     "params": r["params"], "robustness": r["robustness"], "test": r["test"],
+                     "whole": r["whole"], "test_from": r["test_from"]})
+    order = {"pass": 0, "borderline": 1, "young": 2, "fail": 3}
+    rows.sort(key=lambda x: (order[x["class"]], -x["robustness"]["profitable"],
+                             -x["robustness"]["median_return_pct"]))
+    return {"rows": rows, "skipped": skipped, "passed": [r["symbol"] for r in rows if r["class"] == "pass"],
+            "rules": "breakout + chandelier trailing stop (the live rule); pass = profitable in >= 5/6 "
+                     "settings, smaller drawdown than holding in >= 5/6, test period return > 0 with "
+                     f"profit factor >= 1.2, and at least {PASS_MIN_YEARS:g} years of history"}

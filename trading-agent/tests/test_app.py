@@ -126,3 +126,18 @@ def test_swing_section_runs(monkeypatch):
     next(b for b in at.button if "ركوب الموجة" in b.label).click().run()
     assert not at.exception
     assert len(at.session_state["sw_res"]["per_symbol"]["BTC/USDT"]["results"]) == 2
+
+
+def test_robustness_lab_section(monkeypatch, tmp_path):
+    from agent import market_data, swing_live
+    from test_offline import synthetic_ohlcv
+    monkeypatch.setattr(swing_live, "STORE", tmp_path / "swing.json")
+    monkeypatch.setattr(market_data, "fetch_daily_history",
+                        lambda s, years: synthetic_ohlcv(n=1500, drift=0.0008, seed=len(s)))
+    at = AppTest.from_file("../app.py", default_timeout=120)
+    at.session_state["agent"] = FakeAgent()
+    at.run()
+    next(b for b in at.button if "افحص كل العملات" in b.label).click().run()
+    assert not at.exception
+    lab = at.session_state["lab"]
+    assert len(lab["rows"]) + len(lab["skipped"]) >= 20

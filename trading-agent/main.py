@@ -9,6 +9,7 @@
     python main.py --backtest BTC/USDT ETH/USDT [--years 4]   # historical test of the scanner rules
     python main.py --shortterm BTC/USDT ETH/USDT [--tf 1h] [--days 730]   # test quick in-and-out strategies
     python main.py --swing BTC/USDT ETH/USDT [--tf 1d|4h] [--years 8]   # trend-riding with a trailing stop
+    python main.py --robustness        # run the swing rule on every approved coin and rank them
     python main.py --telegram-setup   # link your Telegram bot (after messaging it once)
 """
 import json
@@ -252,10 +253,33 @@ def run_swing(args: list[str]) -> None:
     console.print(f"[dim]{r['rules']}[/]")
 
 
+def run_robustness() -> None:
+    from agent import swing
+    with console.status("Testing the swing rule on every approved coin..."):
+        r = swing.scan_universe(progress=lambda i, n, s: console.log(f"{i + 1}/{n} {s}"))
+    t = Table(title="Robustness lab · breakout + trailing stop · daily")
+    for col in ("symbol", "class", "years", "profitable", "smaller DD", "beat hold",
+                "test %", "hold test %", "DD %", "hold DD %"):
+        t.add_column(col)
+    for x in r["rows"]:
+        rb = x["robustness"]
+        t.add_row(x["symbol"], x["class"], str(x["years"]), f"{rb['profitable']}/{rb['settings']}",
+                  f"{rb['smaller_drawdown']}/{rb['settings']}", f"{rb['beat_hold_return']}/{rb['settings']}",
+                  str(x["test"]["total_return_pct"]), str(x["test"]["buy_and_hold_pct"]),
+                  str(x["whole"]["max_drawdown_pct"]), str(x["whole"]["buy_and_hold_max_drawdown_pct"]))
+    console.print(t)
+    for x in r["skipped"]:
+        console.print(f"[dim]skipped {x['symbol']}: {x['why']}[/]")
+    console.print(f"[green]Passed: {', '.join(r['passed']) or 'none'}[/]")
+
+
 def main() -> None:
     if "--telegram-setup" in sys.argv:
         from agent import notify
         console.print(notify.setup_chat_id())
+        return
+    if "--robustness" in sys.argv:
+        run_robustness()
         return
     if "--swing" in sys.argv:
         run_swing(sys.argv[sys.argv.index("--swing") + 1:])

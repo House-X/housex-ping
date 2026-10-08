@@ -109,3 +109,35 @@ def test_swing_research_reports_test_and_whole_history():
     assert all("whole" in x and "test" in x for x in res)
     rb = res[0]["robustness"]
     assert rb["settings"] == len(swing.GRIDS["breakout"]) and 0 <= rb["profitable"] <= rb["settings"]
+
+
+# ── universe-wide robustness lab ─────────────────────────────
+def _res(profitable, smaller, test_ret, pf):
+    return {"robustness": {"settings": 6, "profitable": profitable, "smaller_drawdown": smaller},
+            "test": {"total_return_pct": test_ret, "profit_factor": pf}}
+
+
+@pytest.mark.parametrize("res,years,expected", [
+    (_res(6, 6, 20, 1.6), 5, "pass"),
+    (_res(5, 5, 5, 1.25), 5, "pass"),
+    (_res(6, 6, -3, 0.9), 5, "borderline"),   # robust history, but failed the unseen test period
+    (_res(4, 2, 10, 1.5), 5, "borderline"),
+    (_res(2, 6, 10, 1.5), 5, "fail"),
+    (_res(6, 6, 20, 1.6), 2, "young"),        # too little history to judge
+])
+def test_lab_classification(res, years, expected):
+    assert swing.classify(res, years)[0] == expected
+
+
+def test_scan_universe_ranks_and_skips():
+    def fetch(sym):
+        if sym == "BAD/USDT":
+            raise ValueError("no market")
+        if sym == "NEW/USDT":
+            return synthetic_ohlcv(n=300, seed=1)
+        return synthetic_ohlcv(n=2000, drift=0.0008, seed=hash(sym) % 50)
+    r = swing.scan_universe(["AAA/USDT", "BBB/USDT", "NEW/USDT", "BAD/USDT"], fetch=fetch)
+    assert {x["symbol"] for x in r["rows"]} == {"AAA/USDT", "BBB/USDT"}
+    assert {x["symbol"] for x in r["skipped"]} == {"NEW/USDT", "BAD/USDT"}
+    assert all(x["class"] in ("pass", "borderline", "young", "fail") for x in r["rows"])
+    assert r["passed"] == [x["symbol"] for x in r["rows"] if x["class"] == "pass"]

@@ -94,3 +94,17 @@ def test_no_signal_without_breakout(env):
     flat = df.copy()
     flat.iloc[-1] = flat.iloc[-2]
     assert not swing_live.run(broker, now=now, fetch=lambda s: flat)["proposals"]
+
+
+def test_lab_list_keeps_only_approved_coins_and_dropped_coins_keep_their_stop(env):
+    broker, df, px, now, sent = env
+    assert swing_live.set_symbols(["SOL/USDT", "DOGE/USDT", "APT/USDT"]) == ["SOL/USDT"]
+    assert swing_live.symbols() == ["SOL/USDT"]
+    swing_live.set_symbols(["ETH/USDT"])
+    prop = swing_live.run(broker, now=now, fetch=lambda s: df)["proposals"][0]
+    first_stop = swing_live.approve(broker, prop["id"], price_fn=lambda s: px[s], now=now.timestamp())["stop_loss"]
+    swing_live.set_symbols(["SOL/USDT"])                                   # ETH dropped from the list
+    up = pd.concat([df, df.iloc[[-1]].set_axis([df.index[-1] + timedelta(days=1)]) * 1.10])
+    r = swing_live.run(broker, now=now + timedelta(days=1), fetch=lambda s: up)
+    assert any(x["symbol"] == "ETH/USDT" for x in r["raised"])           # still managed
+    assert broker.state["positions"][0]["stop_loss"] > first_stop

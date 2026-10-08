@@ -543,6 +543,42 @@ with tab_bt:
                 y=alt.Y("equity:Q", title=None, scale=alt.Scale(type="log"), axis=alt.Axis(format="$,.0f")),
             ).properties(height=220), width="stretch")
 
+    st.divider()
+    st.markdown("## 🔬 مختبر الثبات الشامل: أي العملات المعتمدة تصلح لركوب الموجة؟")
+    st.caption("يطبّق قاعدة الموجة الحية (اختراق + وقف متحرك) على كل عملة في قائمتك الشرعية، بستة إعدادات مختلفة "
+               "وعلى تاريخها كاملاً. تنجح العملة إذا ربحت في 5 إعدادات على الأقل من 6، وكان هبوطها أقل من "
+               "الاحتفاظ، ونجحت على فترة اختبار لم ترها، ولها 3 سنوات تاريخ على الأقل.")
+    from agent import swing_live
+    st.markdown(f"**عملات الموجة الحالية:** {' · '.join(swing_live.symbols())}")
+    if st.button("🔬 افحص كل العملات المعتمدة", type="primary"):
+        bar = st.progress(0.0, text="جارٍ التحميل...")
+        ss.lab = swing.scan_universe(
+            progress=lambda i, n, sym: bar.progress(i / n, text=f"({i + 1}/{n}) {sym}"))
+        bar.empty()
+    lab = ss.get("lab")
+    if lab:
+        icon = {"pass": "🟢 ناجحة", "borderline": "🟡 على الحدود", "young": "⚪ تاريخ قصير", "fail": "🔴 فاشلة"}
+        st.dataframe(pd.DataFrame([{
+            "العملة": r["symbol"], "الحكم": icon[r["class"]], "سنوات التاريخ": r["years"],
+            "إعدادات رابحة": f"{r['robustness']['profitable']}/{r['robustness']['settings']}",
+            "هبوط أقل من الاحتفاظ": f"{r['robustness']['smaller_drawdown']}/{r['robustness']['settings']}",
+            "تفوقت على الاحتفاظ": f"{r['robustness']['beat_hold_return']}/{r['robustness']['settings']}",
+            "عائد الاختبار %": r["test"]["total_return_pct"], "احتفاظ بالاختبار %": r["test"]["buy_and_hold_pct"],
+            "تراجع كامل التاريخ %": r["whole"]["max_drawdown_pct"],
+            "تراجع الاحتفاظ %": r["whole"]["buy_and_hold_max_drawdown_pct"],
+        } for r in lab["rows"]]), hide_index=True, width="stretch")
+        for x in lab["skipped"]:
+            st.caption(f"⏭ {x['symbol']}: {x['why']}")
+        if lab["passed"]:
+            st.success(f"الناجحة ({len(lab['passed'])}): " + " · ".join(lab["passed"]))
+            st.caption("عند الاعتماد يراقبها الوكيل كل ليلة. الحد الأقصى 3 صفقات مفتوحة معاً، وكل صفقة "
+                       "مخاطرتها 1% من رأس المال، والصفقات المفتوحة الحالية تبقى مُدارة حتى خروجها.")
+            if st.button("✅ اعتمد الناجحة لركوب الموجة"):
+                kept = swing_live.set_symbols(lab["passed"])
+                st.success("عملات الموجة الآن: " + " · ".join(kept))
+        else:
+            st.info("لا توجد عملة ناجحة بالكامل في هذا الفحص؛ تبقى الموجة على قائمتها الحالية.")
+
 # ── account ────────────────────────────────────────────────────
 with tab_acc:
     st.markdown("## الحساب")
