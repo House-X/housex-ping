@@ -221,3 +221,56 @@ def status_text(broker) -> str:
             lines.append("   لا توجد إشارة: ننتظر اختراقاً جديداً. الصبر جزء من الاستراتيجية.")
     lines.append("\nالفحص التالي بعد إغلاق الشمعة اليومية (03:10 بتوقيت إسطنبول).")
     return "\n".join(lines)
+
+
+# ── quarterly robustness lab ────────────────────────────────────
+LAB_EVERY_S = 90 * 86_400
+
+
+def lab_due(now: float | None = None) -> bool:
+    return (now or time.time()) - (_load().get("last_lab") or {}).get("ts", 0) >= LAB_EVERY_S
+
+
+def run_lab(send: bool = True, scan: Callable | None = None, now: float | None = None) -> dict:
+    """Run the lab, remember the recommendation, and ask the trader on Telegram. Never changes the
+    list by itself: the trader approves with one tap."""
+    lab = (scan or swing.scan_universe)()
+    current = symbols()
+    rec = swing.recommend(lab, current)
+    state = _load()
+    state["last_lab"] = {"ts": now or time.time(), "recommended": rec,
+                         "rows": [{k: r[k] for k in ("symbol", "class")} for r in lab["rows"]]}
+    _save(state)
+    if send:
+        notify.send(lab_text(lab, current, rec),
+                    buttons=[[("✅ اعتمد التوصية", "lb:ok"), ("❌ أبقِ القائمة كما هي", "lb:no")]] if rec else None)
+    return {"lab": lab, "recommended": rec}
+
+
+def lab_text(lab: dict, current: list[str], rec: list[str]) -> str:
+    icon = {"pass": "🟢", "borderline": "🟡", "young": "⚪", "fail": "🔴"}
+    lines = ["🔬 مختبر الثبات: نتيجة فحص كل العملات المعتمدة"]
+    for r in lab["rows"]:
+        rb = r["robustness"]
+        lines.append(f"{icon[r['class']]} {r['symbol'].split('/')[0]}: رابحة {rb['profitable']}/{rb['settings']}"
+                     f" · تفوقت على الاحتفاظ {rb['beat_hold_return']}/{rb['settings']}")
+    lines.append(f"\nالقائمة الحالية: {' · '.join(s.split('/')[0] for s in current)}")
+    added = [s for s in rec if s not in current]
+    dropped = [s for s in current if s not in rec]
+    if rec:
+        lines.append(f"التوصية: {' · '.join(s.split('/')[0] for s in rec)}")
+        if added:
+            lines.append(f"➕ إضافة: {' · '.join(s.split('/')[0] for s in added)}")
+        if dropped:
+            lines.append(f"➖ حذف: {' · '.join(s.split('/')[0] for s in dropped)} (الصفقات المفتوحة تبقى مُدارة)")
+    else:
+        lines.append("لا توجد عملة ناجحة: تبقى القائمة كما هي.")
+    return "\n".join(lines)
+
+
+def approve_lab() -> list[str]:
+    rec = (_load().get("last_lab") or {}).get("recommended") or []
+    if not rec:
+        raise ValueError("لا توجد توصية محفوظة؛ شغّل /lab أولاً")
+    return set_symbols(rec)
+

@@ -108,3 +108,30 @@ def test_lab_list_keeps_only_approved_coins_and_dropped_coins_keep_their_stop(en
     r = swing_live.run(broker, now=now + timedelta(days=1), fetch=lambda s: up)
     assert any(x["symbol"] == "ETH/USDT" for x in r["raised"])           # still managed
     assert broker.state["positions"][0]["stop_loss"] > first_stop
+
+
+def _lab_rows():
+    def row(sym, cls, beat):
+        return {"symbol": sym, "class": cls, "robustness": {"settings": 6, "profitable": 6,
+                                                           "smaller_drawdown": 6, "beat_hold_return": beat}}
+    return {"rows": [row("NEAR/USDT", "pass", 6), row("BTC/USDT", "pass", 0), row("ETH/USDT", "borderline", 6),
+                     row("SOL/USDT", "borderline", 3), row("DOT/USDT", "fail", 6)], "skipped": [], "passed": []}
+
+
+def test_recommendation_rule():
+    from agent import swing
+    rec = swing.recommend(_lab_rows(), ["ETH/USDT"])
+    assert rec == ["NEAR/USDT", "ETH/USDT"]            # BTC: only protection; SOL: borderline, not held
+
+
+def test_quarterly_lab_asks_and_one_tap_approves(env):
+    broker, df, px, now, sent = env
+    assert swing_live.lab_due()
+    r = swing_live.run_lab(scan=_lab_rows)
+    assert r["recommended"] == ["NEAR/USDT", "ETH/USDT"]
+    text, kw = sent[-1]
+    assert "مختبر الثبات" in text and "lb:ok" in str(kw["buttons"])
+    assert not swing_live.lab_due()
+    assert swing_live.symbols() == ["ETH/USDT"]          # nothing changes before the tap
+    assert swing_live.approve_lab() == ["NEAR/USDT", "ETH/USDT"]
+    assert swing_live.symbols() == ["NEAR/USDT", "ETH/USDT"]

@@ -550,6 +550,7 @@ with tab_bt:
                "الاحتفاظ، ونجحت على فترة اختبار لم ترها، ولها 3 سنوات تاريخ على الأقل.")
     from agent import swing_live
     st.markdown(f"**عملات الموجة الحالية:** {' · '.join(swing_live.symbols())}")
+    st.caption("يعمل هذا المختبر تلقائياً كل 3 أشهر ويرسل النتيجة إلى تيليجرام، أو شغّله في أي وقت بالأمر /lab")
     if st.button("🔬 افحص كل العملات المعتمدة", type="primary"):
         bar = st.progress(0.0, text="جارٍ التحميل...")
         ss.lab = swing.scan_universe(
@@ -574,7 +575,10 @@ with tab_bt:
         st.caption("اختر عملات الموجة (يمكنك إضافة عملة «على الحدود» أو حذف عملة ناجحة). الحد الأقصى 3 صفقات "
                    "مفتوحة معاً، ومخاطرة كل صفقة 1% من رأس المال، والصفقات المفتوحة تبقى مُدارة حتى خروجها.")
         options = [r["symbol"] for r in lab["rows"]]
-        chosen = st.multiselect("عملات الموجة", options, default=[x for x in lab["passed"] if x in options],
+        rec = swing.recommend(lab, swing_live.symbols())
+        st.caption("التوصية تستبعد العملة الناجحة التي لم تتفوق على الاحتفاظ أبداً (مكانها النواة)، وتبقي "
+                   "عملة حالية تراجعت إلى «على الحدود» فقط.")
+        chosen = st.multiselect("عملات الموجة", options, default=[x for x in rec if x in options],
                                 key="lab_pick")
         if st.button("✅ اعتمد المختارة لركوب الموجة", disabled=not chosen):
             kept = swing_live.set_symbols(chosen)

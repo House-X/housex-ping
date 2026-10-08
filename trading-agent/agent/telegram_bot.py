@@ -26,6 +26,7 @@ COMMANDS = [
     ("positions", "الصفقات المفتوحة مع زر إغلاق"),
     ("core", "النواة: الشراء الدوري والاستثمار الطويل"),
     ("swing", "ركوب الموجة: الإشارات والوقف المتحرك"),
+    ("lab", "مختبر الثبات: أي العملات تصلح للموجة"),
     ("explore", "ابحث عن فرص الآن"),
     ("new", "محادثة جديدة مع الوكيل"),
     ("help", "طريقة الاستخدام"),
@@ -39,6 +40,8 @@ HELP = """📱 مكتبك على الهاتف
 /positions — الصفقات المفتوحة (إغلاق)
 /core — النواة: الشراء الدوري الأسبوعي
 /swing — ركوب الموجة: الإشارات والوقف المتحرك
+/lab — مختبر الثبات (يعمل تلقائياً كل 3 أشهر)
+/setswing ETH NEAR ADA — تحديد عملات الموجة يدوياً
 /explore — ابحث عن فرص الآن
 /new — ابدأ محادثة جديدة
 
@@ -135,6 +138,8 @@ class PhoneDesk:
                 result = self._alert_button(verb, ident)
             elif kind == "ps":
                 result = self._position_button(verb, ident)
+            elif kind == "lb":
+                result = self._lab_button(verb)
             elif kind == "sw":
                 result = self._swing_button(verb, ident)
             elif kind == "dc":
@@ -171,6 +176,15 @@ class PhoneDesk:
             return f"✅ أُغلقت. الربح/الخسارة: {c.get('pnl', 0):+.2f}$"
         if verb == "keep":
             return "👍 الصفقة باقية كما هي."
+        return "زر غير معروف"
+
+    def _lab_button(self, verb: str) -> str:
+        from . import swing_live
+        if verb == "ok":
+            kept = swing_live.approve_lab()
+            return "✅ عملات الموجة الآن: " + " · ".join(x.split("/")[0] for x in kept)
+        if verb == "no":
+            return "👍 بقيت القائمة كما هي."
         return "زر غير معروف"
 
     def _swing_button(self, verb: str, ident: str) -> str:
@@ -233,6 +247,20 @@ class PhoneDesk:
         elif cmd in ("/swing", "الموجة"):
             from . import swing_live
             notify.send(swing_live.status_text(self.broker))
+        elif cmd in ("/lab", "المختبر"):
+            from . import swing_live
+            notify.send("🔬 أفحص كل العملات المعتمدة على 9 سنوات... قرابة 5 دقائق.")
+            swing_live.run_lab()
+        elif cmd in ("/setswing",):
+            from . import swing_live
+            wanted = [w.upper() if "/" in w else f"{w.upper()}/USDT" for w in text.split()[1:]]
+            if not wanted:
+                notify.send("اكتب العملات بعد الأمر، مثال:\n/setswing ETH NEAR ADA HBAR LINK")
+            else:
+                kept = swing_live.set_symbols(wanted)
+                refused = [w for w in wanted if w not in kept]
+                notify.send("✅ عملات الموجة الآن: " + (" · ".join(x.split("/")[0] for x in kept) or "لا شيء")
+                            + (f"\n⛔ رُفضت لأنها غير معتمدة شرعياً: {' · '.join(refused)}" if refused else ""))
         elif cmd in ("/explore", "استكشف"):
             notify.send("🔎 أبحث عن فرص الآن... قد يستغرق ذلك بضع دقائق.")
             run = self.explore_fn() if self.explore_fn else None

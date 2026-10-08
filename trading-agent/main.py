@@ -148,6 +148,8 @@ def watch(broker) -> None:
                 console.print(f"[green]Core DCA: {len(b['buys'])} buys, {len(b['skipped'])} skipped[/]")
             if settings.swing_enabled and swing_live.due():
                 r = swing_live.run(broker)
+                if swing_live.lab_due():  # quarterly re-check of which coins still suit the wave
+                    swing_live.run_lab()
                 console.print(f"[blue]Swing: {len(r['proposals'])} signals, {len(r['raised'])} stops raised"
                               f"{', errors: ' + '; '.join(r['errors']) if r['errors'] else ''}[/]")
             if settings.explore_enabled and explorer.due():

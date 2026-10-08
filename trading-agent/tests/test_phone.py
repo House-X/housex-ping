@@ -197,3 +197,13 @@ def test_status_includes_core_holdings(desk, tg, tmp_path, monkeypatch):
         "positions": [{"symbol": "BTC/USDT"}], "value": 100.0, "invested": 99.0, "pnl": 1.0, "pnl_pct": 1.0})
     text = desk.status_text()
     assert "الإجمالي مع النواة" in text and "النواة: 100.00$" in text
+
+
+def test_setswing_command_filters_unapproved(desk, tg, tmp_path, monkeypatch):
+    from agent import swing_live
+    monkeypatch.setattr(swing_live, "STORE", tmp_path / "swing.json")
+    tg.updates = [text("/setswing eth near doge")]
+    desk.poll(0)
+    msg = tg.sent()[-1]["text"]
+    assert "ETH · NEAR" in msg and "DOGE/USDT" in msg
+    assert swing_live.symbols() == ["ETH/USDT", "NEAR/USDT"]

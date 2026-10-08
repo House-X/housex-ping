@@ -238,3 +238,13 @@ def scan_universe(symbols: list[str] | None = None, years: int = 9, fetch: Calla
             "rules": "breakout + chandelier trailing stop (the live rule); pass = profitable in >= 5/6 "
                      "settings, smaller drawdown than holding in >= 5/6, test period return > 0 with "
                      f"profit factor >= 1.2, and at least {PASS_MIN_YEARS:g} years of history"}
+
+
+def recommend(lab: dict, current: list[str]) -> list[str]:
+    """Coins to ride: passed AND beat buy-and-hold in at least one setting (a coin that only cuts the
+    drawdown, like BTC, is better held in the core), plus current coins that only slipped to borderline
+    (one weak period is not a reason to drop a coin that was robust)."""
+    out = [r["symbol"] for r in lab["rows"]
+           if r["class"] == "pass" and r["robustness"]["beat_hold_return"] > 0]
+    out += [r["symbol"] for r in lab["rows"] if r["class"] == "borderline" and r["symbol"] in current]
+    return list(dict.fromkeys(out))
