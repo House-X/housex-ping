@@ -18,7 +18,7 @@ class FakeBinance:
         self.orders, self.lists = {}, {}
         self.markets = {"ETH/USDT": {"id": "ETHUSDT", "spot": True, "active": True,
                                      "limits": {"cost": {"min": 5}, "amount": {"min": 0.0001}}},
-                        "WLD/USDT": {"id": "WLDUSDT", "spot": True, "active": True, "limits": {}}}
+                        "APT/USDT": {"id": "APTUSDT", "spot": True, "active": True, "limits": {}}}
         self.restrictions = restrictions or {"ipRestrict": True, "enableSpotAndMarginTrading": True,
                                              "enableWithdrawals": False, "enableFutures": False}
         self.n = 0
@@ -174,7 +174,7 @@ def test_oco_failure_falls_back_to_local_watch(broker, ex, monkeypatch):
 
 
 @pytest.mark.parametrize("symbol,msg", [
-    ("WLD/USDT", "Sharia"),           # active market, but not in the approved list
+    ("APT/USDT", "Sharia"),           # active market, but not in the approved list
     ("THYAO.IS", "spot */USDT"),      # stocks can't go to Binance
     ("BTC/USDT", "not an active"),    # not in this fake exchange
 ])

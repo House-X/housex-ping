@@ -5,212 +5,149 @@
     "ETH",
     "XRP",
     "SOL",
-    "BNB",
-    "ADA",
     "TRX",
     "LINK",
+    "ADA",
+    "NEAR",
+    "XLM",
+    "BCH",
+    "LTC",
+    "TON",
+    "GRAM",
     "AVAX",
     "SUI",
-    "XLM",
-    "TON",
     "HBAR",
-    "DOT",
-    "LTC",
-    "BCH",
-    "UNI",
-    "NEAR",
-    "APT",
-    "ETC",
-    "ICP",
-    "VET",
     "TAO",
-    "POL",
-    "ALGO",
-    "KAS",
-    "RENDER",
-    "FIL",
+    "DOT",
+    "ICP",
+    "ETC",
     "ARB",
-    "FET",
+    "KAS",
+    "ALGO",
+    "RENDER",
     "ATOM",
-    "THETA",
-    "EOS",
-    "XTZ",
-    "IOTA",
-    "NEO",
-    "EGLD",
-    "LEO",
-    "BGB",
-    "OKB",
-    "CRO",
-    "MNT"
+    "FIL",
+    "QNT",
+    "WLD",
+    "ZRO"
   ],
   "crypto_approvals": {
     "BTC": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08; originally approved by the trader",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "ETH": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08; originally approved by the trader",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "XRP": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "SOL": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "BNB": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "ADA": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "TRX": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "LINK": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "AVAX": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "SUI": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "XLM": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "TON": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "HBAR": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "DOT": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "LTC": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "BCH": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "UNI": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "ADA": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "NEAR": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "APT": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "XLM": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "ETC": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "BCH": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "ICP": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "LTC": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "VET": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "TON": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08",
+      "note": "Toncoin, renamed Gram: both tickers accepted"
+    },
+    "GRAM": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08",
+      "note": "Toncoin, renamed Gram: both tickers accepted"
+    },
+    "AVAX": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "SUI": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "HBAR": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "TAO": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "POL": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "DOT": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "ALGO": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "ICP": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "KAS": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "RENDER": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "FIL": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "ETC": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "ARB": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "FET": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "KAS": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ALGO": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "RENDER": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
     "ATOM": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "THETA": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "FIL": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
       "date": "2026-10-08"
     },
-    "EOS": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "QNT": {
+      "source": "CryptoHalal (cryptohalal.cc) rates it permissible; not covered by Islamic Finance Guru. Added by the trader's decision.",
       "date": "2026-10-08"
     },
-    "XTZ": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "WLD": {
+      "source": "CryptoHalal (cryptohalal.cc) rates it permissible; not covered by Islamic Finance Guru. Added by the trader's decision.",
       "date": "2026-10-08"
     },
-    "IOTA": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "NEO": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "EGLD": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "LEO": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "BGB": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "OKB": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "CRO": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
-      "date": "2026-10-08"
-    },
-    "MNT": {
-      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+    "ZRO": {
+      "source": "CryptoHalal (cryptohalal.cc) rates it permissible; not covered by Islamic Finance Guru. Added by the trader's decision.",
       "date": "2026-10-08"
     }
   },
@@ -251,7 +188,19 @@
     "FTT",
     "XMR",
     "ZEC",
-    "OM"
+    "OM",
+    "BNB",
+    "CRO",
+    "OKB",
+    "BGB",
+    "UNI",
+    "PAXG",
+    "JST",
+    "GT",
+    "KCS",
+    "INJ",
+    "CAKE",
+    "USDD"
   ],
   "crypto_blocked_reasons": {
     "DOGE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
@@ -290,13 +239,26 @@
     "FTT": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
     "XMR": "Privacy coin: excluded by the trader on taqwa grounds (IFG itself is uncomfortable adding value to it).",
     "ZEC": "Privacy coin: excluded by the trader on taqwa grounds (IFG itself is uncomfortable adding value to it).",
-    "OM": "Excluded by the trader for risk: collapsed >90% in hours in April 2025 amid governance concerns."
+    "OM": "Excluded by the trader for risk: collapsed >90% in hours in April 2025 amid governance concerns.",
+    "BNB": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "CRO": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "OKB": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "BGB": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "UNI": "Liquidity-provision structure: CryptoHalal rates it not permissible; IFG raised the same concern but permitted it. Excluded by the trader's consensus rule.",
+    "PAXG": "Tokenized gold: CryptoHalal rates it not permissible (gold needs immediate possession, taqabud). Use physical gold or a participation-bank gold account instead.",
+    "JST": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "GT": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "KCS": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "INJ": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "CAKE": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "USDD": "Rated doubtful (mushtabah) by CryptoHalal."
   },
   "_crypto_blocked_reason": "Meme coins: no underlying utility, driven by speculation (gharar / maysir).",
-  "stablecoins_note": "USDT, USDC and DAI are rated permissible by IFG; USDT is used as the account's cash, stablecoins are not traded for profit.",
+  "stablecoins_note": "USDT and USDC are rated permissible by both sources and USDT is the account's cash; DAI is permissible per IFG but not per CryptoHalal. Stablecoins are not traded for profit.",
   "stocks_etfs": [
     "SPUS",
     "HLAL"
   ],
-  "stocks_blocked": []
+  "stocks_blocked": [],
+  "review_note": "Single-source coins (IFG permits, CryptoHalal not yet reviewed): APT, VET, POL, FET, THETA, EOS, XTZ, IOTA, NEO, EGLD, LEO, MNT. Not tradable until a second source covers them."
 }
