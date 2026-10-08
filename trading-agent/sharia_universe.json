@@ -2,8 +2,218 @@
   "_note": "You (ideally with your Sharia advisor) own this list; the agent can read it but never edit it. Crypto: only crypto_spot_bases are tradable. Stocks: screened automatically (AAOIFI ratios); stocks_etfs force-approves and stocks_blocked force-blocks a ticker, e.g. a participation bank like ALBRK.IS.",
   "crypto_spot_bases": [
     "BTC",
-    "ETH"
+    "ETH",
+    "XRP",
+    "SOL",
+    "BNB",
+    "ADA",
+    "TRX",
+    "LINK",
+    "AVAX",
+    "SUI",
+    "XLM",
+    "TON",
+    "HBAR",
+    "DOT",
+    "LTC",
+    "BCH",
+    "UNI",
+    "NEAR",
+    "APT",
+    "ETC",
+    "ICP",
+    "VET",
+    "TAO",
+    "POL",
+    "ALGO",
+    "KAS",
+    "RENDER",
+    "FIL",
+    "ARB",
+    "FET",
+    "ATOM",
+    "THETA",
+    "EOS",
+    "XTZ",
+    "IOTA",
+    "NEO",
+    "EGLD",
+    "LEO",
+    "BGB",
+    "OKB",
+    "CRO",
+    "MNT"
   ],
+  "crypto_approvals": {
+    "BTC": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08; originally approved by the trader",
+      "date": "2026-10-08"
+    },
+    "ETH": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08; originally approved by the trader",
+      "date": "2026-10-08"
+    },
+    "XRP": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "SOL": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "BNB": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "ADA": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "TRX": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "LINK": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "AVAX": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "SUI": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "XLM": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "TON": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "HBAR": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "DOT": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "LTC": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "BCH": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "UNI": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "NEAR": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "APT": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "ETC": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "ICP": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "VET": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "TAO": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "POL": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "ALGO": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "KAS": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "RENDER": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "FIL": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "ARB": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "FET": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "ATOM": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "THETA": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "EOS": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "XTZ": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "IOTA": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "NEO": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "EGLD": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "LEO": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "BGB": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "OKB": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "CRO": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    },
+    "MNT": {
+      "source": "Islamic Finance Guru crypto screening (islamicfinanceguru.com/crypto), adopted 2026-10-08",
+      "date": "2026-10-08"
+    }
+  },
   "crypto_blocked_bases": [
     "DOGE",
     "SHIB",
@@ -31,9 +241,59 @@
     "GOAT",
     "BROCCOLI",
     "FARTCOIN",
-    "PEOPLE"
+    "PEOPLE",
+    "HYPE",
+    "ENA",
+    "USDE",
+    "ONDO",
+    "AAVE",
+    "MKR",
+    "FTT",
+    "XMR",
+    "ZEC",
+    "OM"
   ],
+  "crypto_blocked_reasons": {
+    "DOGE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "SHIB": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PEPE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "FLOKI": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BONK": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "WIF": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PENGU": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "TRUMP": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BOME": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "MEME": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "NEIRO": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "TURBO": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "MEW": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "POPCAT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PNUT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "ACT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BABYDOGE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "1000SATS": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "1000CAT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "DOGS": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "HMSTR": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "CATI": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "MOODENG": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "GOAT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BROCCOLI": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "FARTCOIN": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PEOPLE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "HYPE": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "ENA": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "USDE": "Synthetic dollar built on short futures positions - not permissible per Islamic Finance Guru.",
+    "ONDO": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "AAVE": "Interest-based lending protocol (riba) - not permissible per Islamic Finance Guru.",
+    "MKR": "Governance token of an interest-based loan platform (DAI stability fee) - not permissible per Islamic Finance Guru.",
+    "FTT": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "XMR": "Privacy coin: excluded by the trader on taqwa grounds (IFG itself is uncomfortable adding value to it).",
+    "ZEC": "Privacy coin: excluded by the trader on taqwa grounds (IFG itself is uncomfortable adding value to it).",
+    "OM": "Excluded by the trader for risk: collapsed >90% in hours in April 2025 amid governance concerns."
+  },
   "_crypto_blocked_reason": "Meme coins: no underlying utility, driven by speculation (gharar / maysir).",
+  "stablecoins_note": "USDT, USDC and DAI are rated permissible by IFG; USDT is used as the account's cash, stablecoins are not traded for profit.",
   "stocks_etfs": [
     "SPUS",
     "HLAL"

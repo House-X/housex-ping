@@ -56,7 +56,7 @@ def test_run_buys_split_and_reports(core):
 
 
 def test_unapproved_assets_are_skipped(core, monkeypatch):
-    monkeypatch.setattr(dca, "settings", dataclasses.replace(dca.settings, dca_allocation="SOL/USDT:100"))
+    monkeypatch.setattr(dca, "settings", dataclasses.replace(dca.settings, dca_allocation="WLD/USDT:100"))
     b = dca.run(core[0], now=MON_10, send=False)
     assert not b["buys"] and "شرعياً" in b["skipped"][0]["why"]
 

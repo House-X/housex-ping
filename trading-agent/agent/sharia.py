@@ -70,9 +70,12 @@ def check(symbol: str, auto_screen: bool = True) -> dict:
     if cls == "crypto":
         base = s.split("/")[0]
         if base in u.get("crypto_blocked_bases", []):
-            return result("not_compliant", [u.get("_crypto_blocked_reason", "Blocked token.")])
+            reason = (u.get("crypto_blocked_reasons") or {}).get(base) or u.get("_crypto_blocked_reason")
+            return result("not_compliant", [reason or "Blocked token."])
         if base in u.get("crypto_spot_bases", []):
-            return result("compliant", ["Approved spot crypto asset in your Sharia universe."])
+            src = ((u.get("crypto_approvals") or {}).get(base) or {}).get("source")
+            return result("compliant", ["Approved spot crypto asset in your Sharia universe."
+                                        + (f" Source: {src}." if src else "")])
         return result("review_required", [CRYPTO_SCREEN])
     if s in u.get("stocks_etfs", []):
         return result("compliant", ["Approved Sharia-screened stock/ETF in your universe."])

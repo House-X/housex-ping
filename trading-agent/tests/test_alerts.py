@@ -80,8 +80,8 @@ def test_auto_buy_still_obeys_risk_rules(broker, market):
 
 
 def test_auto_buy_still_obeys_sharia(broker, market):
-    market["SOL/USDT"] = 100
-    a = alerts.create("SOL/USDT", "price_above", 100, "auto_buy", stop_loss=90, take_profit=130)
+    market["WLD/USDT"] = 100
+    a = alerts.create("WLD/USDT", "price_above", 100, "auto_buy", stop_loss=90, take_profit=130)
     alerts.approve(a["id"])
     ev = run(broker, market)
     assert ev[0]["status"] == "failed" and "Sharia" in ev[0]["result"]
@@ -144,5 +144,5 @@ def test_explorer_cannot_alert_on_unapproved_coins(broker):
     from agent.tools import ToolExecutor
     ex = ToolExecutor(broker)
     ex.alert_source = "explorer"
-    assert "error" in ex._create_alert("SOL/USDT", "price_above", 125, "notify")
+    assert "error" in ex._create_alert("WLD/USDT", "price_above", 125, "notify")
     assert "id" in ex._create_alert("BTC/USDT", "price_above", 90000, "notify")

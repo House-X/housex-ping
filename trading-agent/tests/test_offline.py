@@ -64,7 +64,7 @@ def test_validation_rules():
     ("BTC/USDT", "compliant"), ("ETH/USDT", "compliant"), ("SPUS", "compliant"),
     ("BTC/USDT:USDT", "not_compliant"), ("DOGE/USDT", "not_compliant"),
     ("EURUSD", "not_compliant"), ("XAUUSD", "not_compliant"), ("NAS100", "not_compliant"),
-    ("GC=F", "not_compliant"), ("ADA/USDT", "review_required"), ("AAPL", "review_required"),
+    ("GC=F", "not_compliant"), ("WLD/USDT", "review_required"), ("AAPL", "review_required"),
 ])
 def test_sharia_screen(symbol, status):
     from agent.sharia import check
@@ -284,3 +284,16 @@ def test_screen_cache_roundtrip_with_turkish_and_arabic(tmp_path, monkeypatch):
     r1 = stock_screen.screen("THYAO.IS", fetch=lambda s: f)
     r2 = stock_screen.screen("THYAO.IS", fetch=lambda s: 1 / 0)  # must come from cache
     assert r1 == r2 and r2["name"].startswith("Türk")
+
+
+def test_ifg_adoption_in_the_universe():
+    from agent import sharia
+    sharia.universe.cache_clear()
+    for ok in ("SOL/USDT", "ADA/USDT", "LINK/USDT", "AVAX/USDT"):
+        r = sharia.check(ok)
+        assert r["status"] == "compliant" and "Islamic Finance Guru" in r["reasons"][0]
+    for meme in ("DOGE/USDT", "PEPE/USDT", "TRUMP/USDT"):
+        assert sharia.check(meme)["status"] == "not_compliant"
+    assert "riba" in sharia.check("AAVE/USDT")["reasons"][0]
+    assert "taqwa" in sharia.check("ZEC/USDT")["reasons"][0]
+    assert sharia.check("OM/USDT")["status"] == "not_compliant"
