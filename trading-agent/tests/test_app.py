@@ -141,3 +141,7 @@ def test_robustness_lab_section(monkeypatch, tmp_path):
     assert not at.exception
     lab = at.session_state["lab"]
     assert len(lab["rows"]) + len(lab["skipped"]) >= 20
+    pick = [r["symbol"] for r in lab["rows"]][:2]
+    at.multiselect(key="lab_pick").set_value(pick).run()
+    next(b for b in at.button if "اعتمد المختارة" in b.label).click().run()
+    assert not at.exception and swing_live.symbols() == pick

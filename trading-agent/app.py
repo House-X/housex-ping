@@ -571,13 +571,16 @@ with tab_bt:
             st.caption(f"⏭ {x['symbol']}: {x['why']}")
         if lab["passed"]:
             st.success(f"الناجحة ({len(lab['passed'])}): " + " · ".join(lab["passed"]))
-            st.caption("عند الاعتماد يراقبها الوكيل كل ليلة. الحد الأقصى 3 صفقات مفتوحة معاً، وكل صفقة "
-                       "مخاطرتها 1% من رأس المال، والصفقات المفتوحة الحالية تبقى مُدارة حتى خروجها.")
-            if st.button("✅ اعتمد الناجحة لركوب الموجة"):
-                kept = swing_live.set_symbols(lab["passed"])
-                st.success("عملات الموجة الآن: " + " · ".join(kept))
-        else:
-            st.info("لا توجد عملة ناجحة بالكامل في هذا الفحص؛ تبقى الموجة على قائمتها الحالية.")
+        st.caption("اختر عملات الموجة (يمكنك إضافة عملة «على الحدود» أو حذف عملة ناجحة). الحد الأقصى 3 صفقات "
+                   "مفتوحة معاً، ومخاطرة كل صفقة 1% من رأس المال، والصفقات المفتوحة تبقى مُدارة حتى خروجها.")
+        options = [r["symbol"] for r in lab["rows"]]
+        chosen = st.multiselect("عملات الموجة", options, default=[x for x in lab["passed"] if x in options],
+                                key="lab_pick")
+        if st.button("✅ اعتمد المختارة لركوب الموجة", disabled=not chosen):
+            kept = swing_live.set_symbols(chosen)
+            st.success("عملات الموجة الآن: " + " · ".join(kept))
+        if not lab["passed"]:
+            st.info("لا توجد عملة ناجحة بالكامل في هذا الفحص؛ تبقى الموجة على قائمتها الحالية ما لم تختر غيرها.")
 
 # ── account ────────────────────────────────────────────────────
 with tab_acc:
