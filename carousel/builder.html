@@ -95,7 +95,11 @@ select:focus{border-color:var(--gold)}
   <div class="top-right">
     <button class="fmt-btn active" id="btnPost" onclick="setFmt('post')">بوست</button>
     <button class="fmt-btn" id="btnStory" onclick="setFmt('story')">ستوري</button>
+    <button class="fmt-btn" onclick="document.getElementById('inProject').click()" title="استيراد ملف مشروع JSON">📥 مشروع</button>
+    <input type="file" id="inProject" accept=".json,application/json">
+    <button class="fmt-btn" onclick="exportProject()" title="حفظ المشروع الحالي كملف JSON">📤 حفظ</button>
     <button class="dl-top" id="dlBtn" onclick="downloadPNG()">⬇ PNG</button>
+    <button class="dl-top" id="dlAllBtn" onclick="downloadAll()">⬇ الكل</button>
   </div>
 </div>
 <div class="main">
@@ -146,7 +150,7 @@ select:focus{border-color:var(--gold)}
   </div>
   <!-- CENTER -->
   <div class="center">
-    <div id="slide" style="width:378px;height:472px">
+    <div id="slide" style="width:378px;height:472.5px">
       <div class="s-bg">
         <img id="bgImg" class="s-bg-img" src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80" alt="">
         <div class="s-ovl" id="bgOvl" style="background:rgba(255,255,255,.65)"></div>
@@ -174,10 +178,16 @@ var FEN=["'Poppins',sans-serif","'Montserrat',sans-serif","'Raleway',sans-serif"
 
 // ── STATE ───────────────────────────────────────────
 var curSlide=0, fmt='post';
+var FMT={post:{w:378,h:472.5},story:{w:280,h:280*16/9}};
+var EXPORT_W=1080;
 var imgSt={bg:{tx:0,ty:0,sc:1},col:{tx:0,ty:0,sc:1}};
 var STEP=14;
 // persist across navigation
-var savedImg={bg:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80',col:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80',logo:'',logoShown:false,bgOvl:'rgba(255,255,255,.65)',logoSz:52};
+var savedImg={bg:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80',col:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80',logo:'',logoShown:false,ovl:{color:'#ffffff',opacity:65},logoSz:52,colLayout:'top-two'};
+// optional per-slide overrides: {bg, overlay:{color,opacity}, logo, footerColor}
+var LOOK=[{},{},{},{},{}];
+function lk(k){var l=LOOK[curSlide]||{};return l[k]!=null?l[k]:null;}
+function ovlCss(o){var c=o.color||'#ffffff';return 'rgba('+parseInt(c.slice(1,3),16)+','+parseInt(c.slice(3,5),16)+','+parseInt(c.slice(5,7),16)+','+(o.opacity/100)+')';}
 var savedAI={input:'',json:''};
 var FT={phone:'+90 551 4000 200',web:'www.house-ex.com',sz:9,col:'#1a1a3e',show:true,align:'left'};
 
@@ -216,6 +226,7 @@ var SD=[
 
 // ── HELPERS ─────────────────────────────────────────
 function g(id){var e=document.getElementById(id);return e?e.value:'';}
+function ea(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function pAc(v,c){return v.replace(/\*([^*]+)\*/g,'<span style="color:'+(c||'#ec1c24')+';font-weight:900">$1</span>');}
 
 function applyFxToEl(el,fxObj,col){
@@ -272,9 +283,9 @@ function ftPanel(){
   var a=FT.align||'left';
   return '<div class="psec"><div class="ptitle">الذيل</div>'+
     '<div class="tog-row"><span style="font-size:10px;color:var(--txt)">إظهار</span><div class="tog'+(FT.show?' on':'')+'" id="togFt" onclick="togFtFn()"></div></div>'+
-    '<input type="text" id="pFtPh" value="'+FT.phone+'" oninput="upFt()" style="direction:ltr;margin-top:3px">'+
-    '<input type="text" id="pFtWb" value="'+FT.web+'" oninput="upFt()" style="direction:ltr;margin-top:3px">'+
-    '<div class="row"><span class="lbl">الحجم</span><input type="range" id="pFtSz" min="7" max="18" value="'+FT.sz+'" oninput="upFt()"><span class="rv" id="pFtSzV">'+FT.sz+'</span><input type="color" id="pFtCol" value="'+FT.col+'" oninput="FT.col=this.value;upFt()"></div>'+
+    '<input type="text" id="pFtPh" value="'+ea(FT.phone)+'" oninput="upFt()" style="direction:ltr;margin-top:3px">'+
+    '<input type="text" id="pFtWb" value="'+ea(FT.web)+'" oninput="upFt()" style="direction:ltr;margin-top:3px">'+
+    '<div class="row"><span class="lbl">الحجم</span><input type="range" id="pFtSz" min="7" max="18" value="'+ea(FT.sz)+'" oninput="upFt()"><span class="rv" id="pFtSzV">'+FT.sz+'</span><input type="color" id="pFtCol" value="'+ea(FT.col)+'" oninput="FT.col=this.value;upFt()"></div>'+
     '<div class="row"><span class="lbl">الموضع</span>'+
       '<div class="align-row" style="flex:1">'+
         '<button class="al-btn'+(a==='right'?' on':'')+'" onclick="setFtAlign(\'right\')">يمين</button>'+
@@ -348,92 +359,15 @@ function parseJson(){
     var clean=ta.value.replace(/```json|```/g,'').trim();
     var i1=clean.indexOf('{'),i2=clean.lastIndexOf('}');
     if(i1>=0&&i2>=0)clean=clean.slice(i1,i2+1);
-    generatedData=JSON.parse(clean);
+    var parsed=JSON.parse(clean);
+    // A full project file (with images/theme) loads straight into all slides.
+    if(parsed.slides){loadProject(parsed);return;}
+    generatedData=parsed;
     showPreview(generatedData);
   }catch(e){alert('خطأ في قراءة الـ JSON — تأكد من نسخه كاملاً:\n'+e.message);}
 }
 
 var generatedData=null;
-
-async function generateTexts(){
-  var keyEl=document.getElementById('aiKey');
-  var input=document.getElementById('aiInput');
-  var apiKey=keyEl?keyEl.value.trim():'';
-  if(!apiKey){alert('الرجاء إدخال Anthropic API Key أولاً');return;}
-  if(!input||!input.value.trim()){alert('الرجاء إدخال تفاصيل المشروع');return;}
-  var btn=document.getElementById('genBtn');
-  btn.textContent='⏳ جاري التوليد...';btn.disabled=true;
-  var status=document.getElementById('aiStatus');
-  if(status)status.textContent='⏳ Claude يعمل على توليد النصوص...';
-
-  var prompt=`أنت خبير تسويق عقاري. بناءً على تفاصيل المشروع التالية، اكتب النصوص المناسبة لكاروسيل انستغرام مكون من 5 شرائح.
-
-تفاصيل المشروع:
-${input.value.trim()}
-
-أعطني النتيجة بصيغة JSON فقط بدون أي نص إضافي، بهذا الشكل بالضبط:
-{
-  "s0": {
-    "tAr": "اسم المشروع بالعربي (قصير، 1-3 كلمات)",
-    "tEn": "PROJECT NAME IN ENGLISH",
-    "sl1": "سطر سلوجان أول جذاب مع *كلمة مميزة* بين نجمتين",
-    "sl2": "سطر سلوجان ثانٍ مع *كلمة مميزة* بين نجمتين"
-  },
-  "s1": {
-    "h": "عنوان المساحة أو الوصف المعماري (مثل: تحفة معمارية على)",
-    "hR": "الرقم أو الإحصاء المميز (مثل: 48,200 م²)",
-    "u1": "أول ميزة رئيسية للوحدات",
-    "u2": "ثاني ميزة مع *أرقام* مميزة بنجمتين",
-    "u3": "ثالث ميزة مع *أرقام* مميزة بنجمتين",
-    "cl": "جملة ختامية مقنعة"
-  },
-  "s2": {
-    "title": "عنوان شريحة الموقع",
-    "t1": "المدة", "d1": "الوجهة الأولى",
-    "t2": "المدة", "d2": "الوجهة الثانية",
-    "t3": "المدة", "d3": "الوجهة الثالثة",
-    "t4": "المدة", "d4": "الوجهة الرابعة",
-    "cl": "جملة ختامية عن قرب الخدمات مع *رقم* بنجمتين"
-  },
-  "s3": {
-    "title": "عنوان شريحة المرافق",
-    "items": ["مرفق 1","مرفق 2","مرفق 3","مرفق 4","مرفق 5","مرفق 6","مرفق 7","مرفق 8","مرفق 9","مرفق 10"]
-  },
-  "s4": {
-    "nameEn": "PROJECT NAME",
-    "slogan": "سلوجان ختامي قوي",
-    "desc": "وصف تسويقي مقنع في 2-3 جمل",
-    "ctaBtn": "تواصل معنا",
-    "ctaText": "لمعرفة الأسعار وخيارات الدفع المتاحة"
-  }
-}`;
-
-  try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    var data=await res.json();
-    var text=data.content&&data.content[0]&&data.content[0].text;
-    if(!text)throw new Error('لا يوجد رد من الـ API');
-    // clean JSON
-    var clean=text.replace(/```json|```/g,'').trim();
-    var idx1=clean.indexOf('{'),idx2=clean.lastIndexOf('}');
-    if(idx1>=0&&idx2>=0)clean=clean.slice(idx1,idx2+1);
-    generatedData=JSON.parse(clean);
-    showPreview(generatedData);
-    if(status)status.textContent='✅ تم التوليد! راجع النصوص في اللوحة';
-  }catch(e){
-    if(status)status.textContent='❌ خطأ: '+e.message;
-    console.error(e);
-  }
-  btn.textContent='✨ توليد النصوص';btn.disabled=false;
-}
 
 function showPreview(d){
   var pp=document.getElementById('previewPanel');
@@ -552,24 +486,24 @@ function renderS0(){
 function panelS0(){
   var s=SD[0];
   return '<div class="psec"><div class="ptitle">العنوان العربي</div>'+
-    '<input type="text" id="i_tAr" value="'+s.tAr+'" oninput="reS0()">'+
+    '<input type="text" id="i_tAr" value="'+ea(s.tAr)+'" oninput="reS0()">'+
     mFont('f_tAr',FAR,s.fTAr,'reS0()')+
     mRange('sz_tAr',12,72,s.szTAr,'reS0()','الحجم')+
     palRow('pal_tAr')+
     mFxRow(0,'tAr','reS0')+'</div>'+
   '<div class="psec"><div class="ptitle">الاسم الإنجليزي</div>'+
-    '<input type="text" id="i_tEn" value="'+s.tEn+'" oninput="reS0()" style="direction:ltr">'+
+    '<input type="text" id="i_tEn" value="'+ea(s.tEn)+'" oninput="reS0()" style="direction:ltr">'+
     mFont('f_tEn',FEN,s.fTEn,'reS0()')+
     mRange('sz_tEn',10,52,s.szTEn,'reS0()','الحجم')+
     palRow('pal_tEn')+
     mFxRow(0,'tEn','reS0')+'</div>'+
   '<div class="psec"><div class="ptitle">السلوجان <span style="color:var(--gold);font-size:9px">* كلمة * = مميز</span></div>'+
-    '<input type="text" id="i_sl1" value="'+s.sl1+'" oninput="reS0()">'+
-    '<input type="text" id="i_sl2" value="'+s.sl2+'" oninput="reS0()" style="margin-top:3px">'+
+    '<input type="text" id="i_sl1" value="'+ea(s.sl1)+'" oninput="reS0()">'+
+    '<input type="text" id="i_sl2" value="'+ea(s.sl2)+'" oninput="reS0()" style="margin-top:3px">'+
     mFont('f_sl',FAR,s.fSl,'reS0()')+
     mRange('sz_sl',9,24,s.szSl,'reS0()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_sl')+'<input type="color" id="cp_sl" value="'+s.cSl+'" oninput="SD[0].cSl=this.value;reS0()"></div>'+
-    '<div class="row"><span class="lbl">المميز</span>'+palRow('pal_slAc')+'<input type="color" id="cp_slAc" value="'+s.cSlAc+'" oninput="SD[0].cSlAc=this.value;reS0()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_sl')+'<input type="color" id="cp_sl" value="'+ea(s.cSl)+'" oninput="SD[0].cSl=this.value;reS0()"></div>'+
+    '<div class="row"><span class="lbl">المميز</span>'+palRow('pal_slAc')+'<input type="color" id="cp_slAc" value="'+ea(s.cSlAc)+'" oninput="SD[0].cSlAc=this.value;reS0()"></div>'+
     mFxRow(0,'sl','reS0')+'</div>'+ftPanel();
 }
 function reS0(){
@@ -604,26 +538,26 @@ function renderS1(){
 function panelS1(){
   var s=SD[1];
   return '<div class="psec"><div class="ptitle">العنوان</div>'+
-    '<input type="text" id="i_h" value="'+s.h+'" oninput="reS1()">'+
-    '<input type="text" id="i_hR" value="'+s.hR+'" oninput="reS1()" style="direction:ltr;margin-top:3px">'+
+    '<input type="text" id="i_h" value="'+ea(s.h)+'" oninput="reS1()">'+
+    '<input type="text" id="i_hR" value="'+ea(s.hR)+'" oninput="reS1()" style="direction:ltr;margin-top:3px">'+
     mFont('f_h',FAR,s.fH,'reS1()')+
     mRange('sz_h',14,52,s.szH,'reS1()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_h')+'<input type="color" id="cp_h" value="'+s.cH+'" oninput="SD[1].cH=this.value;reS1()"></div>'+
-    '<div class="row"><span class="lbl">أحمر</span>'+palRow('pal_hR')+'<input type="color" id="cp_hR" value="'+s.cHR+'" oninput="SD[1].cHR=this.value;reS1()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_h')+'<input type="color" id="cp_h" value="'+ea(s.cH)+'" oninput="SD[1].cH=this.value;reS1()"></div>'+
+    '<div class="row"><span class="lbl">أحمر</span>'+palRow('pal_hR')+'<input type="color" id="cp_hR" value="'+ea(s.cHR)+'" oninput="SD[1].cHR=this.value;reS1()"></div>'+
     mFxRow(1,'h','reS1')+'</div>'+
   '<div class="psec"><div class="ptitle">النقاط <span style="color:var(--gold);font-size:9px">* كلمة * = أحمر</span></div>'+
-    '<input type="text" id="i_u1" value="'+s.u1+'" oninput="reS1()">'+
-    '<input type="text" id="i_u2" value="'+s.u2+'" oninput="reS1()" style="margin-top:3px">'+
-    '<input type="text" id="i_u3" value="'+s.u3+'" oninput="reS1()" style="margin-top:3px">'+
+    '<input type="text" id="i_u1" value="'+ea(s.u1)+'" oninput="reS1()">'+
+    '<input type="text" id="i_u2" value="'+ea(s.u2)+'" oninput="reS1()" style="margin-top:3px">'+
+    '<input type="text" id="i_u3" value="'+ea(s.u3)+'" oninput="reS1()" style="margin-top:3px">'+
     mFont('f_u',FAR,s.fU,'reS1()')+
     mRange('sz_u',10,24,s.szU,'reS1()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_u')+'<input type="color" id="cp_u" value="'+s.cU+'" oninput="SD[1].cU=this.value;reS1()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_u')+'<input type="color" id="cp_u" value="'+ea(s.cU)+'" oninput="SD[1].cU=this.value;reS1()"></div>'+
     mFxRow(1,'u','reS1')+'</div>'+
   '<div class="psec"><div class="ptitle">الجملة الختامية</div>'+
-    '<input type="text" id="i_cl" value="'+s.cl+'" oninput="reS1()">'+
+    '<input type="text" id="i_cl" value="'+ea(s.cl)+'" oninput="reS1()">'+
     mFont('f_cl',FAR,s.fCl,'reS1()')+
     mRange('sz_cl',10,24,s.szCl,'reS1()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cl')+'<input type="color" id="cp_cl" value="'+s.cCl+'" oninput="SD[1].cCl=this.value;reS1()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cl')+'<input type="color" id="cp_cl" value="'+ea(s.cCl)+'" oninput="SD[1].cCl=this.value;reS1()"></div>'+
     mFxRow(1,'cl','reS1')+'</div>'+
   '<div class="psec"><div class="ptitle">شفافية البطاقة</div>'+
     mRange('sz_op1',0,95,s.cardOp,'reS1()','شفافية')+'</div>'+ftPanel();
@@ -662,23 +596,23 @@ function renderS2(){
 function panelS2(){
   var s=SD[2];
   return '<div class="psec"><div class="ptitle">العنوان</div>'+
-    '<input type="text" id="i_ttl" value="'+s.title+'" oninput="reS2()">'+
+    '<input type="text" id="i_ttl" value="'+ea(s.title)+'" oninput="reS2()">'+
     mFont('f_ttl',FAR,s.fTitle,'reS2()')+
     mRange('sz_ttl',14,36,s.szTitle,'reS2()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_ttl')+'<input type="color" id="cp_ttl" value="'+s.cTitle+'" oninput="SD[2].cTitle=this.value;reS2()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_ttl')+'<input type="color" id="cp_ttl" value="'+ea(s.cTitle)+'" oninput="SD[2].cTitle=this.value;reS2()"></div>'+
     mRange('sz_twOp',0,100,s.titleOp,'reS2()','شفافية')+
     mFxRow(2,'title','reS2')+'</div>'+
   '<div class="psec"><div class="ptitle">البطاقات</div>'+
-    '<input type="text" id="i_t1" value="'+s.t1+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d1" value="'+s.d1+'" oninput="reS2()"><div class="sep"></div>'+
-    '<input type="text" id="i_t2" value="'+s.t2+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d2" value="'+s.d2+'" oninput="reS2()"><div class="sep"></div>'+
-    '<input type="text" id="i_t3" value="'+s.t3+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d3" value="'+s.d3+'" oninput="reS2()"><div class="sep"></div>'+
-    '<input type="text" id="i_t4" value="'+s.t4+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d4" value="'+s.d4+'" oninput="reS2()"></div>'+
+    '<input type="text" id="i_t1" value="'+ea(s.t1)+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d1" value="'+ea(s.d1)+'" oninput="reS2()"><div class="sep"></div>'+
+    '<input type="text" id="i_t2" value="'+ea(s.t2)+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d2" value="'+ea(s.d2)+'" oninput="reS2()"><div class="sep"></div>'+
+    '<input type="text" id="i_t3" value="'+ea(s.t3)+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d3" value="'+ea(s.d3)+'" oninput="reS2()"><div class="sep"></div>'+
+    '<input type="text" id="i_t4" value="'+ea(s.t4)+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d4" value="'+ea(s.d4)+'" oninput="reS2()"></div>'+
   '<div class="psec"><div class="ptitle">الجملة الختامية</div>'+
-    '<input type="text" id="i_cl2" value="'+s.cl+'" oninput="reS2()">'+
+    '<input type="text" id="i_cl2" value="'+ea(s.cl)+'" oninput="reS2()">'+
     mFont('f_cl2',FAR,s.fCl,'reS2()')+
     mRange('sz_cl2',10,24,s.szCl,'reS2()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cl2')+'<input type="color" id="cp_cl2" value="'+s.cCl+'" oninput="SD[2].cCl=this.value;reS2()"></div>'+
-    '<div class="row"><span class="lbl">المميز</span>'+palRow('pal_clAc')+'<input type="color" id="cp_clAc" value="'+s.cClAc+'" oninput="SD[2].cClAc=this.value;reS2()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cl2')+'<input type="color" id="cp_cl2" value="'+ea(s.cCl)+'" oninput="SD[2].cCl=this.value;reS2()"></div>'+
+    '<div class="row"><span class="lbl">المميز</span>'+palRow('pal_clAc')+'<input type="color" id="cp_clAc" value="'+ea(s.cClAc)+'" oninput="SD[2].cClAc=this.value;reS2()"></div>'+
     mFxRow(2,'cl','reS2')+'</div>'+ftPanel();
 }
 function reS2(){
@@ -710,18 +644,18 @@ function renderS3(){
 }
 function panelS3(){
   var s=SD[3];
-  var items=s.items.map(function(it,i){return '<input type="text" id="i_it'+i+'" value="'+it+'" oninput="reS3()" style="margin-top:2px">';}).join('');
+  var items=s.items.map(function(it,i){return '<input type="text" id="i_it'+i+'" value="'+ea(it)+'" oninput="reS3()" style="margin-top:2px">';}).join('');
   return '<div class="psec"><div class="ptitle">العنوان</div>'+
-    '<input type="text" id="i_ttl3" value="'+s.title+'" oninput="reS3()">'+
+    '<input type="text" id="i_ttl3" value="'+ea(s.title)+'" oninput="reS3()">'+
     mFont('f_ttl3',FAR,s.fTitle,'reS3()')+
     mRange('sz_ttl3',12,32,s.szTitle,'reS3()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_ttl3')+'<input type="color" id="cp_ttl3" value="'+s.cTitle+'" oninput="SD[3].cTitle=this.value;reS3()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_ttl3')+'<input type="color" id="cp_ttl3" value="'+ea(s.cTitle)+'" oninput="SD[3].cTitle=this.value;reS3()"></div>'+
     mRange('sz_twOp3',0,100,s.titleOp,'reS3()','شفافية')+
     mFxRow(3,'title','reS3')+'</div>'+
   '<div class="psec"><div class="ptitle">المرافق</div>'+items+
     mFont('f_item',FAR,s.fItem,'reS3()')+
     mRange('sz_item',9,20,s.szItem,'reS3()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_item')+'<input type="color" id="cp_item" value="'+s.cItem+'" oninput="SD[3].cItem=this.value;reS3()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_item')+'<input type="color" id="cp_item" value="'+ea(s.cItem)+'" oninput="SD[3].cItem=this.value;reS3()"></div>'+
     mFxRow(3,'item','reS3')+'</div>'+
   '<div class="psec"><div class="ptitle">شفافية البطاقة</div>'+
     mRange('sz_op3',0,95,s.cardOp,'reS3()','شفافية')+'</div>'+ftPanel();
@@ -753,37 +687,37 @@ function renderS4(){
         '<div id="el_desc" style="font-family:'+s.fDesc+';font-size:'+s.szDesc+'px;color:'+s.cDesc+';font-weight:700;line-height:1.7;text-align:center">'+s.desc+'</div>'+
       '</div>'+
     '</div>'+
-    '<div style="position:absolute;bottom:42px;right:16px;z-index:20;text-align:right">'+
+    '<div style="position:absolute;bottom:42px;right:16px;left:16px;z-index:20;text-align:right">'+
       '<div id="el_cta" style="font-size:'+s.szCta+'px;font-weight:700;color:'+s.cCta+';line-height:1.6;font-family:\'Cairo\',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,.6)"><span class="s-cta-badge" id="el_ctaBtn">'+s.ctaBtn+'</span> <span id="el_ctaTxt">'+s.ctaText+'</span></div>'+
     '</div>';
 }
 function panelS4(){
   var s=SD[4];
   return '<div class="psec"><div class="ptitle">اسم المشروع</div>'+
-    '<input type="text" id="i_name" value="'+s.nameEn+'" oninput="reS4()" style="direction:ltr">'+
+    '<input type="text" id="i_name" value="'+ea(s.nameEn)+'" oninput="reS4()" style="direction:ltr">'+
     mFont('f_name',FEN,s.fName,'reS4()')+
     mRange('sz_name',16,52,s.szName,'reS4()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_name')+'<input type="color" id="cp_name" value="'+s.cName+'" oninput="SD[4].cName=this.value;reS4()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_name')+'<input type="color" id="cp_name" value="'+ea(s.cName)+'" oninput="SD[4].cName=this.value;reS4()"></div>'+
     mFxRow(4,'name','reS4')+'</div>'+
   '<div class="psec"><div class="ptitle">السلوجان</div>'+
-    '<input type="text" id="i_slogan" value="'+s.slogan+'" oninput="reS4()">'+
+    '<input type="text" id="i_slogan" value="'+ea(s.slogan)+'" oninput="reS4()">'+
     mFont('f_slogan',FAR,s.fSlogan,'reS4()')+
     mRange('sz_slogan',12,32,s.szSlogan,'reS4()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_slogan')+'<input type="color" id="cp_slogan" value="'+s.cSlogan+'" oninput="SD[4].cSlogan=this.value;reS4()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_slogan')+'<input type="color" id="cp_slogan" value="'+ea(s.cSlogan)+'" oninput="SD[4].cSlogan=this.value;reS4()"></div>'+
     mFxRow(4,'slogan','reS4')+'</div>'+
   '<div class="psec"><div class="ptitle">الوصف</div>'+
-    '<input type="text" id="i_desc" value="'+s.desc+'" oninput="reS4()">'+
+    '<input type="text" id="i_desc" value="'+ea(s.desc)+'" oninput="reS4()">'+
     mFont('f_desc',FAR,s.fDesc,'reS4()')+
     mRange('sz_desc',10,22,s.szDesc,'reS4()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_desc')+'<input type="color" id="cp_desc" value="'+s.cDesc+'" oninput="SD[4].cDesc=this.value;reS4()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_desc')+'<input type="color" id="cp_desc" value="'+ea(s.cDesc)+'" oninput="SD[4].cDesc=this.value;reS4()"></div>'+
     mFxRow(4,'desc','reS4')+'</div>'+
   '<div class="psec"><div class="ptitle">شفافية الصندوق</div>'+
     mRange('sz_descOp',0,90,s.descOp,'reS4()','شفافية')+'</div>'+
   '<div class="psec"><div class="ptitle">CTA</div>'+
-    '<input type="text" id="i_ctaBtn" value="'+s.ctaBtn+'" oninput="reS4()">'+
-    '<input type="text" id="i_ctaTxt" value="'+s.ctaText+'" oninput="reS4()" style="margin-top:3px">'+
+    '<input type="text" id="i_ctaBtn" value="'+ea(s.ctaBtn)+'" oninput="reS4()">'+
+    '<input type="text" id="i_ctaTxt" value="'+ea(s.ctaText)+'" oninput="reS4()" style="margin-top:3px">'+
     mRange('sz_cta',10,22,s.szCta,'reS4()','الحجم')+
-    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cta')+'<input type="color" id="cp_cta" value="'+s.cCta+'" oninput="SD[4].cCta=this.value;reS4()"></div>'+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cta')+'<input type="color" id="cp_cta" value="'+ea(s.cCta)+'" oninput="SD[4].cCta=this.value;reS4()"></div>'+
     mFxRow(4,'cta','reS4')+'</div>'+ftPanel();
 }
 function reS4(){
@@ -818,9 +752,11 @@ function ctr(k){imgSt[k].tx=0;imgSt[k].ty=0;applyTr(k);}
 function rst(k){imgSt[k]={tx:0,ty:0,sc:1};applyTr(k);if(k==='bg'){document.getElementById('bgZ').value=100;document.getElementById('bgZv').textContent='100%';}else{document.getElementById('colZ').value=100;document.getElementById('colZv').textContent='100%';}}
 function applyBgZoom(){var z=+document.getElementById('bgZ').value/100;imgSt.bg.sc=z;applyTr('bg');document.getElementById('bgZv').textContent=Math.round(z*100)+'%';}
 function applyColZoom(){var z=+document.getElementById('colZ').value/100;imgSt.col.sc=z;applyTr('col');document.getElementById('colZv').textContent=Math.round(z*100)+'%';}
-function applyOvl(){var op=+document.getElementById('bgOp').value/100;var col=document.getElementById('bgOvCol').value;var r=parseInt(col.slice(1,3),16),g2=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);var bgv='rgba('+r+','+g2+','+b+','+op+')';document.getElementById('bgOvl').style.background=bgv;savedImg.bgOvl=bgv;document.getElementById('bgOpV').textContent=Math.round(op*100)+'%';}
-function applyLogo(){var sz=+document.getElementById('logoSz').value;var w=document.getElementById('logoWrap');w.style.width=sz+'px';w.style.height=(sz*.5)+'px';savedImg.logoSz=sz;document.getElementById('logoSzV').textContent=sz;}
-function applyColLayout(){var lay=document.getElementById('colLayout').value;var lc=document.getElementById('colLineCol').value;var lw=+document.getElementById('colLineW').value;var svg=document.getElementById('colLines');if(!svg)return;svg.innerHTML='';if(lay==='full'||lw===0)return;function mk(x1,y1,x2,y2){var l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);l.setAttribute('stroke',lc);l.setAttribute('stroke-width',lw);svg.appendChild(l);}if(lay==='top-two'){mk('0','61%','100%','61%');mk('50%','61%','50%','100%');}else if(lay==='three-h'){mk('0','33%','100%','33%');mk('0','67%','100%','67%');}else if(lay==='three-v'){mk('33%','0','33%','100%');mk('67%','0','67%','100%');}else if(lay==='grid4'){mk('0','50%','100%','50%');mk('50%','0','50%','100%');}else if(lay==='left-big'){mk('40%','0','40%','100%');mk('40%','50%','100%','50%');}else if(lay==='right-big'){mk('60%','0','60%','100%');mk('0','50%','60%','50%');}}
+function applyOvl(){var o={color:document.getElementById('bgOvCol').value,opacity:+document.getElementById('bgOp').value};if(lk('overlay'))LOOK[curSlide].overlay=o;else savedImg.ovl=o;document.getElementById('bgOvl').style.background=ovlCss(o);document.getElementById('bgOpV').textContent=o.opacity+'%';}
+function applyLogo(){var sz=+document.getElementById('logoSz').value;var w=document.getElementById('logoWrap');w.style.width=sz+'px';w.style.height=(sz*.5)+'px';savedImg.logoSz=sz;document.getElementById('logoSzV').textContent=sz;placeCoverTitle();}
+// Cover title starts below the logo so a full-size logo never collides with it.
+function placeCoverTitle(){var tb=document.getElementById('tb0'),lw=document.getElementById('logoWrap');if(!tb)return;var lb=lw.style.display!=='none'?lw.offsetTop+lw.offsetHeight+6:0;tb.style.top=Math.max(48,lb)+'px';posCollage();}
+function applyColLayout(){var lay=document.getElementById('colLayout').value;savedImg.colLayout=lay;var lc=document.getElementById('colLineCol').value;var lw=+document.getElementById('colLineW').value;var svg=document.getElementById('colLines');if(!svg)return;svg.innerHTML='';if(lay==='full'||lw===0)return;function mk(x1,y1,x2,y2){var l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);l.setAttribute('stroke',lc);l.setAttribute('stroke-width',lw);svg.appendChild(l);}if(lay==='top-two'){mk('0','61%','100%','61%');mk('50%','61%','50%','100%');}else if(lay==='three-h'){mk('0','33%','100%','33%');mk('0','67%','100%','67%');}else if(lay==='three-v'){mk('33%','0','33%','100%');mk('67%','0','67%','100%');}else if(lay==='grid4'){mk('0','50%','100%','50%');mk('50%','0','50%','100%');}else if(lay==='left-big'){mk('40%','0','40%','100%');mk('40%','50%','100%','50%');}else if(lay==='right-big'){mk('60%','0','60%','100%');mk('0','50%','60%','50%');}}
 
 function addDrag(imgId,key){
   var el=document.getElementById(imgId);if(!el)return;
@@ -834,7 +770,7 @@ function addDrag(imgId,key){
 }
 
 // ── FORMAT ───────────────────────────────────────────
-function setFmt(f){fmt=f;var sl=document.getElementById('slide');if(f==='post'){sl.style.width='378px';sl.style.height='472px';}else{sl.style.width='280px';sl.style.height='498px';}document.getElementById('btnPost').className='fmt-btn'+(f==='post'?' active':'');document.getElementById('btnStory').className='fmt-btn'+(f==='story'?' active':'');setTimeout(posCollage,100);}
+function setFmt(f){fmt=f;var sl=document.getElementById('slide');var d=FMT[f];sl.style.width=d.w+'px';sl.style.height=d.h+'px';document.getElementById('btnPost').className='fmt-btn'+(f==='post'?' active':'');document.getElementById('btnStory').className='fmt-btn'+(f==='story'?' active':'');setTimeout(posCollage,100);}
 
 // ── NAVIGATION ───────────────────────────────────────
 var renderers=[renderS0,renderS1,renderS2,renderS3,renderS4,renderS5];
@@ -884,21 +820,34 @@ function goSlide(i){
   palBuilders[i]();
   // restore bg image + its transform + overlay (all slides)
   var bgEl=document.getElementById('bgImg');
-  if(bgEl){bgEl.src=savedImg.bg;}
+  if(bgEl){bgEl.src=lk('bg')||savedImg.bg;}
+  var o=lk('overlay')||savedImg.ovl;
   var ovl=document.getElementById('bgOvl');
-  if(ovl)ovl.style.background=savedImg.bgOvl;
+  if(ovl)ovl.style.background=ovlCss(o);
+  document.getElementById('bgOp').value=o.opacity;document.getElementById('bgOpV').textContent=o.opacity+'%';
+  document.getElementById('bgOvCol').value=o.color;
   applyTr('bg');
   // restore logo
   var logoImg=document.getElementById('logoImg'),logoWrap=document.getElementById('logoWrap');
-  if(logoImg&&savedImg.logo){logoImg.src=savedImg.logo;}
-  if(logoWrap)logoWrap.style.display=savedImg.logoShown?'flex':'none';
+  var logoSrc=lk('logo')||savedImg.logo;
+  if(logoImg&&logoSrc){logoImg.src=logoSrc;}
+  if(logoWrap)logoWrap.style.display=(savedImg.logoShown&&logoSrc)?'flex':'none';
+  document.getElementById('logoSz').value=savedImg.logoSz;document.getElementById('logoSzV').textContent=savedImg.logoSz;
+  // footer colour may differ per slide (light text on dark photos)
+  var fc=lk('footerColor')||FT.col;
+  document.getElementById('footer').querySelectorAll('.s-ftl').forEach(function(el){el.style.color=fc;el.style.fontSize=FT.sz+'px';});
+  document.getElementById('ftPhone').textContent=FT.phone;document.getElementById('ftWeb').textContent=FT.web;
+  document.getElementById('footer').style.display=(FT.show&&i<5)?'flex':'none';
+  setFtAlign(FT.align||'left');
+  if(i<5)document.getElementById('colLayout').value=savedImg.colLayout;
+  if(i===0)placeCoverTitle();
   if(logoWrap&&savedImg.logoSz){logoWrap.style.width=savedImg.logoSz+'px';logoWrap.style.height=(savedImg.logoSz*.5)+'px';}
   // restore collage (slide 0 only)
   if(i===0){
     setTimeout(function(){
       var colEl=document.getElementById('colImg');
       if(colEl)colEl.src=savedImg.col;
-      addDrag('colImg','col');applyTr('col');
+      addDrag('colImg','col');applyTr('col');applyColLayout();posCollage();
     },80);
   }
   // restore AI fields (slide 5)
@@ -921,24 +870,128 @@ function setupUp(inId,imgId,boxId,extra){
 }
 
 // ── DOWNLOAD ─────────────────────────────────────────
-function downloadPNG(){
-  var btn=document.getElementById('dlBtn');btn.textContent='⏳';btn.disabled=true;
+function captureSlide(){
   var sl=document.getElementById('slide');
   sl.querySelectorAll('*').forEach(function(el){el.style.animation='none';el.style.transition='none';});
-  html2canvas(sl,{scale:2,useCORS:true,allowTaint:true,width:sl.offsetWidth,height:sl.offsetHeight,backgroundColor:null}).then(function(c){
-    var url=c.toDataURL('image/png');var a=document.createElement('a');a.href=url;a.download='housex-s'+(curSlide+1)+'-'+fmt+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);
-    btn.textContent='⬇ PNG';btn.disabled=false;
-  }).catch(function(e){alert(e.message);btn.textContent='⬇ PNG';btn.disabled=false;});
+  var d=FMT[fmt];
+  return html2canvas(sl,{scale:EXPORT_W/d.w,useCORS:true,allowTaint:true,width:d.w,height:d.h,backgroundColor:null}).then(function(c){
+    var a=document.createElement('a');a.href=c.toDataURL('image/png');a.download=(PROJECT_NAME||'housex')+'-s'+(curSlide+1)+'-'+fmt+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);
+  });
 }
+function downloadPNG(){
+  var btn=document.getElementById('dlBtn');btn.textContent='⏳';btn.disabled=true;
+  captureSlide().catch(function(e){alert(e.message);}).then(function(){btn.textContent='⬇ PNG';btn.disabled=false;});
+}
+async function downloadAll(){
+  var btn=document.getElementById('dlAllBtn');btn.textContent='⏳';btn.disabled=true;
+  var back=curSlide;
+  try{for(var i=0;i<5;i++){goSlide(i);await new Promise(function(r){setTimeout(r,350);});await captureSlide();}}
+  catch(e){alert(e.message);}
+  goSlide(back<5?back:0);btn.textContent='⬇ الكل';btn.disabled=false;
+}
+
+// ── PROJECT (JSON in → full carousel out) ─────────────
+// Schema: carousel/SCHEMA.md. Each slides.sN object is merged into SD[N]
+// (texts + optional sz*/c*/f* style keys); its "look" key goes to LOOK[N].
+var PROJECT_NAME='';
+var LOGOS={'fullcolor':'assets/logo-fullcolor.png','white-colorx':'assets/logo-white-colorx.png','all-white':'assets/logo-all-white.png','navy-mono':'assets/logo-navy-mono.png'};
+function logoSrc(v){return v?(LOGOS[v]||v):'';}
+var SD_DEFAULT=JSON.parse(JSON.stringify(SD));
+function loadProject(p){
+  if(!p||!p.slides)throw new Error('المشروع لا يحتوي على slides');
+  PROJECT_NAME=p.name||'';
+  SD=JSON.parse(JSON.stringify(SD_DEFAULT));
+  LOOK=[{},{},{},{},{}];
+  for(var i=0;i<5;i++){
+    var src=p.slides['s'+i];if(!src)continue;
+    Object.keys(src).forEach(function(k){
+      if(k==='look'){var l=Object.assign({},src.look);if(l.logo)l.logo=logoSrc(l.logo);LOOK[i]=l;}
+      else if(k==='fx')SD[i].fx=Object.assign({},SD[i].fx,src.fx);
+      else SD[i][k]=src[k];
+    });
+  }
+  var t=p.theme||{};
+  if(t.bg)savedImg.bg=t.bg;
+  if(t.collage)savedImg.col=t.collage;
+  if(t.collageLayout)savedImg.colLayout=t.collageLayout;
+  if(t.overlay)savedImg.ovl={color:t.overlay.color||'#ffffff',opacity:t.overlay.opacity!=null?t.overlay.opacity:65};
+  if(t.logo!==undefined){savedImg.logo=logoSrc(t.logo);savedImg.logoShown=!!t.logo;}
+  if(t.logoSize)savedImg.logoSz=t.logoSize;
+  var c=p.contact||{};
+  ['phone','web','show','align'].forEach(function(k){if(c[k]!=null)FT[k]=c[k];});
+  if(c.color)FT.col=c.color;if(c.size)FT.sz=c.size;
+  imgSt={bg:{tx:0,ty:0,sc:1},col:{tx:0,ty:0,sc:1}};
+  setFmt(p.format==='story'?'story':'post');
+  goSlide(0);
+  return true;
+}
+function exportProject(){
+  var slides={};
+  SD.forEach(function(sd,i){var o=JSON.parse(JSON.stringify(sd));if(Object.keys(LOOK[i]).length)o.look=LOOK[i];slides['s'+i]=o;});
+  var p={name:PROJECT_NAME||'housex-project',format:fmt,
+    theme:{bg:savedImg.bg,collage:savedImg.col,collageLayout:savedImg.colLayout,overlay:savedImg.ovl,logo:savedImg.logoShown?savedImg.logo:null,logoSize:savedImg.logoSz},
+    contact:{phone:FT.phone,web:FT.web,show:FT.show,align:FT.align,color:FT.col,size:FT.sz},slides:slides};
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(p,null,2)],{type:'application/json'}));
+  a.download=(p.name)+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+// ── AUTO-FIT ─────────────────────────────────────────
+// Returns the problems on the current slide: text leaving the canvas,
+// running into the footer, the CTA overlapping the description, or the
+// cover title leaving too little room for the collage.
+function fitIssues(){
+  var out=[],sl=document.getElementById('slide').getBoundingClientRect();
+  var ft=document.getElementById('footer');
+  var floor=sl.bottom-2;
+  if(FT.show&&ft.style.display!=='none'){var fr=ft.getBoundingClientRect();floor=Math.min(floor,fr.top-2);}
+  var lw=document.getElementById('logoWrap'),lr=lw.style.display!=='none'?lw.getBoundingClientRect():null;
+  document.querySelectorAll('#slideContent [id^="el_"]').forEach(function(el){
+    var r=el.getBoundingClientRect();if(!r.width)return;
+    if(r.left<sl.left-1||r.right>sl.right+1)out.push(el.id);
+    if(el.id.indexOf('el_cta')===0)return; // CTA line sits beside the footer by design
+    if(r.top<sl.top-1||r.bottom>floor+1)out.push(el.id);
+    if(lr&&r.top<lr.bottom&&r.bottom>lr.top&&r.left<lr.right&&r.right>lr.left)out.push(el.id+':logo');
+    if(el.scrollWidth>el.clientWidth+2)out.push(el.id+':wrap');
+  });
+  if(curSlide===4){
+    var db=document.getElementById('el_descBox'),ct=document.getElementById('el_cta');
+    if(db&&ct&&db.getBoundingClientRect().bottom>ct.getBoundingClientRect().top-4)out.push('el_descBox:overlaps-cta');
+  }
+  if(curSlide===0){
+    var cw=document.getElementById('collageWrap');
+    if(cw&&cw.offsetHeight<document.getElementById('slide').offsetHeight*0.38)out.push('collage:too-small');
+  }
+  return out;
+}
+// Shrinks every sz* value on the slide by 6% steps until it fits.
+function fitSlide(i){
+  goSlide(i);posCollage();
+  var log=[],n=0;
+  while(n<14){
+    var iss=fitIssues();if(!iss.length)break;
+    log.push(iss.join(','));
+    Object.keys(SD[i]).forEach(function(k){if(/^sz/.test(k))SD[i][k]=Math.max(8,Math.round(SD[i][k]*0.94));});
+    goSlide(i);posCollage();n++;
+  }
+  return {slide:i,steps:n,remaining:fitIssues(),log:log};
+}
+window.HX={loadProject:loadProject,goSlide:goSlide,fitSlide:fitSlide,fitIssues:fitIssues,setFmt:setFmt,exportProject:exportProject};
 
 // ── INIT ─────────────────────────────────────────────
 window.addEventListener('load',function(){
   setupUp('inLogo','logoImg','uLogo',function(e){savedImg.logo=e;savedImg.logoShown=true;document.getElementById('logoWrap').style.display='flex';});
-  setupUp('inBg','bgImg','uBg',function(e){savedImg.bg=e;});
+  setupUp('inBg','bgImg','uBg',function(e){if(lk('bg'))LOOK[curSlide].bg=e;else savedImg.bg=e;});
+  document.getElementById('inProject').addEventListener('change',function(){
+    var f=this.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(e){try{loadProject(JSON.parse(e.target.result));}catch(err){alert('ملف المشروع غير صالح:\n'+err.message);}};
+    r.readAsText(f);this.value='';
+  });
   setupUp('inCol','colImg','uCol',function(e){savedImg.col=e;});
   addDrag('bgImg','bg');
   document.getElementById('bgImg').style.cursor='grab';
   goSlide(0);
+  var pq=new URLSearchParams(location.search).get('project');
+  if(pq)fetch(pq).then(function(r){return r.json();}).then(loadProject).catch(function(e){alert('تعذر تحميل المشروع: '+e.message);});
 });
 </script>
 </body>
