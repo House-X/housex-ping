@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HOUSE X Carousel Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Poppins:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=Almarai:wght@400;700;800&family=Noto+Kufi+Arabic:wght@400;700;900&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Raleway:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#26247b;--gold:#ffca05;--red:#ec1c24;--bg:#07101e;--p1:#0f1628;--p2:#152038;--p3:#1a2845;--bdr:#1e3050;--txt:#c8d8f0;--mut:#6a8fb0;--inbg:#1a2d47}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--navy);padding:7px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:2px solid var(--gold);gap:8px}
+.logo-text{font-size:14px;font-weight:900;letter-spacing:1px;white-space:nowrap}.logo-text span{color:var(--gold)}
+.slide-tabs{display:flex;gap:3px;flex:1;justify-content:center}
+.stab{padding:4px 10px;background:rgba(255,255,255,.1);border:1.5px solid transparent;border-radius:5px;cursor:pointer;color:rgba(255,255,255,.55);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;transition:all .2s;white-space:nowrap}
+.stab.active{border-color:var(--gold);background:rgba(255,202,5,.18);color:var(--gold)}
+.top-right{display:flex;gap:5px;align-items:center}
+.fmt-btn{padding:4px 10px;background:rgba(255,255,255,.1);border:1.5px solid transparent;border-radius:5px;cursor:pointer;color:rgba(255,255,255,.55);font-family:'Cairo',sans-serif;font-size:11px;font-weight:700}
+.fmt-btn.active{border-color:var(--red);background:rgba(236,28,36,.18);color:#fff}
+.dl-top{background:linear-gradient(135deg,var(--red),#900);border:none;border-radius:5px;padding:5px 14px;color:#fff;font-family:'Cairo',sans-serif;font-size:12px;font-weight:900;cursor:pointer}
+.dl-top:disabled{opacity:.5}
+.main{flex:1;display:flex;overflow:hidden}
+.side{width:225px;background:var(--p1);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.side-r{border-left:1px solid var(--bdr)}.side-l{border-right:1px solid var(--bdr)}
+.side-head{padding:6px 10px;background:var(--p2);font-size:9px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.side-body{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:8px}
+.side-body::-webkit-scrollbar{width:3px}.side-body::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px}
+.center{flex:1;display:flex;align-items:center;justify-content:center;background:#060d18;overflow:hidden}
+.psec{display:flex;flex-direction:column;gap:4px}
+.ptitle{font-size:9px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;padding-bottom:3px;border-bottom:1px solid var(--bdr)}
+.row{display:flex;align-items:center;gap:4px}
+.lbl{font-size:10px;color:var(--txt);min-width:40px;flex-shrink:0}
+input[type=range]{flex:1;accent-color:var(--gold);height:3px;cursor:pointer}
+.rv{font-size:9px;color:var(--mut);min-width:26px;text-align:left;font-family:'Poppins',sans-serif}
+input[type=text]{background:var(--inbg);border:1.5px solid var(--bdr);border-radius:5px;padding:5px 7px;color:#fff;font-family:'Cairo',sans-serif;font-size:11px;outline:none;direction:rtl;width:100%}
+input[type=text]:focus{border-color:var(--gold)}
+input[type=file]{display:none}
+input[type=color]{width:22px;height:22px;border:none;border-radius:3px;cursor:pointer;padding:0;flex-shrink:0}
+input[type=number]{background:var(--inbg);border:1.5px solid var(--bdr);border-radius:4px;padding:3px 4px;color:#fff;font-size:10px;outline:none;width:36px;text-align:center;direction:ltr}
+select{background:var(--inbg);border:1.5px solid var(--bdr);border-radius:5px;padding:4px 6px;color:#fff;font-family:'Cairo',sans-serif;font-size:10px;outline:none;cursor:pointer;width:100%}
+select:focus{border-color:var(--gold)}
+.upload-box{border:2px dashed var(--bdr);border-radius:6px;padding:7px;text-align:center;cursor:pointer;color:var(--mut);font-size:10px;font-weight:600;transition:all .2s}
+.upload-box:hover{border-color:var(--red)}.upload-box.done{border-color:#2a8a4a;background:#0a180f;color:#5dba80;font-size:9px}
+.palette{display:flex;flex-wrap:wrap;gap:2px}
+.pchip{width:15px;height:15px;border-radius:2px;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:transform .1s}
+.pchip:hover{transform:scale(1.25);border-color:#fff}
+.fx-row{display:flex;gap:2px;flex-wrap:wrap}
+.fx-btn{padding:3px 7px;background:var(--p3);border:1.5px solid var(--bdr);border-radius:3px;cursor:pointer;color:var(--mut);font-size:10px;font-weight:700;font-family:'Poppins',sans-serif;transition:all .15s}
+.fx-btn.on{border-color:var(--gold);color:var(--gold);background:#1e1a00}
+.mv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.mv{padding:5px;background:var(--p3);border:1px solid var(--bdr);border-radius:4px;cursor:pointer;color:var(--txt);font-size:13px;text-align:center;user-select:none}
+.mv:hover{background:var(--navy);border-color:var(--gold)}.mv:active{background:var(--gold);color:#000}
+.align-row{display:flex;gap:3px}
+.al-btn{flex:1;padding:4px;background:var(--p3);border:1.5px solid var(--bdr);border-radius:4px;cursor:pointer;color:var(--mut);font-size:10px;font-weight:700;font-family:'Cairo',sans-serif;text-align:center}
+.al-btn.on{border-color:var(--gold);color:var(--gold);background:#1e1a00}
+.tog-row{display:flex;align-items:center;justify-content:space-between}
+.tog{width:28px;height:15px;background:var(--p3);border-radius:8px;cursor:pointer;position:relative;border:1.5px solid var(--bdr)}
+.tog.on{background:var(--navy);border-color:var(--gold)}
+.tog::after{content:'';width:9px;height:9px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;transition:all .2s}
+.tog.on::after{right:auto;left:2px}
+.sep{height:1px;background:var(--bdr);margin:2px 0}
+#slide{position:relative;overflow:hidden;border-radius:6px;box-shadow:0 16px 50px rgba(0,0,0,.9);direction:rtl;background:#ccc;flex-shrink:0}
+.s-bg{position:absolute;inset:0;overflow:hidden}
+.s-bg-img,.s-col-img{position:absolute;width:100%;height:100%;object-fit:cover;transform-origin:center center;will-change:transform;cursor:grab;touch-action:none}
+.s-bg-img:active,.s-col-img:active{cursor:grabbing}
+.s-ovl{position:absolute;inset:0;pointer-events:none}
+.s-logo{position:absolute;z-index:20;display:none}
+.s-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.s-collage{position:absolute;z-index:8;overflow:hidden;border-radius:4px}
+.s-col-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.s-footer{position:absolute;z-index:20;direction:ltr;display:flex;flex-direction:column}
+.s-ftl{font-family:'Cairo',sans-serif;font-weight:700;display:flex;align-items:center;gap:3px}
+.s-card{border-radius:8px;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.s-bullet{display:flex;align-items:flex-start;gap:8px}
+.s-dot{width:9px;height:9px;min-width:9px;border-radius:50%;background:#ec1c24;margin-top:5px}
+.s-loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%}
+.s-loc-card{border-radius:6px;overflow:hidden;display:flex;flex-direction:row;height:52px}
+.s-loc-time{background:#ec1c24;width:38%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;text-align:center;padding:4px;line-height:1.2;font-family:'Cairo',sans-serif}
+.s-loc-dest{background:rgba(28,33,88,.9);flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;text-align:center;padding:4px;line-height:1.3;font-family:'Cairo',sans-serif}
+.s-cta-badge{display:inline-block;background:#26247b;color:#ec1c24;padding:2px 10px;border-radius:4px;font-weight:700;font-size:14px;font-family:'Cairo',sans-serif}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo-text">HOUSE<span>X</span></div>
+  <div class="slide-tabs">
+    <div class="stab active" onclick="goSlide(0)">١ غلاف</div>
+    <div class="stab" onclick="goSlide(1)">٢ وحدات</div>
+    <div class="stab" onclick="goSlide(2)">٣ موقع</div>
+    <div class="stab" onclick="goSlide(3)">٤ مرافق</div>
+    <div class="stab" onclick="goSlide(4)">٥ CTA</div>
+    <div class="stab" id="aiTab" onclick="goSlide(5)" style="border-color:var(--gold);color:var(--gold);background:rgba(255,202,5,.08)">✨ توليد</div>
+  </div>
+  <div class="top-right">
+    <button class="fmt-btn active" id="btnPost" onclick="setFmt('post')">بوست</button>
+    <button class="fmt-btn" id="btnStory" onclick="setFmt('story')">ستوري</button>
+    <button class="dl-top" id="dlBtn" onclick="downloadPNG()">⬇ PNG</button>
+  </div>
+</div>
+<div class="main">
+  <!-- RIGHT -->
+  <div class="side side-r">
+    <div class="side-head">الصور والتحريك</div>
+    <div class="side-body">
+      <div class="psec">
+        <div class="ptitle">اللوغو</div>
+        <div class="upload-box" id="uLogo" onclick="document.getElementById('inLogo').click()">🏷️ رفع اللوغو</div>
+        <input type="file" id="inLogo" accept="image/*">
+        <div class="row"><span class="lbl">الحجم</span><input type="range" id="logoSz" min="30" max="130" value="52" oninput="applyLogo()"><span class="rv" id="logoSzV">52</span></div>
+      </div>
+      <div class="psec">
+        <div class="ptitle">الخلفية — اسحب</div>
+        <div class="upload-box" id="uBg" onclick="document.getElementById('inBg').click()">🖼️ رفع الخلفية</div>
+        <input type="file" id="inBg" accept="image/*">
+        <div class="row"><span class="lbl">زووم</span><input type="range" id="bgZ" min="100" max="300" value="100" oninput="applyBgZoom()"><span class="rv" id="bgZv">100%</span></div>
+        <div class="mv-grid">
+          <div class="mv" onclick="mv('bg','right')">→</div><div class="mv" onclick="mv('bg','up')">↑</div><div class="mv" onclick="mv('bg','left')">←</div>
+          <div class="mv" onclick="ctr('bg')">⊙</div><div class="mv" onclick="mv('bg','down')">↓</div><div class="mv" onclick="rst('bg')">↺</div>
+        </div>
+        <div class="row"><span class="lbl">تظليل</span><input type="range" id="bgOp" min="0" max="95" value="65" oninput="applyOvl()"><span class="rv" id="bgOpV">65%</span><input type="color" id="bgOvCol" value="#ffffff" oninput="applyOvl()"></div>
+      </div>
+      <div class="psec" id="colPanel">
+        <div class="ptitle">الكولاج — اسحب</div>
+        <div class="upload-box" id="uCol" onclick="document.getElementById('inCol').click()">📸 رفع الكولاج</div>
+        <input type="file" id="inCol" accept="image/*">
+        <div class="row"><span class="lbl">زووم</span><input type="range" id="colZ" min="100" max="300" value="100" oninput="applyColZoom()"><span class="rv" id="colZv">100%</span></div>
+        <div class="mv-grid">
+          <div class="mv" onclick="mv('col','right')">→</div><div class="mv" onclick="mv('col','up')">↑</div><div class="mv" onclick="mv('col','left')">←</div>
+          <div class="mv" onclick="ctr('col')">⊙</div><div class="mv" onclick="mv('col','down')">↓</div><div class="mv" onclick="rst('col')">↺</div>
+        </div>
+        <div class="row"><span class="lbl">تقسيم</span>
+          <select id="colLayout" onchange="applyColLayout()">
+            <option value="top-two">كبير + صغيرين</option>
+            <option value="full">كامل</option>
+            <option value="three-h">٣ أفقية</option>
+            <option value="three-v">٣ عمودية</option>
+            <option value="grid4">شبكة ٢×٢</option>
+            <option value="left-big">كبير يسار + ٢</option>
+            <option value="right-big">كبير يمين + ٢</option>
+          </select>
+        </div>
+        <div class="row"><span class="lbl">لون الخط</span><input type="color" id="colLineCol" value="#ffffff" oninput="applyColLayout()"><span class="lbl">سُمك</span><input type="number" id="colLineW" value="3" min="0" max="15" oninput="applyColLayout()"></div>
+      </div>
+    </div>
+  </div>
+  <!-- CENTER -->
+  <div class="center">
+    <div id="slide" style="width:378px;height:472px">
+      <div class="s-bg">
+        <img id="bgImg" class="s-bg-img" src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80" alt="">
+        <div class="s-ovl" id="bgOvl" style="background:rgba(255,255,255,.65)"></div>
+      </div>
+      <div class="s-logo" id="logoWrap" style="top:8px;left:8px;width:52px;height:26px"><img id="logoImg" src="" alt=""></div>
+      <div id="slideContent" style="position:absolute;inset:0;z-index:10"></div>
+      <div class="s-footer" id="footer" style="bottom:7px;left:8px;gap:1px">
+        <div class="s-ftl" id="ftl1" style="font-size:9px;color:#1a1a3e"><span>📞</span><span id="ftPhone">+90 551 4000 200</span></div>
+        <div class="s-ftl" id="ftl2" style="font-size:9px;color:#1a1a3e"><span>🌐</span><span id="ftWeb">www.house-ex.com</span></div>
+      </div>
+    </div>
+  </div>
+  <!-- LEFT -->
+  <div class="side side-l">
+    <div class="side-head">النصوص والإعدادات</div>
+    <div class="side-body" id="textPanel"></div>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ───────────────────────────────────────
+var PAL=['#26247b','#3d3baa','#7977cc','#ffca05','#e6b800','#fff9c4','#ec1c24','#b00014','#ff8a8a','#fff','#f0f0f0','#ccc','#888','#444','#111','#1a1a3e','#0f2a5a','#003322','#2a1a00','#1a0000','#001a2a'];
+var FAR=["'Cairo',sans-serif","'Tajawal',sans-serif","'Almarai',sans-serif","'Noto Kufi Arabic',sans-serif","'Amiri',serif","'Scheherazade New',serif"];
+var FEN=["'Poppins',sans-serif","'Montserrat',sans-serif","'Raleway',sans-serif","'Playfair Display',serif","'Cairo',sans-serif"];
+
+// ── STATE ───────────────────────────────────────────
+var curSlide=0, fmt='post';
+var imgSt={bg:{tx:0,ty:0,sc:1},col:{tx:0,ty:0,sc:1}};
+var STEP=14;
+// persist across navigation
+var savedImg={bg:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80',col:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80',logo:'',logoShown:false,bgOvl:'rgba(255,255,255,.65)',logoSz:52};
+var savedAI={input:'',json:''};
+var FT={phone:'+90 551 4000 200',web:'www.house-ex.com',sz:9,col:'#1a1a3e',show:true,align:'left'};
+
+var SD=[
+  // 0 Cover
+  {tAr:'وادي بريميوم',tEn:'(VADI PREMIUM)',sl1:'اكتشف تجربة معيشة *استثنائية* وسط الطبيعة',sl2:'مع حدائق خاصة وشرفات مطلة على *البحيرة الساحرة*',
+   cTAr:'#26247b',cTEn:'#26247b',cSl:'#1a1a3e',cSlAc:'#ec1c24',
+   szTAr:30,szTEn:18,szSl:12,
+   fTAr:FAR[0],fTEn:FEN[0],fSl:FAR[0],
+   fx:{tAr:{bold:true},tEn:{},sl:{}}},
+  // 1 Units
+  {h:'تحفة معمارية على',hR:'48,200 م²',u1:'١١٦ فيلا فاخرة بإطلالات بانورامية',u2:'دوبلكس *٢+١* بمساحات *١٠٣ م²*',u3:'حدائق خاصة بين *٥٣* و*١٧٤ م²*',cl:'خيار مثالي للخصوصية والهدوء',
+   cH:'#2b3280',cHR:'#ec1c24',cU:'#1a1a3e',cCl:'#2b3280',
+   szH:26,szU:15,szCl:17,cardOp:45,
+   fH:FAR[0],fU:FAR[0],fCl:FAR[0],
+   fx:{h:{bold:true},u:{},cl:{}}},
+  // 2 Location
+  {title:'موقع يربطك بكل ما تحتاج إليه:',t1:'١٥ دقيقة',d1:'لمطار ميلاس بودروم',t2:'١٠ دقائق',d2:'لـ مركز كاريا بورت للتسوق',t3:'٣٠ دقيقة',d3:'لمركز مدينة بودروم',t4:'٤٠ دقيقة',d4:'لمارينا ياليكافاك',cl:'القرب من جميع الخدمات اليومية بين *٢-٥ دقائق*',
+   cTitle:'#fff',cCl:'#fff',cClAc:'#ec1c24',
+   szTitle:22,szCl:17,titleOp:82,
+   fTitle:FAR[0],fCl:FAR[0],
+   fx:{title:{bold:true},cl:{}}},
+  // 3 Amenities
+  {title:'مجتمع متكامل لتجربة منتجعية يومية',
+   items:['مسبح رملي بطراز ميامي','مسبح خارجي واسع','صالة رياضية','ساونا + حمام تركي','استديو يوغا وبيلاتس','ملاعب أطفال','مناطق فعاليات وهوايات','بلياردو + تنس طاولة','مواقف سيارات','حراسة ٧/٢٤'],
+   cTitle:'#fff',cItem:'#1a1a3e',szTitle:20,szItem:13,titleOp:82,cardOp:50,
+   fTitle:FAR[0],fItem:FAR[0],
+   fx:{title:{bold:true},item:{}}},
+  // 4 CTA
+  {nameEn:'VADI PREMIUM',slogan:'حياة فاخرة واستثمار ذكي',desc:'استمتع بتجربة منتجعية يومية وسط الطبيعة الخلابة، مع سكن فاخر وخيارات استثمارية ممتازة',ctaBtn:'تواصل معنا',ctaText:'لمعرفة الأسعار وخيارات الدفع المتاحة',
+   cName:'#fff',cSlogan:'#fff',cDesc:'#fff',cCta:'#fff',
+   szName:28,szSlogan:20,szDesc:14,szCta:15,descOp:10,
+   fName:FEN[0],fSlogan:FAR[0],fDesc:FAR[0],
+   fx:{name:{},slogan:{},desc:{},cta:{}}}
+];
+
+// ── HELPERS ─────────────────────────────────────────
+function g(id){var e=document.getElementById(id);return e?e.value:'';}
+function pAc(v,c){return v.replace(/\*([^*]+)\*/g,'<span style="color:'+(c||'#ec1c24')+';font-weight:900">$1</span>');}
+
+function applyFxToEl(el,fxObj,col){
+  if(!el||!fxObj)return;
+  el.style.fontWeight=fxObj.bold?'900':'700';
+  el.style.fontStyle=fxObj.italic?'italic':'normal';
+  el.style.textDecoration=fxObj.underline?'underline':'none';
+  el.style.textShadow=fxObj.shadow?'2px 2px 8px rgba(0,0,0,.7)':'none';
+  el.style.webkitTextStroke=fxObj.stroke?'1px '+(col||'currentColor'):'';
+}
+
+// ── PALETTE BUILDER ─────────────────────────────────
+function buildPal(id,onPick){
+  var c=document.getElementById(id);if(!c)return;
+  c.innerHTML='';
+  PAL.forEach(function(h){
+    var d=document.createElement('div');d.className='pchip';d.style.background=h;
+    if(h==='#fff'||h==='#f0f0f0')d.style.outline='1px solid #444';
+    d.onclick=function(){onPick(h);};c.appendChild(d);
+  });
+}
+
+// ── UI GENERATORS ────────────────────────────────────
+function mRange(id,mn,mx,val,fn,lbl){
+  return '<div class="row"><span class="lbl">'+lbl+'</span><input type="range" id="'+id+'" min="'+mn+'" max="'+mx+'" value="'+val+'" oninput="'+fn+'"><span class="rv" id="'+id+'V">'+val+'</span></div>';
+}
+function mFont(id,fonts,val,fn){
+  var s='<select id="'+id+'" onchange="'+fn+'">';
+  fonts.forEach(function(f){s+='<option value="'+f+'"'+(f===val?' selected':'')+'>'+f.split(',')[0].replace(/'/g,'')+'</option>';});
+  return s+'</select>';
+}
+function mPal(palId,colorKey,sdIdx,fn){
+  return '<div class="palette" id="'+palId+'"></div><div class="row"><span class="lbl" style="font-size:9px">حر</span><input type="color" id="'+palId+'_cp" value="'+fn+'" oninput="'+colorKey+'=this.value;re'+fn+'()"></div>';
+}
+function mFxRow(sdIdx,fxKey,reFn){
+  var s=SD[sdIdx];var fx=(s.fx&&s.fx[fxKey])||{};
+  var lbls={bold:'B',italic:'I',underline:'U',shadow:'ظل',stroke:'حد'};
+  return '<div class="fx-row">'+
+    ['bold','italic','underline','shadow','stroke'].map(function(f){
+      return '<button class="fx-btn'+(fx[f]?' on':'')+'" onclick="toggleFx('+sdIdx+',\''+fxKey+'\',\''+f+'\',this,\''+reFn+'\')">'+lbls[f]+'</button>';
+    }).join('')+'</div>';
+}
+function toggleFx(sdIdx,fxKey,f,btn,reFn){
+  if(!SD[sdIdx].fx)SD[sdIdx].fx={};
+  if(!SD[sdIdx].fx[fxKey])SD[sdIdx].fx[fxKey]={};
+  SD[sdIdx].fx[fxKey][f]=!SD[sdIdx].fx[fxKey][f];
+  btn.classList.toggle('on',SD[sdIdx].fx[fxKey][f]);
+  window[reFn]();
+}
+function palRow(palId){return '<div class="palette" id="'+palId+'"></div>';}
+
+// ── FT PANEL ─────────────────────────────────────────
+function ftPanel(){
+  var a=FT.align||'left';
+  return '<div class="psec"><div class="ptitle">الذيل</div>'+
+    '<div class="tog-row"><span style="font-size:10px;color:var(--txt)">إظهار</span><div class="tog'+(FT.show?' on':'')+'" id="togFt" onclick="togFtFn()"></div></div>'+
+    '<input type="text" id="pFtPh" value="'+FT.phone+'" oninput="upFt()" style="direction:ltr;margin-top:3px">'+
+    '<input type="text" id="pFtWb" value="'+FT.web+'" oninput="upFt()" style="direction:ltr;margin-top:3px">'+
+    '<div class="row"><span class="lbl">الحجم</span><input type="range" id="pFtSz" min="7" max="18" value="'+FT.sz+'" oninput="upFt()"><span class="rv" id="pFtSzV">'+FT.sz+'</span><input type="color" id="pFtCol" value="'+FT.col+'" oninput="FT.col=this.value;upFt()"></div>'+
+    '<div class="row"><span class="lbl">الموضع</span>'+
+      '<div class="align-row" style="flex:1">'+
+        '<button class="al-btn'+(a==='right'?' on':'')+'" onclick="setFtAlign(\'right\')">يمين</button>'+
+        '<button class="al-btn'+(a==='center'?' on':'')+'" onclick="setFtAlign(\'center\')">وسط</button>'+
+        '<button class="al-btn'+(a==='left'?' on':'')+'" onclick="setFtAlign(\'left\')">يسار</button>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+function togFtFn(){var t=document.getElementById('togFt');t.classList.toggle('on');FT.show=t.classList.contains('on');document.getElementById('footer').style.display=FT.show?'flex':'none';}
+function upFt(){
+  FT.phone=g('pFtPh');FT.web=g('pFtWb');FT.sz=+g('pFtSz');
+  document.getElementById('pFtSzV').textContent=FT.sz;
+  var l1=document.getElementById('ftl1'),l2=document.getElementById('ftl2');
+  document.getElementById('ftPhone').textContent=FT.phone;
+  document.getElementById('ftWeb').textContent=FT.web;
+  if(l1)l1.style.display=FT.phone.trim()?'flex':'none';
+  if(l2)l2.style.display=FT.web.trim()?'flex':'none';
+  document.getElementById('footer').querySelectorAll('.s-ftl').forEach(function(el){el.style.fontSize=FT.sz+'px';el.style.color=FT.col;});
+}
+function setFtAlign(a){FT.align=a;var ft=document.getElementById('footer');ft.style.left='';ft.style.right='';ft.style.transform='';if(a==='left')ft.style.left='8px';else if(a==='right')ft.style.right='8px';else{ft.style.left='50%';ft.style.transform='translateX(-50%)';}document.querySelectorAll('.al-btn').forEach(function(b){b.classList.toggle('on',b.textContent.trim()==={right:'يمين',center:'وسط',left:'يسار'}[a]);});}
+
+// ── SLIDE 5: AI Generator ────────────────────────────
+function renderS5(){
+  document.getElementById('colPanel').style.display='none';
+  document.getElementById('slideContent').innerHTML=
+    '<div style="position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:10px">'+
+      '<div style="font-family:\'Cairo\',sans-serif;font-size:20px;font-weight:900;color:#ffca05;text-align:center">✨ توليد النصوص بالذكاء الاصطناعي</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,.6);text-align:center;font-family:\'Cairo\',sans-serif">الصق تفاصيل المشروع في اللوحة اليسرى وانتظر التوليد</div>'+
+      '<div id="aiStatus" style="font-family:\'Cairo\',sans-serif;font-size:14px;color:#5dba80;text-align:center;min-height:24px"></div>'+
+    '</div>';
+}
+
+function panelS5(){
+  return '<div class="psec"><div class="ptitle" style="color:var(--gold)">✨ مولّد النصوص</div>'+
+    '<div style="font-size:10px;color:var(--mut);line-height:1.7;margin-bottom:4px">١. الصق تفاصيل المشروع بالأسفل<br>٢. اضغط "نسخ الأمر"<br>٣. الصقه في محادثة Claude<br>٤. انسخ الـ JSON الناتج والصقه في الخانة الأخيرة</div>'+
+    '<div style="font-size:10px;color:var(--txt);margin-bottom:2px">تفاصيل المشروع:</div>'+
+    '<textarea id="aiInput" placeholder="مثال: مشروع وادي بريميوم في بودروم تركيا، 116 فيلا فاخرة على مساحة 48,200 م²، مسبح وصالة رياضية وحراسة 24/7، يبعد 15 دقيقة عن المطار و30 دقيقة عن وسط المدينة..." style="background:var(--inbg);border:1.5px solid var(--bdr);border-radius:6px;padding:8px;color:#fff;font-family:\'Cairo\',sans-serif;font-size:11px;outline:none;direction:rtl;width:100%;min-height:120px;resize:vertical;line-height:1.6"></textarea>'+
+    '<button onclick="copyPrompt()" id="copyBtn" style="width:100%;padding:9px;background:linear-gradient(135deg,#26247b,#3d3baa);border:2px solid var(--gold);border-radius:8px;color:#fff;font-family:\'Cairo\',sans-serif;font-size:12px;font-weight:900;cursor:pointer;margin-top:4px">📋 نسخ الأمر للصقه في Claude</button>'+
+  '</div>'+
+  '<div class="psec">'+
+    '<div class="ptitle" style="color:var(--gold)">الصق JSON هنا</div>'+
+    '<div style="font-size:10px;color:var(--mut);margin-bottom:2px">الصق الناتج من Claude:</div>'+
+    '<textarea id="aiJson" placeholder=\'{"s0":{...},"s1":{...}}\' style="background:var(--inbg);border:1.5px solid var(--bdr);border-radius:6px;padding:8px;color:#fff;font-family:\'Poppins\',monospace;font-size:10px;outline:none;direction:ltr;width:100%;min-height:100px;resize:vertical"></textarea>'+
+    '<button onclick="parseJson()" style="width:100%;padding:9px;background:var(--p3);border:1.5px solid var(--gold);border-radius:7px;color:var(--gold);font-family:\'Cairo\',sans-serif;font-size:12px;font-weight:900;cursor:pointer;margin-top:4px">🔍 معاينة النصوص</button>'+
+  '</div>'+
+  '<div class="psec" id="previewPanel" style="display:none">'+
+    '<div class="ptitle" style="color:var(--gold)">المعاينة — راجع قبل التطبيق</div>'+
+    '<div id="previewContent" style="display:flex;flex-direction:column;gap:6px"></div>'+
+    '<button onclick="applyAll()" style="width:100%;padding:9px;background:linear-gradient(135deg,var(--red),#900);border:none;border-radius:7px;color:#fff;font-family:\'Cairo\',sans-serif;font-size:13px;font-weight:900;cursor:pointer;margin-top:4px">✅ تطبيق على الشرائح الخمس</button>'+
+  '</div>';
+}
+
+var PROMPT_TEMPLATE='أنت خبير تسويق عقاري. بناءً على تفاصيل المشروع التالية، اكتب النصوص المناسبة لكاروسيل انستغرام من 5 شرائح. أعطني النتيجة بصيغة JSON فقط بدون أي نص إضافي بهذا الشكل بالضبط:\n\n{\n  "s0": {"tAr":"اسم المشروع عربي (1-3 كلمات)","tEn":"NAME IN ENGLISH","sl1":"سلوجان أول مع *كلمة مميزة*","sl2":"سلوجان ثانٍ مع *كلمة مميزة*"},\n  "s1": {"h":"عنوان المساحة","hR":"الرقم المميز مثل 48,200 م²","u1":"ميزة وحدات ١","u2":"ميزة مع *أرقام*","u3":"ميزة مع *أرقام*","cl":"جملة ختامية"},\n  "s2": {"title":"عنوان الموقع","t1":"مدة","d1":"وجهة","t2":"مدة","d2":"وجهة","t3":"مدة","d3":"وجهة","t4":"مدة","d4":"وجهة","cl":"ختامية مع *رقم*"},\n  "s3": {"title":"عنوان المرافق","items":["مرفق1","مرفق2","مرفق3","مرفق4","مرفق5","مرفق6","مرفق7","مرفق8","مرفق9","مرفق10"]},\n  "s4": {"nameEn":"NAME","slogan":"سلوجان ختامي","desc":"وصف تسويقي 2-3 جمل","ctaBtn":"تواصل معنا","ctaText":"لمعرفة الأسعار وخيارات الدفع المتاحة"}\n}\n\nتفاصيل المشروع:\n';
+
+function copyPrompt(){
+  var input=document.getElementById('aiInput');
+  if(!input||!input.value.trim()){alert('الرجاء إدخال تفاصيل المشروع أولاً');return;}
+  var fullPrompt=PROMPT_TEMPLATE+input.value.trim();
+  var ta=document.createElement('textarea');
+  ta.value=fullPrompt;document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');var btn=document.getElementById('copyBtn');btn.textContent='✅ تم النسخ! الصقه في Claude';setTimeout(function(){btn.textContent='📋 نسخ الأمر للصقه في Claude';},2500);}
+  catch(e){alert('انسخ يدوياً:\n\n'+fullPrompt);}
+  document.body.removeChild(ta);
+}
+
+function parseJson(){
+  var ta=document.getElementById('aiJson');
+  if(!ta||!ta.value.trim()){alert('الرجاء لصق الـ JSON أولاً');return;}
+  try{
+    var clean=ta.value.replace(/```json|```/g,'').trim();
+    var i1=clean.indexOf('{'),i2=clean.lastIndexOf('}');
+    if(i1>=0&&i2>=0)clean=clean.slice(i1,i2+1);
+    generatedData=JSON.parse(clean);
+    showPreview(generatedData);
+  }catch(e){alert('خطأ في قراءة الـ JSON — تأكد من نسخه كاملاً:\n'+e.message);}
+}
+
+var generatedData=null;
+
+async function generateTexts(){
+  var keyEl=document.getElementById('aiKey');
+  var input=document.getElementById('aiInput');
+  var apiKey=keyEl?keyEl.value.trim():'';
+  if(!apiKey){alert('الرجاء إدخال Anthropic API Key أولاً');return;}
+  if(!input||!input.value.trim()){alert('الرجاء إدخال تفاصيل المشروع');return;}
+  var btn=document.getElementById('genBtn');
+  btn.textContent='⏳ جاري التوليد...';btn.disabled=true;
+  var status=document.getElementById('aiStatus');
+  if(status)status.textContent='⏳ Claude يعمل على توليد النصوص...';
+
+  var prompt=`أنت خبير تسويق عقاري. بناءً على تفاصيل المشروع التالية، اكتب النصوص المناسبة لكاروسيل انستغرام مكون من 5 شرائح.
+
+تفاصيل المشروع:
+${input.value.trim()}
+
+أعطني النتيجة بصيغة JSON فقط بدون أي نص إضافي، بهذا الشكل بالضبط:
+{
+  "s0": {
+    "tAr": "اسم المشروع بالعربي (قصير، 1-3 كلمات)",
+    "tEn": "PROJECT NAME IN ENGLISH",
+    "sl1": "سطر سلوجان أول جذاب مع *كلمة مميزة* بين نجمتين",
+    "sl2": "سطر سلوجان ثانٍ مع *كلمة مميزة* بين نجمتين"
+  },
+  "s1": {
+    "h": "عنوان المساحة أو الوصف المعماري (مثل: تحفة معمارية على)",
+    "hR": "الرقم أو الإحصاء المميز (مثل: 48,200 م²)",
+    "u1": "أول ميزة رئيسية للوحدات",
+    "u2": "ثاني ميزة مع *أرقام* مميزة بنجمتين",
+    "u3": "ثالث ميزة مع *أرقام* مميزة بنجمتين",
+    "cl": "جملة ختامية مقنعة"
+  },
+  "s2": {
+    "title": "عنوان شريحة الموقع",
+    "t1": "المدة", "d1": "الوجهة الأولى",
+    "t2": "المدة", "d2": "الوجهة الثانية",
+    "t3": "المدة", "d3": "الوجهة الثالثة",
+    "t4": "المدة", "d4": "الوجهة الرابعة",
+    "cl": "جملة ختامية عن قرب الخدمات مع *رقم* بنجمتين"
+  },
+  "s3": {
+    "title": "عنوان شريحة المرافق",
+    "items": ["مرفق 1","مرفق 2","مرفق 3","مرفق 4","مرفق 5","مرفق 6","مرفق 7","مرفق 8","مرفق 9","مرفق 10"]
+  },
+  "s4": {
+    "nameEn": "PROJECT NAME",
+    "slogan": "سلوجان ختامي قوي",
+    "desc": "وصف تسويقي مقنع في 2-3 جمل",
+    "ctaBtn": "تواصل معنا",
+    "ctaText": "لمعرفة الأسعار وخيارات الدفع المتاحة"
+  }
+}`;
+
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    var data=await res.json();
+    var text=data.content&&data.content[0]&&data.content[0].text;
+    if(!text)throw new Error('لا يوجد رد من الـ API');
+    // clean JSON
+    var clean=text.replace(/```json|```/g,'').trim();
+    var idx1=clean.indexOf('{'),idx2=clean.lastIndexOf('}');
+    if(idx1>=0&&idx2>=0)clean=clean.slice(idx1,idx2+1);
+    generatedData=JSON.parse(clean);
+    showPreview(generatedData);
+    if(status)status.textContent='✅ تم التوليد! راجع النصوص في اللوحة';
+  }catch(e){
+    if(status)status.textContent='❌ خطأ: '+e.message;
+    console.error(e);
+  }
+  btn.textContent='✨ توليد النصوص';btn.disabled=false;
+}
+
+function showPreview(d){
+  var pp=document.getElementById('previewPanel');
+  var pc=document.getElementById('previewContent');
+  if(!pp||!pc)return;
+  var sections=[
+    {label:'١ الغلاف',fields:[
+      {k:'s0.tAr',l:'الاسم العربي',v:d.s0.tAr},
+      {k:'s0.tEn',l:'الاسم الإنجليزي',v:d.s0.tEn},
+      {k:'s0.sl1',l:'سلوجان ١',v:d.s0.sl1},
+      {k:'s0.sl2',l:'سلوجان ٢',v:d.s0.sl2}
+    ]},
+    {label:'٢ الوحدات',fields:[
+      {k:'s1.h',l:'العنوان',v:d.s1.h},
+      {k:'s1.hR',l:'الرقم',v:d.s1.hR},
+      {k:'s1.u1',l:'نقطة ١',v:d.s1.u1},
+      {k:'s1.u2',l:'نقطة ٢',v:d.s1.u2},
+      {k:'s1.u3',l:'نقطة ٣',v:d.s1.u3},
+      {k:'s1.cl',l:'الختامية',v:d.s1.cl}
+    ]},
+    {label:'٣ الموقع',fields:[
+      {k:'s2.title',l:'العنوان',v:d.s2.title},
+      {k:'s2.t1',l:'وقت ١',v:d.s2.t1},{k:'s2.d1',l:'وجهة ١',v:d.s2.d1},
+      {k:'s2.t2',l:'وقت ٢',v:d.s2.t2},{k:'s2.d2',l:'وجهة ٢',v:d.s2.d2},
+      {k:'s2.t3',l:'وقت ٣',v:d.s2.t3},{k:'s2.d3',l:'وجهة ٣',v:d.s2.d3},
+      {k:'s2.t4',l:'وقت ٤',v:d.s2.t4},{k:'s2.d4',l:'وجهة ٤',v:d.s2.d4},
+      {k:'s2.cl',l:'الختامية',v:d.s2.cl}
+    ]},
+    {label:'٤ المرافق',fields:[
+      {k:'s3.title',l:'العنوان',v:d.s3.title}
+    ].concat(d.s3.items.map(function(it,i){return {k:'s3.i'+i,l:'مرفق '+(i+1),v:it};}))},
+    {label:'٥ CTA',fields:[
+      {k:'s4.nameEn',l:'الاسم',v:d.s4.nameEn},
+      {k:'s4.slogan',l:'السلوجان',v:d.s4.slogan},
+      {k:'s4.desc',l:'الوصف',v:d.s4.desc},
+      {k:'s4.ctaBtn',l:'زر CTA',v:d.s4.ctaBtn},
+      {k:'s4.ctaText',l:'نص CTA',v:d.s4.ctaText}
+    ]}
+  ];
+
+  pc.innerHTML=sections.map(function(sec){
+    return '<div style="background:var(--p3);border-radius:6px;padding:8px;border:1px solid var(--bdr)">'+
+      '<div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:5px">'+sec.label+'</div>'+
+      sec.fields.map(function(f){
+        return '<div style="margin-bottom:4px">'+
+          '<div style="font-size:9px;color:var(--mut)">'+f.l+'</div>'+
+          '<textarea id="prev_'+f.k.replace(/\./g,'_')+'" style="width:100%;background:var(--inbg);border:1px solid var(--bdr);border-radius:4px;padding:4px 6px;color:#fff;font-family:\'Cairo\',sans-serif;font-size:10px;direction:rtl;resize:vertical;min-height:28px;outline:none">'+f.v+'</textarea>'+
+        '</div>';
+      }).join('')+
+    '</div>';
+  }).join('');
+  pp.style.display='flex';
+}
+
+function applyAll(){
+  if(!generatedData)return;
+  var d=generatedData;
+  function gv(dotKey){
+    var id='prev_'+dotKey.replace(/\./g,'_');
+    var el=document.getElementById(id);
+    return el?el.value:null;
+  }
+  // Apply to SD
+  SD[0].tAr=gv('s0.tAr')||d.s0.tAr;
+  SD[0].tEn=gv('s0.tEn')||d.s0.tEn;
+  SD[0].sl1=gv('s0.sl1')||d.s0.sl1;
+  SD[0].sl2=gv('s0.sl2')||d.s0.sl2;
+
+  SD[1].h=gv('s1.h')||d.s1.h;
+  SD[1].hR=gv('s1.hR')||d.s1.hR;
+  SD[1].u1=gv('s1.u1')||d.s1.u1;
+  SD[1].u2=gv('s1.u2')||d.s1.u2;
+  SD[1].u3=gv('s1.u3')||d.s1.u3;
+  SD[1].cl=gv('s1.cl')||d.s1.cl;
+
+  SD[2].title=gv('s2.title')||d.s2.title;
+  SD[2].t1=gv('s2.t1')||d.s2.t1;SD[2].d1=gv('s2.d1')||d.s2.d1;
+  SD[2].t2=gv('s2.t2')||d.s2.t2;SD[2].d2=gv('s2.d2')||d.s2.d2;
+  SD[2].t3=gv('s2.t3')||d.s2.t3;SD[2].d3=gv('s2.d3')||d.s2.d3;
+  SD[2].t4=gv('s2.t4')||d.s2.t4;SD[2].d4=gv('s2.d4')||d.s2.d4;
+  SD[2].cl=gv('s2.cl')||d.s2.cl;
+
+  SD[3].title=gv('s3.title')||d.s3.title;
+  d.s3.items.forEach(function(it,i){SD[3].items[i]=gv('s3.i'+i)||it;});
+
+  SD[4].nameEn=gv('s4.nameEn')||d.s4.nameEn;
+  SD[4].slogan=gv('s4.slogan')||d.s4.slogan;
+  SD[4].desc=gv('s4.desc')||d.s4.desc;
+  SD[4].ctaBtn=gv('s4.ctaBtn')||d.s4.ctaBtn;
+  SD[4].ctaText=gv('s4.ctaText')||d.s4.ctaText;
+
+  // Go to slide 1 to show result
+  goSlide(0);
+  var status=document.getElementById('aiStatus');
+  if(status)status.textContent='✅ تم تطبيق النصوص على جميع الشرائح!';
+}
+
+// ── SLIDE 0 ──────────────────────────────────────────
+function renderS0(){
+  document.getElementById('colPanel').style.display='';
+  document.getElementById('slideContent').innerHTML=
+    '<div id="tb0" style="position:absolute;top:48px;left:0;right:0;z-index:15;display:flex;flex-direction:column;align-items:center;padding:0 14px;gap:5px">'+
+      '<div id="el_tAr" style="font-family:'+SD[0].fTAr+';font-weight:900;font-size:'+SD[0].szTAr+'px;color:'+SD[0].cTAr+';text-align:center;line-height:1.2">'+SD[0].tAr+'</div>'+
+      '<div id="el_tEn" style="font-family:'+SD[0].fTEn+';font-weight:700;font-size:'+SD[0].szTEn+'px;color:'+SD[0].cTEn+';text-align:center">'+SD[0].tEn+'</div>'+
+      '<div style="text-align:center;line-height:1.7;margin-top:2px">'+
+        '<div id="el_sl1" style="font-family:'+SD[0].fSl+';font-size:'+SD[0].szSl+'px;color:'+SD[0].cSl+';font-weight:700">'+pAc(SD[0].sl1,SD[0].cSlAc)+'</div>'+
+        '<div id="el_sl2" style="font-family:'+SD[0].fSl+';font-size:'+SD[0].szSl+'px;color:'+SD[0].cSl+';font-weight:700">'+pAc(SD[0].sl2,SD[0].cSlAc)+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="s-collage" id="collageWrap" style="left:8px;right:8px;bottom:32px">'+
+      '<img id="colImg" class="s-col-img" src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=900&q=80" alt="">'+
+      '<svg id="colLines" class="s-col-svg"><line x1="0" y1="61%" x2="100%" y2="61%" stroke="white" stroke-width="3"/><line x1="50%" y1="61%" x2="50%" y2="100%" stroke="white" stroke-width="3"/></svg>'+
+    '</div>';
+  setTimeout(function(){addDrag('colImg','col');applyTr('col');posCollage();},50);
+}
+function panelS0(){
+  var s=SD[0];
+  return '<div class="psec"><div class="ptitle">العنوان العربي</div>'+
+    '<input type="text" id="i_tAr" value="'+s.tAr+'" oninput="reS0()">'+
+    mFont('f_tAr',FAR,s.fTAr,'reS0()')+
+    mRange('sz_tAr',12,72,s.szTAr,'reS0()','الحجم')+
+    palRow('pal_tAr')+
+    mFxRow(0,'tAr','reS0')+'</div>'+
+  '<div class="psec"><div class="ptitle">الاسم الإنجليزي</div>'+
+    '<input type="text" id="i_tEn" value="'+s.tEn+'" oninput="reS0()" style="direction:ltr">'+
+    mFont('f_tEn',FEN,s.fTEn,'reS0()')+
+    mRange('sz_tEn',10,52,s.szTEn,'reS0()','الحجم')+
+    palRow('pal_tEn')+
+    mFxRow(0,'tEn','reS0')+'</div>'+
+  '<div class="psec"><div class="ptitle">السلوجان <span style="color:var(--gold);font-size:9px">* كلمة * = مميز</span></div>'+
+    '<input type="text" id="i_sl1" value="'+s.sl1+'" oninput="reS0()">'+
+    '<input type="text" id="i_sl2" value="'+s.sl2+'" oninput="reS0()" style="margin-top:3px">'+
+    mFont('f_sl',FAR,s.fSl,'reS0()')+
+    mRange('sz_sl',9,24,s.szSl,'reS0()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_sl')+'<input type="color" id="cp_sl" value="'+s.cSl+'" oninput="SD[0].cSl=this.value;reS0()"></div>'+
+    '<div class="row"><span class="lbl">المميز</span>'+palRow('pal_slAc')+'<input type="color" id="cp_slAc" value="'+s.cSlAc+'" oninput="SD[0].cSlAc=this.value;reS0()"></div>'+
+    mFxRow(0,'sl','reS0')+'</div>'+ftPanel();
+}
+function reS0(){
+  var s=SD[0];
+  s.tAr=g('i_tAr');s.tEn=g('i_tEn');s.sl1=g('i_sl1');s.sl2=g('i_sl2');
+  s.fTAr=g('f_tAr')||s.fTAr;s.fTEn=g('f_tEn')||s.fTEn;s.fSl=g('f_sl')||s.fSl;
+  s.szTAr=+g('sz_tAr');s.szTEn=+g('sz_tEn');s.szSl=+g('sz_sl');
+  sv('sz_tAr');sv('sz_tEn');sv('sz_sl');
+  var e;
+  e=document.getElementById('el_tAr');if(e){e.textContent=s.tAr;e.style.fontFamily=s.fTAr;e.style.fontSize=s.szTAr+'px';e.style.color=s.cTAr;applyFxToEl(e,s.fx.tAr,s.cTAr);}
+  e=document.getElementById('el_tEn');if(e){e.textContent=s.tEn;e.style.fontFamily=s.fTEn;e.style.fontSize=s.szTEn+'px';e.style.color=s.cTEn;applyFxToEl(e,s.fx.tEn,s.cTEn);}
+  e=document.getElementById('el_sl1');if(e){e.innerHTML=pAc(s.sl1,s.cSlAc);e.style.fontFamily=s.fSl;e.style.fontSize=s.szSl+'px';e.style.color=s.cSl;applyFxToEl(e,s.fx.sl,s.cSl);}
+  e=document.getElementById('el_sl2');if(e){e.innerHTML=pAc(s.sl2,s.cSlAc);e.style.fontFamily=s.fSl;e.style.fontSize=s.szSl+'px';e.style.color=s.cSl;applyFxToEl(e,s.fx.sl,s.cSl);}
+  posCollage();
+}
+
+// ── SLIDE 1 ──────────────────────────────────────────
+function renderS1(){
+  document.getElementById('colPanel').style.display='none';
+  var s=SD[1];
+  document.getElementById('slideContent').innerHTML=
+    '<div id="tb1" style="position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 18px;gap:14px">'+
+      '<div style="text-align:center"><div id="el_h" style="font-family:'+s.fH+';font-weight:900;font-size:'+s.szH+'px;color:'+s.cH+';line-height:1.3">'+s.h+'<br><span id="el_hR" style="color:'+s.cHR+'">'+s.hR+'</span></div></div>'+
+      '<div class="s-card" id="el_card" style="background:rgba(255,255,255,'+s.cardOp/100+');width:100%">'+
+        '<div class="s-bullet"><div class="s-dot"></div><div id="el_u1" style="font-family:'+s.fU+';font-size:'+s.szU+'px;color:'+s.cU+';font-weight:700;line-height:1.4">'+pAc(s.u1,s.cHR)+'</div></div>'+
+        '<div class="s-bullet"><div class="s-dot"></div><div id="el_u2" style="font-family:'+s.fU+';font-size:'+s.szU+'px;color:'+s.cU+';font-weight:700;line-height:1.4">'+pAc(s.u2,s.cHR)+'</div></div>'+
+        '<div class="s-bullet"><div class="s-dot"></div><div id="el_u3" style="font-family:'+s.fU+';font-size:'+s.szU+'px;color:'+s.cU+';font-weight:700;line-height:1.4">'+pAc(s.u3,s.cHR)+'</div></div>'+
+      '</div>'+
+      '<div id="el_cl" style="font-family:'+s.fCl+';font-size:'+s.szCl+'px;color:'+s.cCl+';font-weight:700;text-align:center">'+s.cl+'</div>'+
+    '</div>';
+}
+function panelS1(){
+  var s=SD[1];
+  return '<div class="psec"><div class="ptitle">العنوان</div>'+
+    '<input type="text" id="i_h" value="'+s.h+'" oninput="reS1()">'+
+    '<input type="text" id="i_hR" value="'+s.hR+'" oninput="reS1()" style="direction:ltr;margin-top:3px">'+
+    mFont('f_h',FAR,s.fH,'reS1()')+
+    mRange('sz_h',14,52,s.szH,'reS1()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_h')+'<input type="color" id="cp_h" value="'+s.cH+'" oninput="SD[1].cH=this.value;reS1()"></div>'+
+    '<div class="row"><span class="lbl">أحمر</span>'+palRow('pal_hR')+'<input type="color" id="cp_hR" value="'+s.cHR+'" oninput="SD[1].cHR=this.value;reS1()"></div>'+
+    mFxRow(1,'h','reS1')+'</div>'+
+  '<div class="psec"><div class="ptitle">النقاط <span style="color:var(--gold);font-size:9px">* كلمة * = أحمر</span></div>'+
+    '<input type="text" id="i_u1" value="'+s.u1+'" oninput="reS1()">'+
+    '<input type="text" id="i_u2" value="'+s.u2+'" oninput="reS1()" style="margin-top:3px">'+
+    '<input type="text" id="i_u3" value="'+s.u3+'" oninput="reS1()" style="margin-top:3px">'+
+    mFont('f_u',FAR,s.fU,'reS1()')+
+    mRange('sz_u',10,24,s.szU,'reS1()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_u')+'<input type="color" id="cp_u" value="'+s.cU+'" oninput="SD[1].cU=this.value;reS1()"></div>'+
+    mFxRow(1,'u','reS1')+'</div>'+
+  '<div class="psec"><div class="ptitle">الجملة الختامية</div>'+
+    '<input type="text" id="i_cl" value="'+s.cl+'" oninput="reS1()">'+
+    mFont('f_cl',FAR,s.fCl,'reS1()')+
+    mRange('sz_cl',10,24,s.szCl,'reS1()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cl')+'<input type="color" id="cp_cl" value="'+s.cCl+'" oninput="SD[1].cCl=this.value;reS1()"></div>'+
+    mFxRow(1,'cl','reS1')+'</div>'+
+  '<div class="psec"><div class="ptitle">شفافية البطاقة</div>'+
+    mRange('sz_op1',0,95,s.cardOp,'reS1()','شفافية')+'</div>'+ftPanel();
+}
+function reS1(){
+  var s=SD[1];
+  s.h=g('i_h');s.hR=g('i_hR');s.u1=g('i_u1');s.u2=g('i_u2');s.u3=g('i_u3');s.cl=g('i_cl');
+  s.fH=g('f_h')||s.fH;s.fU=g('f_u')||s.fU;s.fCl=g('f_cl')||s.fCl;
+  s.szH=+g('sz_h');s.szU=+g('sz_u');s.szCl=+g('sz_cl');s.cardOp=+g('sz_op1');
+  sv('sz_h');sv('sz_u');sv('sz_cl');sv('sz_op1','%');
+  var e;
+  e=document.getElementById('el_h');if(e){e.innerHTML=s.h+'<br><span id="el_hR" style="color:'+s.cHR+'">'+s.hR+'</span>';e.style.fontFamily=s.fH;e.style.fontSize=s.szH+'px';e.style.color=s.cH;applyFxToEl(e,s.fx.h,s.cH);}
+  ['u1','u2','u3'].forEach(function(k){e=document.getElementById('el_'+k);if(e){e.innerHTML=pAc(s[k],s.cHR);e.style.fontFamily=s.fU;e.style.fontSize=s.szU+'px';e.style.color=s.cU;applyFxToEl(e,s.fx.u,s.cU);}});
+  e=document.getElementById('el_cl');if(e){e.textContent=s.cl;e.style.fontFamily=s.fCl;e.style.fontSize=s.szCl+'px';e.style.color=s.cCl;applyFxToEl(e,s.fx.cl,s.cCl);}
+  e=document.getElementById('el_card');if(e)e.style.background='rgba(255,255,255,'+s.cardOp/100+')';
+}
+
+// ── SLIDE 2 ──────────────────────────────────────────
+function renderS2(){
+  document.getElementById('colPanel').style.display='none';
+  var s=SD[2];
+  document.getElementById('slideContent').innerHTML=
+    '<div style="position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 16px;gap:12px">'+
+      '<div id="el_tw" style="background:rgba(40,40,60,'+s.titleOp/100+');border-radius:7px;padding:10px 16px;width:100%;text-align:center">'+
+        '<div id="el_ttl" style="font-family:'+s.fTitle+';font-size:'+s.szTitle+'px;font-weight:900;color:'+s.cTitle+';line-height:1.3">'+s.title+'</div>'+
+      '</div>'+
+      '<div class="s-loc-grid">'+
+        '<div class="s-loc-card"><div id="el_t1" class="s-loc-time">'+s.t1+'</div><div id="el_d1" class="s-loc-dest">'+s.d1+'</div></div>'+
+        '<div class="s-loc-card"><div id="el_t2" class="s-loc-time">'+s.t2+'</div><div id="el_d2" class="s-loc-dest">'+s.d2+'</div></div>'+
+        '<div class="s-loc-card"><div id="el_t3" class="s-loc-time">'+s.t3+'</div><div id="el_d3" class="s-loc-dest">'+s.d3+'</div></div>'+
+        '<div class="s-loc-card"><div id="el_t4" class="s-loc-time">'+s.t4+'</div><div id="el_d4" class="s-loc-dest">'+s.d4+'</div></div>'+
+      '</div>'+
+      '<div id="el_cl2" style="font-family:'+s.fCl+';font-size:'+s.szCl+'px;color:'+s.cCl+';font-weight:700;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.6)">'+pAc(s.cl,s.cClAc)+'</div>'+
+    '</div>';
+}
+function panelS2(){
+  var s=SD[2];
+  return '<div class="psec"><div class="ptitle">العنوان</div>'+
+    '<input type="text" id="i_ttl" value="'+s.title+'" oninput="reS2()">'+
+    mFont('f_ttl',FAR,s.fTitle,'reS2()')+
+    mRange('sz_ttl',14,36,s.szTitle,'reS2()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_ttl')+'<input type="color" id="cp_ttl" value="'+s.cTitle+'" oninput="SD[2].cTitle=this.value;reS2()"></div>'+
+    mRange('sz_twOp',0,100,s.titleOp,'reS2()','شفافية')+
+    mFxRow(2,'title','reS2')+'</div>'+
+  '<div class="psec"><div class="ptitle">البطاقات</div>'+
+    '<input type="text" id="i_t1" value="'+s.t1+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d1" value="'+s.d1+'" oninput="reS2()"><div class="sep"></div>'+
+    '<input type="text" id="i_t2" value="'+s.t2+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d2" value="'+s.d2+'" oninput="reS2()"><div class="sep"></div>'+
+    '<input type="text" id="i_t3" value="'+s.t3+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d3" value="'+s.d3+'" oninput="reS2()"><div class="sep"></div>'+
+    '<input type="text" id="i_t4" value="'+s.t4+'" oninput="reS2()" style="direction:ltr;margin-bottom:3px"><input type="text" id="i_d4" value="'+s.d4+'" oninput="reS2()"></div>'+
+  '<div class="psec"><div class="ptitle">الجملة الختامية</div>'+
+    '<input type="text" id="i_cl2" value="'+s.cl+'" oninput="reS2()">'+
+    mFont('f_cl2',FAR,s.fCl,'reS2()')+
+    mRange('sz_cl2',10,24,s.szCl,'reS2()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cl2')+'<input type="color" id="cp_cl2" value="'+s.cCl+'" oninput="SD[2].cCl=this.value;reS2()"></div>'+
+    '<div class="row"><span class="lbl">المميز</span>'+palRow('pal_clAc')+'<input type="color" id="cp_clAc" value="'+s.cClAc+'" oninput="SD[2].cClAc=this.value;reS2()"></div>'+
+    mFxRow(2,'cl','reS2')+'</div>'+ftPanel();
+}
+function reS2(){
+  var s=SD[2];
+  s.title=g('i_ttl');s.t1=g('i_t1');s.d1=g('i_d1');s.t2=g('i_t2');s.d2=g('i_d2');
+  s.t3=g('i_t3');s.d3=g('i_d3');s.t4=g('i_t4');s.d4=g('i_d4');s.cl=g('i_cl2');
+  s.fTitle=g('f_ttl')||s.fTitle;s.fCl=g('f_cl2')||s.fCl;
+  s.szTitle=+g('sz_ttl');s.szCl=+g('sz_cl2');s.titleOp=+g('sz_twOp');
+  sv('sz_ttl');sv('sz_cl2');sv('sz_twOp','%');
+  var e;
+  e=document.getElementById('el_ttl');if(e){e.textContent=s.title;e.style.fontFamily=s.fTitle;e.style.fontSize=s.szTitle+'px';e.style.color=s.cTitle;applyFxToEl(e,s.fx.title,s.cTitle);}
+  e=document.getElementById('el_tw');if(e)e.style.background='rgba(40,40,60,'+s.titleOp/100+')';
+  ['t1','d1','t2','d2','t3','d3','t4','d4'].forEach(function(k){e=document.getElementById('el_'+k);if(e)e.textContent=s[k];});
+  e=document.getElementById('el_cl2');if(e){e.innerHTML=pAc(s.cl,s.cClAc);e.style.fontFamily=s.fCl;e.style.fontSize=s.szCl+'px';e.style.color=s.cCl;applyFxToEl(e,s.fx.cl,s.cCl);}
+}
+
+// ── SLIDE 3 ──────────────────────────────────────────
+function renderS3(){
+  document.getElementById('colPanel').style.display='none';
+  var s=SD[3];
+  var items=s.items.map(function(it,i){return '<div class="s-bullet"><div class="s-dot"></div><div id="el_it'+i+'" style="font-family:'+s.fItem+';font-size:'+s.szItem+'px;color:'+s.cItem+';font-weight:700">'+it+'</div></div>';}).join('');
+  document.getElementById('slideContent').innerHTML=
+    '<div style="position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 16px;gap:12px">'+
+      '<div id="el_tw3" style="background:rgba(40,40,60,'+s.titleOp/100+');border-radius:7px;padding:8px 14px;width:100%;text-align:center">'+
+        '<div id="el_ttl3" style="font-family:'+s.fTitle+';font-size:'+s.szTitle+'px;font-weight:900;color:'+s.cTitle+'">'+s.title+'</div>'+
+      '</div>'+
+      '<div class="s-card" id="el_card3" style="background:rgba(255,255,255,'+s.cardOp/100+');width:60%;gap:6px;padding:12px 16px">'+items+'</div>'+
+    '</div>';
+}
+function panelS3(){
+  var s=SD[3];
+  var items=s.items.map(function(it,i){return '<input type="text" id="i_it'+i+'" value="'+it+'" oninput="reS3()" style="margin-top:2px">';}).join('');
+  return '<div class="psec"><div class="ptitle">العنوان</div>'+
+    '<input type="text" id="i_ttl3" value="'+s.title+'" oninput="reS3()">'+
+    mFont('f_ttl3',FAR,s.fTitle,'reS3()')+
+    mRange('sz_ttl3',12,32,s.szTitle,'reS3()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_ttl3')+'<input type="color" id="cp_ttl3" value="'+s.cTitle+'" oninput="SD[3].cTitle=this.value;reS3()"></div>'+
+    mRange('sz_twOp3',0,100,s.titleOp,'reS3()','شفافية')+
+    mFxRow(3,'title','reS3')+'</div>'+
+  '<div class="psec"><div class="ptitle">المرافق</div>'+items+
+    mFont('f_item',FAR,s.fItem,'reS3()')+
+    mRange('sz_item',9,20,s.szItem,'reS3()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_item')+'<input type="color" id="cp_item" value="'+s.cItem+'" oninput="SD[3].cItem=this.value;reS3()"></div>'+
+    mFxRow(3,'item','reS3')+'</div>'+
+  '<div class="psec"><div class="ptitle">شفافية البطاقة</div>'+
+    mRange('sz_op3',0,95,s.cardOp,'reS3()','شفافية')+'</div>'+ftPanel();
+}
+function reS3(){
+  var s=SD[3];
+  s.title=g('i_ttl3');s.fTitle=g('f_ttl3')||s.fTitle;s.fItem=g('f_item')||s.fItem;
+  s.szTitle=+g('sz_ttl3');s.szItem=+g('sz_item');s.titleOp=+g('sz_twOp3');s.cardOp=+g('sz_op3');
+  sv('sz_ttl3');sv('sz_item');sv('sz_twOp3','%');sv('sz_op3','%');
+  s.items.forEach(function(it,i){s.items[i]=g('i_it'+i);});
+  var e;
+  e=document.getElementById('el_ttl3');if(e){e.textContent=s.title;e.style.fontFamily=s.fTitle;e.style.fontSize=s.szTitle+'px';e.style.color=s.cTitle;applyFxToEl(e,s.fx.title,s.cTitle);}
+  e=document.getElementById('el_tw3');if(e)e.style.background='rgba(40,40,60,'+s.titleOp/100+')';
+  e=document.getElementById('el_card3');if(e)e.style.background='rgba(255,255,255,'+s.cardOp/100+')';
+  s.items.forEach(function(it,i){e=document.getElementById('el_it'+i);if(e){e.textContent=it;e.style.fontFamily=s.fItem;e.style.fontSize=s.szItem+'px';e.style.color=s.cItem;applyFxToEl(e,s.fx.item,s.cItem);}});
+}
+
+// ── SLIDE 4 ──────────────────────────────────────────
+function renderS4(){
+  document.getElementById('colPanel').style.display='none';
+  var s=SD[4];
+  document.getElementById('slideContent').innerHTML=
+    '<div style="position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:68px 20px 0;gap:0">'+
+      '<div style="background:#26247b;border-radius:7px;padding:6px 22px;width:100%;text-align:center;margin-bottom:38px">'+
+        '<div id="el_name" style="font-family:'+s.fName+';font-weight:900;font-size:'+s.szName+'px;color:'+s.cName+';letter-spacing:1px">'+s.nameEn+'</div>'+
+      '</div>'+
+      '<div id="el_slogan" style="font-family:'+s.fSlogan+';font-size:'+s.szSlogan+'px;font-weight:700;color:'+s.cSlogan+';text-align:center;margin-bottom:18px">'+s.slogan+'</div>'+
+      '<div id="el_descBox" style="background:rgba(255,255,255,'+s.descOp/100+');border-radius:10px;padding:22px;width:240px;min-height:200px;display:flex;align-items:center;justify-content:center">'+
+        '<div id="el_desc" style="font-family:'+s.fDesc+';font-size:'+s.szDesc+'px;color:'+s.cDesc+';font-weight:700;line-height:1.7;text-align:center">'+s.desc+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="position:absolute;bottom:42px;right:16px;z-index:20;text-align:right">'+
+      '<div id="el_cta" style="font-size:'+s.szCta+'px;font-weight:700;color:'+s.cCta+';line-height:1.6;font-family:\'Cairo\',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,.6)"><span class="s-cta-badge" id="el_ctaBtn">'+s.ctaBtn+'</span> <span id="el_ctaTxt">'+s.ctaText+'</span></div>'+
+    '</div>';
+}
+function panelS4(){
+  var s=SD[4];
+  return '<div class="psec"><div class="ptitle">اسم المشروع</div>'+
+    '<input type="text" id="i_name" value="'+s.nameEn+'" oninput="reS4()" style="direction:ltr">'+
+    mFont('f_name',FEN,s.fName,'reS4()')+
+    mRange('sz_name',16,52,s.szName,'reS4()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_name')+'<input type="color" id="cp_name" value="'+s.cName+'" oninput="SD[4].cName=this.value;reS4()"></div>'+
+    mFxRow(4,'name','reS4')+'</div>'+
+  '<div class="psec"><div class="ptitle">السلوجان</div>'+
+    '<input type="text" id="i_slogan" value="'+s.slogan+'" oninput="reS4()">'+
+    mFont('f_slogan',FAR,s.fSlogan,'reS4()')+
+    mRange('sz_slogan',12,32,s.szSlogan,'reS4()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_slogan')+'<input type="color" id="cp_slogan" value="'+s.cSlogan+'" oninput="SD[4].cSlogan=this.value;reS4()"></div>'+
+    mFxRow(4,'slogan','reS4')+'</div>'+
+  '<div class="psec"><div class="ptitle">الوصف</div>'+
+    '<input type="text" id="i_desc" value="'+s.desc+'" oninput="reS4()">'+
+    mFont('f_desc',FAR,s.fDesc,'reS4()')+
+    mRange('sz_desc',10,22,s.szDesc,'reS4()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_desc')+'<input type="color" id="cp_desc" value="'+s.cDesc+'" oninput="SD[4].cDesc=this.value;reS4()"></div>'+
+    mFxRow(4,'desc','reS4')+'</div>'+
+  '<div class="psec"><div class="ptitle">شفافية الصندوق</div>'+
+    mRange('sz_descOp',0,90,s.descOp,'reS4()','شفافية')+'</div>'+
+  '<div class="psec"><div class="ptitle">CTA</div>'+
+    '<input type="text" id="i_ctaBtn" value="'+s.ctaBtn+'" oninput="reS4()">'+
+    '<input type="text" id="i_ctaTxt" value="'+s.ctaText+'" oninput="reS4()" style="margin-top:3px">'+
+    mRange('sz_cta',10,22,s.szCta,'reS4()','الحجم')+
+    '<div class="row"><span class="lbl">اللون</span>'+palRow('pal_cta')+'<input type="color" id="cp_cta" value="'+s.cCta+'" oninput="SD[4].cCta=this.value;reS4()"></div>'+
+    mFxRow(4,'cta','reS4')+'</div>'+ftPanel();
+}
+function reS4(){
+  var s=SD[4];
+  s.nameEn=g('i_name');s.slogan=g('i_slogan');s.desc=g('i_desc');s.ctaBtn=g('i_ctaBtn');s.ctaText=g('i_ctaTxt');
+  s.fName=g('f_name')||s.fName;s.fSlogan=g('f_slogan')||s.fSlogan;s.fDesc=g('f_desc')||s.fDesc;
+  s.szName=+g('sz_name');s.szSlogan=+g('sz_slogan');s.szDesc=+g('sz_desc');s.szCta=+g('sz_cta');s.descOp=+g('sz_descOp');
+  sv('sz_name');sv('sz_slogan');sv('sz_desc');sv('sz_cta');sv('sz_descOp','%');
+  var e;
+  e=document.getElementById('el_name');if(e){e.textContent=s.nameEn;e.style.fontFamily=s.fName;e.style.fontSize=s.szName+'px';e.style.color=s.cName;applyFxToEl(e,s.fx.name,s.cName);}
+  e=document.getElementById('el_slogan');if(e){e.textContent=s.slogan;e.style.fontFamily=s.fSlogan;e.style.fontSize=s.szSlogan+'px';e.style.color=s.cSlogan;applyFxToEl(e,s.fx.slogan,s.cSlogan);}
+  e=document.getElementById('el_desc');if(e){e.textContent=s.desc;e.style.fontFamily=s.fDesc;e.style.fontSize=s.szDesc+'px';e.style.color=s.cDesc;applyFxToEl(e,s.fx.desc,s.cDesc);}
+  e=document.getElementById('el_descBox');if(e)e.style.background='rgba(255,255,255,'+s.descOp/100+')';
+  e=document.getElementById('el_ctaBtn');if(e)e.textContent=s.ctaBtn;
+  e=document.getElementById('el_ctaTxt');if(e)e.textContent=s.ctaText;
+  e=document.getElementById('el_cta');if(e){e.style.fontSize=s.szCta+'px';e.style.color=s.cCta;applyFxToEl(e,s.fx.cta,s.cCta);}
+}
+
+// ── SHARED ───────────────────────────────────────────
+function sv(id,sfx){var e=document.getElementById(id+'V');if(e)e.textContent=g(id)+(sfx||'');}
+function posCollage(){
+  var tb=document.getElementById('tb0');var ft=document.getElementById('footer');var cw=document.getElementById('collageWrap');var sl=document.getElementById('slide');
+  if(!cw||!tb)return;
+  var top=tb.offsetTop+tb.offsetHeight+6;var bot=sl.offsetHeight-(ft.offsetHeight+6);
+  cw.style.top=top+'px';cw.style.height=Math.max(bot-top,80)+'px';
+}
+
+// ── IMAGE ────────────────────────────────────────────
+function applyTr(k){var s=imgSt[k],el=document.getElementById(k==='bg'?'bgImg':'colImg');if(el)el.style.transform='translate('+s.tx+'px,'+s.ty+'px) scale('+s.sc+')';}
+function mv(k,d){var s=imgSt[k];if(d==='left')s.tx-=STEP;else if(d==='right')s.tx+=STEP;else if(d==='up')s.ty-=STEP;else s.ty+=STEP;applyTr(k);}
+function ctr(k){imgSt[k].tx=0;imgSt[k].ty=0;applyTr(k);}
+function rst(k){imgSt[k]={tx:0,ty:0,sc:1};applyTr(k);if(k==='bg'){document.getElementById('bgZ').value=100;document.getElementById('bgZv').textContent='100%';}else{document.getElementById('colZ').value=100;document.getElementById('colZv').textContent='100%';}}
+function applyBgZoom(){var z=+document.getElementById('bgZ').value/100;imgSt.bg.sc=z;applyTr('bg');document.getElementById('bgZv').textContent=Math.round(z*100)+'%';}
+function applyColZoom(){var z=+document.getElementById('colZ').value/100;imgSt.col.sc=z;applyTr('col');document.getElementById('colZv').textContent=Math.round(z*100)+'%';}
+function applyOvl(){var op=+document.getElementById('bgOp').value/100;var col=document.getElementById('bgOvCol').value;var r=parseInt(col.slice(1,3),16),g2=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);var bgv='rgba('+r+','+g2+','+b+','+op+')';document.getElementById('bgOvl').style.background=bgv;savedImg.bgOvl=bgv;document.getElementById('bgOpV').textContent=Math.round(op*100)+'%';}
+function applyLogo(){var sz=+document.getElementById('logoSz').value;var w=document.getElementById('logoWrap');w.style.width=sz+'px';w.style.height=(sz*.5)+'px';savedImg.logoSz=sz;document.getElementById('logoSzV').textContent=sz;}
+function applyColLayout(){var lay=document.getElementById('colLayout').value;var lc=document.getElementById('colLineCol').value;var lw=+document.getElementById('colLineW').value;var svg=document.getElementById('colLines');if(!svg)return;svg.innerHTML='';if(lay==='full'||lw===0)return;function mk(x1,y1,x2,y2){var l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);l.setAttribute('stroke',lc);l.setAttribute('stroke-width',lw);svg.appendChild(l);}if(lay==='top-two'){mk('0','61%','100%','61%');mk('50%','61%','50%','100%');}else if(lay==='three-h'){mk('0','33%','100%','33%');mk('0','67%','100%','67%');}else if(lay==='three-v'){mk('33%','0','33%','100%');mk('67%','0','67%','100%');}else if(lay==='grid4'){mk('0','50%','100%','50%');mk('50%','0','50%','100%');}else if(lay==='left-big'){mk('40%','0','40%','100%');mk('40%','50%','100%','50%');}else if(lay==='right-big'){mk('60%','0','60%','100%');mk('0','50%','60%','50%');}}
+
+function addDrag(imgId,key){
+  var el=document.getElementById(imgId);if(!el)return;
+  var drag=false,sx,sy,tx0,ty0;
+  el.addEventListener('mousedown',function(e){if(e.button!==0)return;drag=true;sx=e.clientX;sy=e.clientY;tx0=imgSt[key].tx;ty0=imgSt[key].ty;el.style.cursor='grabbing';e.preventDefault();});
+  document.addEventListener('mousemove',function(e){if(!drag)return;imgSt[key].tx=tx0+(e.clientX-sx);imgSt[key].ty=ty0+(e.clientY-sy);applyTr(key);});
+  document.addEventListener('mouseup',function(){if(drag){drag=false;el.style.cursor='grab';}});
+  var tx0t,ty0t,tsx,tsy;
+  el.addEventListener('touchstart',function(e){var t=e.touches[0];tsx=t.clientX;tsy=t.clientY;tx0t=imgSt[key].tx;ty0t=imgSt[key].ty;e.preventDefault();},{passive:false});
+  el.addEventListener('touchmove',function(e){var t=e.touches[0];imgSt[key].tx=tx0t+(t.clientX-tsx);imgSt[key].ty=ty0t+(t.clientY-tsy);applyTr(key);e.preventDefault();},{passive:false});
+}
+
+// ── FORMAT ───────────────────────────────────────────
+function setFmt(f){fmt=f;var sl=document.getElementById('slide');if(f==='post'){sl.style.width='378px';sl.style.height='472px';}else{sl.style.width='280px';sl.style.height='498px';}document.getElementById('btnPost').className='fmt-btn'+(f==='post'?' active':'');document.getElementById('btnStory').className='fmt-btn'+(f==='story'?' active':'');setTimeout(posCollage,100);}
+
+// ── NAVIGATION ───────────────────────────────────────
+var renderers=[renderS0,renderS1,renderS2,renderS3,renderS4,renderS5];
+var panels=[panelS0,panelS1,panelS2,panelS3,panelS4,panelS5];
+var palBuilders=[
+  function(){
+    buildPal('pal_tAr',function(h){SD[0].cTAr=h;document.getElementById('el_tAr')&&(document.getElementById('el_tAr').style.color=h);});
+    buildPal('pal_tEn',function(h){SD[0].cTEn=h;reS0();});
+    buildPal('pal_sl',function(h){SD[0].cSl=h;reS0();});
+    buildPal('pal_slAc',function(h){SD[0].cSlAc=h;reS0();});
+  },
+  function(){
+    buildPal('pal_h',function(h){SD[1].cH=h;reS1();});
+    buildPal('pal_hR',function(h){SD[1].cHR=h;reS1();});
+    buildPal('pal_u',function(h){SD[1].cU=h;reS1();});
+    buildPal('pal_cl',function(h){SD[1].cCl=h;reS1();});
+  },
+  function(){
+    buildPal('pal_ttl',function(h){SD[2].cTitle=h;reS2();});
+    buildPal('pal_cl2',function(h){SD[2].cCl=h;reS2();});
+    buildPal('pal_clAc',function(h){SD[2].cClAc=h;reS2();});
+  },
+  function(){
+    buildPal('pal_ttl3',function(h){SD[3].cTitle=h;reS3();});
+    buildPal('pal_item',function(h){SD[3].cItem=h;reS3();});
+  },
+  function(){
+    buildPal('pal_name',  function(h){SD[4].cName=h;   reS4();});
+    buildPal('pal_slogan',function(h){SD[4].cSlogan=h;  reS4();});
+    buildPal('pal_desc',  function(h){SD[4].cDesc=h;    reS4();});
+    buildPal('pal_cta',   function(h){SD[4].cCta=h;     reS4();});
+  },
+  function(){} // slide 5 — no palettes
+];
+
+function goSlide(i){
+  // save AI panel fields before leaving slide 5
+  if(curSlide===5){
+    var ai=document.getElementById('aiInput'),aj=document.getElementById('aiJson');
+    if(ai)savedAI.input=ai.value;
+    if(aj)savedAI.json=aj.value;
+  }
+  curSlide=i;
+  document.querySelectorAll('.stab').forEach(function(t,j){t.classList.toggle('active',i===j);});
+  renderers[i]();
+  document.getElementById('textPanel').innerHTML=panels[i]();
+  palBuilders[i]();
+  // restore bg image + its transform + overlay (all slides)
+  var bgEl=document.getElementById('bgImg');
+  if(bgEl){bgEl.src=savedImg.bg;}
+  var ovl=document.getElementById('bgOvl');
+  if(ovl)ovl.style.background=savedImg.bgOvl;
+  applyTr('bg');
+  // restore logo
+  var logoImg=document.getElementById('logoImg'),logoWrap=document.getElementById('logoWrap');
+  if(logoImg&&savedImg.logo){logoImg.src=savedImg.logo;}
+  if(logoWrap)logoWrap.style.display=savedImg.logoShown?'flex':'none';
+  if(logoWrap&&savedImg.logoSz){logoWrap.style.width=savedImg.logoSz+'px';logoWrap.style.height=(savedImg.logoSz*.5)+'px';}
+  // restore collage (slide 0 only)
+  if(i===0){
+    setTimeout(function(){
+      var colEl=document.getElementById('colImg');
+      if(colEl)colEl.src=savedImg.col;
+      addDrag('colImg','col');applyTr('col');
+    },80);
+  }
+  // restore AI fields (slide 5)
+  if(i===5){
+    var ai=document.getElementById('aiInput'),aj=document.getElementById('aiJson');
+    if(ai)ai.value=savedAI.input;
+    if(aj)aj.value=savedAI.json;
+    if(generatedData)showPreview(generatedData);
+  }
+}
+
+// ── UPLOADS ──────────────────────────────────────────
+function setupUp(inId,imgId,boxId,extra){
+  document.getElementById(inId).addEventListener('change',function(){
+    var f=this.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(e){var el=document.getElementById(imgId);if(el)el.src=e.target.result;if(extra)extra(e.target.result);var b=document.getElementById(boxId);if(b){b.className='upload-box done';b.textContent='✅ '+f.name;}};
+    r.readAsDataURL(f);
+  });
+}
+
+// ── DOWNLOAD ─────────────────────────────────────────
+function downloadPNG(){
+  var btn=document.getElementById('dlBtn');btn.textContent='⏳';btn.disabled=true;
+  var sl=document.getElementById('slide');
+  sl.querySelectorAll('*').forEach(function(el){el.style.animation='none';el.style.transition='none';});
+  html2canvas(sl,{scale:2,useCORS:true,allowTaint:true,width:sl.offsetWidth,height:sl.offsetHeight,backgroundColor:null}).then(function(c){
+    var url=c.toDataURL('image/png');var a=document.createElement('a');a.href=url;a.download='housex-s'+(curSlide+1)+'-'+fmt+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);
+    btn.textContent='⬇ PNG';btn.disabled=false;
+  }).catch(function(e){alert(e.message);btn.textContent='⬇ PNG';btn.disabled=false;});
+}
+
+// ── INIT ─────────────────────────────────────────────
+window.addEventListener('load',function(){
+  setupUp('inLogo','logoImg','uLogo',function(e){savedImg.logo=e;savedImg.logoShown=true;document.getElementById('logoWrap').style.display='flex';});
+  setupUp('inBg','bgImg','uBg',function(e){savedImg.bg=e;});
+  setupUp('inCol','colImg','uCol',function(e){savedImg.col=e;});
+  addDrag('bgImg','bg');
+  document.getElementById('bgImg').style.cursor='grab';
+  goSlide(0);
+});
+</script>
+</body>
+</html>
