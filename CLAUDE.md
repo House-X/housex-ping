@@ -15,6 +15,9 @@ When Mohamad sends project info (text, brochure, photos) and asks for a carousel
    - One `*accent*` per line at most, on a number or power word.
    - Stay inside the length guides in SCHEMA.md.
    - Use Latin digits (0-9) everywhere, Arabic lines included (`15 دقيقة`, `2+1`, `24/7`). The renderer also converts any ٠-٩ it finds.
+   - Slide 5 (CTA) never mentions prices or payments: no price, down payment, instalments, discount, currency.
+     The renderer refuses such words there (exit 1).
+   - Numbers in the slide-1 bullets are all red automatically (with their م²); no need to mark them with `*…*`.
    - Footer phone is always `+90 551 4000 200` unless Mohamad asks for another number.
 3. **Render**: `node carousel/render.mjs carousel/projects/<slug>/project.json` (add `--story` if asked).
    It checks the project first: exit code 1 → fix the listed errors (missing text, 6-10 amenities, image files);

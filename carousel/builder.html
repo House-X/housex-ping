@@ -218,7 +218,7 @@ var SD=[
    fTitle:FAR[0],fItem:FAR[0],
    fx:{title:{bold:true},item:{}}},
   // 4 CTA
-  {nameEn:'VADI PREMIUM',slogan:'حياة فاخرة واستثمار ذكي',desc:'استمتع بتجربة منتجعية يومية وسط الطبيعة الخلابة، مع سكن فاخر وخيارات استثمارية ممتازة',ctaBtn:'تواصل معنا',ctaText:'لمعرفة الأسعار وخيارات الدفع المتاحة',
+  {nameEn:'VADI PREMIUM',slogan:'حياة فاخرة واستثمار ذكي',desc:'استمتع بتجربة منتجعية يومية وسط الطبيعة الخلابة، مع سكن فاخر وخيارات استثمارية ممتازة',ctaBtn:'تواصل معنا',ctaText:'لمعرفة التفاصيل وحجز موعد للزيارة',
    cName:'#fff',cSlogan:'#fff',cDesc:'#fff',cCta:'#fff',
    szName:28,szSlogan:20,szDesc:14,szCta:15,descOp:10,
    fName:FEN[0],fSlogan:FAR[0],fDesc:FAR[0],
@@ -340,7 +340,7 @@ function panelS5(){
   '</div>';
 }
 
-var PROMPT_TEMPLATE='أنت خبير تسويق عقاري. بناءً على تفاصيل المشروع التالية، اكتب النصوص المناسبة لكاروسيل انستغرام من 5 شرائح. اكتب كل الأرقام بالأرقام اللاتينية (0-9). أعطني النتيجة بصيغة JSON فقط بدون أي نص إضافي بهذا الشكل بالضبط:\n\n{\n  "s0": {"tAr":"اسم المشروع عربي (1-3 كلمات)","tEn":"NAME IN ENGLISH","sl1":"سلوجان أول مع *كلمة مميزة*","sl2":"سلوجان ثانٍ مع *كلمة مميزة*"},\n  "s1": {"h":"عنوان المساحة","hR":"الرقم المميز مثل 48,200 م²","u1":"ميزة وحدات 1","u2":"ميزة مع *أرقام*","u3":"ميزة مع *أرقام*","cl":"جملة ختامية"},\n  "s2": {"title":"عنوان الموقع","t1":"مدة","d1":"وجهة","t2":"مدة","d2":"وجهة","t3":"مدة","d3":"وجهة","t4":"مدة","d4":"وجهة","cl":"ختامية مع *رقم*"},\n  "s3": {"title":"عنوان المرافق","items":["مرفق1","مرفق2","مرفق3","مرفق4","مرفق5","مرفق6","مرفق7","مرفق8","مرفق9","مرفق10"]},\n  "s4": {"nameEn":"NAME","slogan":"سلوجان ختامي","desc":"وصف تسويقي 2-3 جمل","ctaBtn":"تواصل معنا","ctaText":"لمعرفة الأسعار وخيارات الدفع المتاحة"}\n}\n\nتفاصيل المشروع:\n';
+var PROMPT_TEMPLATE='أنت خبير تسويق عقاري. بناءً على تفاصيل المشروع التالية، اكتب النصوص المناسبة لكاروسيل انستغرام من 5 شرائح. اكتب كل الأرقام بالأرقام اللاتينية (0-9). أعطني النتيجة بصيغة JSON فقط بدون أي نص إضافي بهذا الشكل بالضبط:\n\n{\n  "s0": {"tAr":"اسم المشروع عربي (1-3 كلمات)","tEn":"NAME IN ENGLISH","sl1":"سلوجان أول مع *كلمة مميزة*","sl2":"سلوجان ثانٍ مع *كلمة مميزة*"},\n  "s1": {"h":"عنوان المساحة","hR":"الرقم المميز مثل 48,200 م²","u1":"ميزة وحدات 1","u2":"ميزة مع *أرقام*","u3":"ميزة مع *أرقام*","cl":"جملة ختامية"},\n  "s2": {"title":"عنوان الموقع","t1":"مدة","d1":"وجهة","t2":"مدة","d2":"وجهة","t3":"مدة","d3":"وجهة","t4":"مدة","d4":"وجهة","cl":"ختامية مع *رقم*"},\n  "s3": {"title":"عنوان المرافق","items":["مرفق1","مرفق2","مرفق3","مرفق4","مرفق5","مرفق6","مرفق7","مرفق8","مرفق9","مرفق10"]},\n  "s4": {"nameEn":"NAME","slogan":"سلوجان ختامي","desc":"وصف تسويقي 2-3 جمل","ctaBtn":"تواصل معنا","ctaText":"لمعرفة التفاصيل وحجز موعد للزيارة"}\n}\n\nتفاصيل المشروع:\n';
 
 function copyPrompt(){
   var input=document.getElementById('aiInput');
@@ -937,11 +937,31 @@ function isolateNumbers(n){
   if(last<v.length)frag.appendChild(document.createTextNode(v.slice(last)));
   n.parentNode.replaceChild(frag,n);
 }
+// Units bullets (slide 1): every number, with its م² unit, is accent-coloured,
+// so a line never mixes red and dark numbers whatever the *…* markup says.
+var NUM_ACCENT=/\d+(?:[.,:+\-–\/]\d+)*(?:\s?م²)?/g;
+function accentNumbers(el,color){
+  var w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT),n,nodes=[];
+  while((n=w.nextNode()))nodes.push(n);
+  nodes.forEach(function(n){
+    if(n.parentNode!==el&&n.parentNode.closest('span[style*="color"]'))return; // already accented
+    var v=n.nodeValue;NUM_ACCENT.lastIndex=0;if(!NUM_ACCENT.test(v))return;
+    var frag=document.createDocumentFragment(),last=0;
+    v.replace(NUM_ACCENT,function(m,at){
+      if(at>last)frag.appendChild(document.createTextNode(v.slice(last,at)));
+      var s=document.createElement('span');s.style.color=color;s.style.fontWeight='900';s.textContent=m;frag.appendChild(s);
+      last=at+m.length;
+    });
+    if(last<v.length)frag.appendChild(document.createTextNode(v.slice(last)));
+    n.parentNode.replaceChild(frag,n);
+  });
+}
+function textNodes(root){var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n,a=[];while((n=w.nextNode()))a.push(n);return a;}
 function polishText(){
   var root=document.getElementById('slideContent');if(!root)return;
-  var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n,nodes=[];
-  while((n=w.nextNode()))nodes.push(n);
-  nodes.forEach(function(n){var v=latinDigits(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;isolateNumbers(n);});
+  textNodes(root).forEach(function(n){var v=latinDigits(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;});
+  if(curSlide===1)['el_u1','el_u2','el_u3'].forEach(function(id){var e=document.getElementById(id);if(e)accentNumbers(e,SD[1].cHR);});
+  textNodes(root).forEach(isolateNumbers);
   root.querySelectorAll('[id^="el_"]').forEach(function(el){if(!el.querySelector('div'))bindLastWords(el);});
 }
 // Builder edits re-render text through reS0..reS4; polish after each.

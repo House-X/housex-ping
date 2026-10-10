@@ -60,6 +60,12 @@ function checkProject(p) {
     });
     if (s.look) { imageRef(s.look.bg, `${sk}.look.bg`); imageRef(s.look.logo, `${sk}.look.logo`); }
   });
+  // Slide 5 never mentions prices or payments (Mohamad, 2026-10-10).
+  const MONEY = /سعر|أسعار|اسعار|دفع|قسط|أقساط|اقساط|تقسيط|خصم|ليرة|دولار|يورو|\$|€|₺|\bTRY\b|\bUSD\b|\bEUR\b/;
+  if (slides.s4) ['slogan', 'desc', 'ctaBtn', 'ctaText'].forEach(k => {
+    const m = typeof slides.s4[k] === 'string' && slides.s4[k].match(MONEY);
+    if (m) errors.push(`s4 (التواصل) ${k}: لا أسعار ولا دفعات في الشريحة الأخيرة («${m[0]}»)`);
+  });
   const items = slides.s3 && slides.s3.items;
   if (slides.s3) {
     if (!Array.isArray(items)) errors.push('s3 (المرافق) items: القائمة غير موجودة');

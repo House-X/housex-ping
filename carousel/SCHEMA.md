@@ -40,6 +40,7 @@ Leave them out unless there is a reason; `render.mjs` auto-shrinks text that ove
 The slide text is polished automatically (builder and renderer):
 - digits become Latin (`١٥` → `15`), so write Latin digits in the first place;
 - number groups (`2+1`, `2-5`, `24/7`) are kept as one left-to-right unit, so they never flip to `1+2` or split across lines;
+- every number in the slide-1 bullets (`u1`-`u3`) is accent red, with its `م²`, so numbers in a line never mix colours;
 - the last two words of a line are joined, so no single word sits alone on the last line.
 
 | slide | keys | length guide (Arabic chars) |
@@ -63,7 +64,7 @@ node carousel/render.mjs carousel/projects/<slug>/project.json --story    # stor
 
 Before rendering, the project is checked. Errors stop the render (exit code 1): a missing slide or text key
 (it would otherwise show the builder's Vadi Premium copy), fewer than 6 or more than 10 amenities, an image file
-that does not exist. Warnings are printed and the render continues: text over its length guide, no photos
+that does not exist, a price or payment word on slide 5 (سعر، دفع، أقساط، خصم، $ …). Warnings are printed and the render continues: text over its length guide, no photos
 (empty navy cover collage), a footer phone other than `+90 551 4000 200`. `--check` runs only this step.
 
 Exit code 2 = a slide still has a layout issue after auto-fit; the warning names the element
