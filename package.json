@@ -6,6 +6,7 @@
     "render": "node carousel/render.mjs"
   },
   "devDependencies": {
+    "docx": "9.5.1",
     "playwright": "1.56.1"
   }
 }

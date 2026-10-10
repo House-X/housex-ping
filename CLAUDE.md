@@ -20,10 +20,16 @@ When Mohamad sends project info (text, brochure, photos) and asks for a carousel
    - Slide-5 `desc`: 2 short independent sentences as an array, ≤ 42 chars each; each gets its own line.
    - Numbers in the slide-1 bullets are all red automatically (with their م²); no need to mark them with `*…*`.
    - Footer phone is always `+90 551 4000 200` unless Mohamad asks for another number.
-3. **Render**: `node carousel/render.mjs carousel/projects/<slug>/project.json` (add `--story` if asked).
+3. **Write `social.json`** next to `project.json`: the Instagram caption and the Facebook post for this project
+   (format in SCHEMA.md). Same copy rules as the slides; no prices or payments; end with the contact line and
+   `+90 551 4000 200`; Instagram ≈ 10-15 hashtags (Arabic + English), Facebook a longer factual post with 4-6.
+4. **Render**: `node carousel/render.mjs carousel/projects/<slug>/project.json`. It always renders the feed (1080×1350)
+   and the story (1080×1920) set, builds `<slug>-social.docx` from `social.json`, and copies the latest set to
+   `Documents/HOUSE X Carousels/<slug>/` (`Feed/`, `Story/`, the .docx), replacing the previous one.
    It checks the project first: exit code 1 → fix the listed errors (missing text, 6-10 amenities, image files);
    read the warnings too (over-length text, no photos, a different phone). Exit code 2 → shorten the flagged text and re-render. Then look at the PNGs yourself before sending.
-4. **Deliver** the PNGs from `out/` to the user, commit `project.json` + `images/` (not `out/`), push.
+5. **Deliver** the feed PNGs to the user (story too if asked) and tell him the folder; commit `project.json`,
+   `social.json` + `images/` (not `out/`), push.
 
 ## Carousel from a link
 
@@ -39,7 +45,7 @@ When Mohamad sends a project page URL instead of a brief, the link *is* the brie
    `node carousel/fetch-images.mjs <slug> <url> <url> …` → `images/01.webp`, `02.webp` …
    Then look at every photo: drop floor plans, icons and anything with another company's logo or watermark;
    use the strongest exterior/aerial for `theme.bg` and the cover `theme.collage`.
-4. Continue with **Render** / **Deliver** above.
+4. Continue with **social.json** (from the same page facts), **Render** and **Deliver** above.
 
 Site notes:
 

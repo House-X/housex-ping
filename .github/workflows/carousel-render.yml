@@ -7,6 +7,7 @@ on:
       - "carousel/projects/**"
       - "carousel/builder.html"
       - "carousel/render.mjs"
+      - "carousel/social-doc.mjs"
   workflow_dispatch: {}
 
 jobs:
@@ -19,12 +20,11 @@ jobs:
           node-version: 22
       - run: npm ci || npm install
       - run: npx playwright install --with-deps chromium
-      - name: Render every project (post + story)
+      - name: Render every project (feed + story + social.docx)
         run: |
           status=0
           for p in carousel/projects/*/project.json; do
             node carousel/render.mjs "$p" || status=$?
-            node carousel/render.mjs "$p" --story || status=$?
           done
           exit $status
       - uses: actions/upload-artifact@v4

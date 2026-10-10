@@ -55,13 +55,33 @@ The slide text is polished automatically (builder and renderer):
 Lengths are guides, not hard limits: stay inside them and slides render at full size;
 go over and the renderer shrinks the slide's text until it fits (reported in `out/fit-report.json`).
 
+## Social copy — social.json
+
+Next to `project.json`. Each array item is one paragraph in the Word file (and in the post).
+
+```json
+{
+  "instagram": { "caption": ["hook line", "body", "▫️ point", "…", "📩 contact line", "📞 +90 551 4000 200"],
+                 "hashtags": ["#هاوس_إكس", "#عقارات_إسطنبول", "#HOUSEX", "…"] },
+  "facebook":  { "post": ["title", "paragraph", "…", "📞 هاتف وواتساب: +90 551 4000 200", "🌐 www.house-ex.com"],
+                 "hashtags": ["#هاوس_إكس", "#HOUSEX", "…"] }
+}
+```
+
+Phone numbers and codes such as `O-7` get invisible left-to-right marks in the Word file, so they stay in order
+when pasted into Instagram / Facebook. Skip emoji that need a variation selector (🏙️, 🌿): Word shows them as boxes.
+
 ## Render
 
 ```bash
-npm install                                    # once (playwright)
-node carousel/render.mjs carousel/projects/<slug>/project.json            # post
-node carousel/render.mjs carousel/projects/<slug>/project.json --story    # story
+npm install                                                       # once (playwright, docx)
+node carousel/render.mjs carousel/projects/<slug>/project.json     # feed + story + social.docx + export
+node carousel/render.mjs carousel/projects/<slug>/project.json --post | --story   # one format only
 ```
+
+Output in `out/`: `<slug>-s1.png` … `s5.png` (feed), `<slug>-s1-story.png` … (story), `<slug>-social.docx`,
+`fit-report.json`. The latest set is then copied to `~/Documents/HOUSE X Carousels/<slug>/` (`Feed/`, `Story/`, the
+.docx), replacing the previous files; `HOUSEX_EXPORT_DIR` changes the folder, `--no-export` (or CI) skips it.
 
 Before rendering, the project is checked. Errors stop the render (exit code 1): a missing slide or text key
 (it would otherwise show the builder's Vadi Premium copy), fewer than 6 or more than 10 amenities, an image file
