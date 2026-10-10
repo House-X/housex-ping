@@ -39,6 +39,11 @@ const TEXT = {
   s3: { title: 32 },
   s4: { nameEn: 0, slogan: 26, desc: 110, ctaBtn: 0, ctaText: 40 },
 };
+// s4.desc: one line per sentence (array, or \n; otherwise split after ، . ؛), each kept on one line.
+const DESC_LINE = 42;
+const descLines = d => (Array.isArray(d) ? d.join('\n') : String(d || ''))
+  .replace(/([،.؛])\s+/g, (m, p, at, t) => (t.includes('\n') ? m : p + '\n'))
+  .split('\n').map(l => l.trim()).filter(Boolean);
 const LABEL = ['الغلاف', 'الوحدات', 'الموقع', 'المرافق', 'التواصل'];
 
 function checkProject(p) {
@@ -53,8 +58,11 @@ function checkProject(p) {
     const s = slides[sk];
     if (!s) { errors.push(`${sk} (${LABEL[i]}): الشريحة غير موجودة`); return; }
     Object.entries(keys).forEach(([k, max]) => {
-      const v = s[k];
+      const v = Array.isArray(s[k]) && sk === 's4' && k === 'desc' ? s[k].join('\n') : s[k];
       if (typeof v !== 'string' || !v.trim()) { errors.push(`${where(i, k)}: نص فارغ أو غير موجود`); return; }
+      if (sk === 's4' && k === 'desc') descLines(v).forEach((l, j) => {
+        if (l.length > DESC_LINE) warnings.push(`s4 (التواصل) desc سطر ${j + 1}: ${l.length} حرفاً (الحد ${DESC_LINE} للسطر) — سيُصغَّر الخط`);
+      });
       const len = v.replace(/\*/g, '').length;
       if (max && len > max) warnings.push(`${where(i, k)}: ${len} حرفاً (الحد ${max}) — قد يُصغَّر الخط`);
     });
@@ -63,7 +71,8 @@ function checkProject(p) {
   // Slide 5 never mentions prices or payments (Mohamad, 2026-10-10).
   const MONEY = /سعر|أسعار|اسعار|دفع|قسط|أقساط|اقساط|تقسيط|خصم|ليرة|دولار|يورو|\$|€|₺|\bTRY\b|\bUSD\b|\bEUR\b/;
   if (slides.s4) ['slogan', 'desc', 'ctaBtn', 'ctaText'].forEach(k => {
-    const m = typeof slides.s4[k] === 'string' && slides.s4[k].match(MONEY);
+    const v = Array.isArray(slides.s4[k]) ? slides.s4[k].join(' ') : slides.s4[k];
+    const m = typeof v === 'string' && v.match(MONEY);
     if (m) errors.push(`s4 (التواصل) ${k}: لا أسعار ولا دفعات في الشريحة الأخيرة («${m[0]}»)`);
   });
   const items = slides.s3 && slides.s3.items;

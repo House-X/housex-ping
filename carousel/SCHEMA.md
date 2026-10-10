@@ -41,6 +41,7 @@ The slide text is polished automatically (builder and renderer):
 - digits become Latin (`١٥` → `15`), so write Latin digits in the first place;
 - number groups (`2+1`, `2-5`, `24/7`) are kept as one left-to-right unit, so they never flip to `1+2` or split across lines;
 - every number in the slide-1 bullets (`u1`-`u3`) is accent red, with its `م²`, so numbers in a line never mix colours;
+- `s4.desc` shows one sentence per line, never a sentence split across lines (no `\n` given → split after ، . ؛);
 - the last two words of a line are joined, so no single word sits alone on the last line.
 
 | slide | keys | length guide (Arabic chars) |
@@ -49,7 +50,7 @@ The slide text is polished automatically (builder and renderer):
 | **s1 Units** | `h` headline lead-in · `hR` hero number (`48,200 م²`) · `u1` `u2` `u3` bullets · `cl` closer | h ≤ 22 · u ≤ 34 · cl ≤ 32 |
 | **s2 Location** | `title` · `t1..t4` time (`15 دقيقة`) · `d1..d4` destination · `cl` closer | title ≤ 32 · t ≤ 9 · d ≤ 24 · cl ≤ 45 |
 | **s3 Amenities** | `title` · `items` array (6-10) | title ≤ 32 · item ≤ 22 |
-| **s4 CTA** | `nameEn` · `slogan` · `desc` · `ctaBtn` · `ctaText` | slogan ≤ 26 · desc ≤ 110 · ctaText ≤ 40 |
+| **s4 CTA** | `nameEn` · `slogan` · `desc` (one sentence per line: array or `\n`) · `ctaBtn` · `ctaText` | slogan ≤ 26 · desc ≤ 110, ≤ 42 per line · ctaText ≤ 40 |
 
 Lengths are guides, not hard limits: stay inside them and slides render at full size;
 go over and the renderer shrinks the slide's text until it fits (reported in `out/fit-report.json`).
