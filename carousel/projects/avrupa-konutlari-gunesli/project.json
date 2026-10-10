@@ -1,0 +1,104 @@
+{
+  "name": "avrupa-konutlari-gunesli",
+  "created": "2026-10-10",
+  "location": "إسطنبول الأوروبية — باغجلار، غونشلي",
+  "format": "post",
+  "source": "https://house-ex.com/projects/avrupa-konutlari-gunesli (2026-10-10)",
+  "theme": {
+    "bg": "images/04.webp",
+    "collage": "images/07.webp",
+    "collageLayout": "top-two",
+    "overlay": {
+      "color": "#ffffff",
+      "opacity": 65
+    },
+    "logo": "fullcolor",
+    "logoSize": 95
+  },
+  "contact": {
+    "phone": "+90 551 4000 200",
+    "web": "www.house-ex.com",
+    "show": true,
+    "align": "left",
+    "color": "#1a1a3e",
+    "size": 9
+  },
+  "slides": {
+    "s0": {
+      "tAr": "أوروبا كونوتلاري",
+      "tEn": "(AVRUPA KONUTLARI GÜNEŞLİ)",
+      "sl1": "حياة متكاملة في قلب *غونشلي* بإسطنبول",
+      "sl2": "11 مبنى عصرياً على مساحة *72,500 م²*"
+    },
+    "s1": {
+      "h": "مجمع سكني يضم",
+      "hR": "1,556 شقة",
+      "u1": "11 مبنى بارتفاع 18 طابقاً",
+      "u2": "شقق من 1+1 حتى 4+1",
+      "u3": "مساحات من 74 إلى 253 م²",
+      "cl": "التسليم عام 2027",
+      "look": {
+        "bg": "images/03.webp"
+      }
+    },
+    "s2": {
+      "title": "موقع حيوي في غونشلي، باغجلار",
+      "t1": "1 دقيقة",
+      "d1": "لمحطة الحافلات",
+      "t2": "3 دقائق",
+      "d2": "للمستشفيات",
+      "t3": "5 دقائق",
+      "d3": "لمحطة المترو",
+      "t4": "5 دقائق",
+      "d4": "للطريق السريع E80",
+      "cl": "المدارس والجامعات بين *2-7 دقائق*",
+      "look": {
+        "overlay": {
+          "color": "#26247b",
+          "opacity": 35
+        },
+        "logo": "white-colorx",
+        "footerColor": "#ffffff",
+        "bg": "images/06.webp"
+      }
+    },
+    "s3": {
+      "title": "مرافق متكاملة لكل العائلة",
+      "items": [
+        "حراسة وكاميرات 24/7",
+        "مسبح داخلي مغلق",
+        "صالة رياضية",
+        "ساونا + حمام تركي",
+        "غرفة بخار",
+        "ملاعب أطفال",
+        "ملاعب كرة قدم وسلة",
+        "مساحات خضراء",
+        "مواقف سيارات",
+        "24 محلاً تجارياً"
+      ],
+      "look": {
+        "bg": "images/05.webp"
+      }
+    },
+    "s4": {
+      "nameEn": "AVRUPA KONUTLARI",
+      "slogan": "كل ما تحتاجه في متناول يدك",
+      "desc": [
+        "مجمع سكني بتصميم هندسي حديث وعالمي",
+        "قريب من مراكز التسوق والتعليم والصحة"
+      ],
+      "ctaBtn": "تواصل معنا",
+      "ctaText": "لمعرفة التفاصيل وحجز موعد للزيارة",
+      "look": {
+        "overlay": {
+          "color": "#26247b",
+          "opacity": 55
+        },
+        "logo": "white-colorx",
+        "footerColor": "#ffffff",
+        "bg": "images/02.webp"
+      },
+      "szName": 22
+    }
+  }
+}
