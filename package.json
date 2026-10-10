@@ -1,0 +1,11 @@
+{
+  "name": "housex-ping",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "node carousel/render.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
