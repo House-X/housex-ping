@@ -56,7 +56,10 @@ fs.mkdirSync(outDir, { recursive: true });
 
 const browser = await chromium.launch(
   fs.existsSync('/opt/pw-browsers/chromium') ? { executablePath: '/opt/pw-browsers/chromium' } : {}
-).catch(() => chromium.launch());
+).catch(() => chromium.launch())
+  // Playwright's own Chromium missing (e.g. blocked download on Windows): use an installed Chrome / Edge.
+  .catch(() => chromium.launch({ channel: 'chrome' }))
+  .catch(() => chromium.launch({ channel: 'msedge' }));
 
 const fmt = project.format === 'story' ? { w: 280, h: 280 * 16 / 9 } : { w: 378, h: 472.5 };
 const out = { w: 1080, h: project.format === 'story' ? 1920 : 1350 };
