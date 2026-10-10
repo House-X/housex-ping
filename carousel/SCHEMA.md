@@ -95,4 +95,4 @@ that does not exist, a price or payment word on slide 5 (سعر، دفع، أق�
 (empty navy cover collage), a footer phone other than `+90 551 4000 200`. `--check` runs only this step.
 
 Exit code 2 = a slide still has a layout issue after auto-fit; the warning names the element
-(`el_d3`, `el_tAr:logo`, `el_descBox:overlaps-cta` …). Shorten that text and re-render.
+(`el_d3`, `el_tAr:logo`, `el_descBox:overlaps-cta`, `el_t1:clip` — text spilling out of its box …). Shorten that text and re-render.

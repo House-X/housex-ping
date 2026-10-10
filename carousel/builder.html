@@ -1044,6 +1044,10 @@ function fitIssues(){
     if(r.top<sl.top-1||r.bottom>floor+1)out.push(el.id);
     if(lr&&r.top<lr.bottom&&r.bottom>lr.top&&r.left<lr.right&&r.right>lr.left)out.push(el.id+':logo');
     if(el.scrollWidth>el.clientWidth+2)out.push(el.id+':wrap');
+    // Centred text that overflows spills out on both sides, which scrollWidth misses
+    // (e.g. a long word in a location time box): compare the text's own box.
+    var rg=document.createRange();rg.selectNodeContents(el);var tr=rg.getBoundingClientRect();
+    if(tr.width&&(tr.left<r.left-1||tr.right>r.right+1))out.push(el.id+':clip');
   });
   if(curSlide===4){
     var db=document.getElementById('el_descBox'),ct=document.getElementById('el_cta');
