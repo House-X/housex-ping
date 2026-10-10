@@ -67,8 +67,27 @@ const MONEY = /سعر|أسعار|اسعار|دفع|قسط|أقساط|اقساط|
   if (args.includes('--check')) process.exit(0);
 }
 
+// Photos (slide bg, cover phone, compare pairs) are paths relative to tip.json,
+// inlined as data URIs so the render never depends on remote hosts.
+const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
+const inline = file => `data:${MIME[path.extname(file).toLowerCase()] || 'application/octet-stream'};base64,${fs.readFileSync(file).toString('base64')}`;
+const photo = ref => {
+  if (!ref || /^data:/.test(ref)) return ref;
+  const file = path.resolve(tipDir, ref);
+  if (!fs.existsSync(file)) { console.error(`✖ الصورة غير موجودة: ${ref}`); process.exit(1); }
+  return inline(file);
+};
 const logoFile = path.join(here, '..', 'assets', `logo-${tip.logo || 'white-colorx'}.png`);
-const data = { ...tip, logo: `data:image/png;base64,${fs.readFileSync(logoFile).toString('base64')}` };
+const data = {
+  ...tip,
+  logo: inline(logoFile),
+  slides: tip.slides.map(s => ({
+    ...s,
+    bg: photo(s.bg),
+    phonePhoto: photo(s.phonePhoto),
+    pairs: s.pairs && s.pairs.map(p => ({ ...p, photo: photo(p.photo) })),
+  })),
+};
 
 const outDir = path.join(tipDir, 'out');
 fs.mkdirSync(outDir, { recursive: true });
@@ -84,7 +103,7 @@ for (const format of FORMATS) {
   await page.goto(pathToFileURL(path.join(here, 'tips.html')).href, { waitUntil: 'networkidle' });
   for (let i = 0; i < tip.slides.length; i++) {
     const fit = await page.evaluate(([d, n, f]) => window.TIPS.fit(d, n, f), [data, i, format]);
-    await page.waitForTimeout(120);
+    await page.waitForTimeout(350);   // let the inlined photos decode
     const file = path.join(outDir, `${slug}-s${i + 1}${format === 'story' ? '-story' : ''}.png`);
     await page.screenshot({ path: file, animations: 'disabled', clip: { x: 0, y: 0, width: 1080, height: h } });
     files.push({ format, file });

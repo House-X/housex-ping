@@ -3,99 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <title>HOUSE X — Tips template</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* One slide at full export size (1080 × 1350 feed, 1080 × 1920 story).
-   Every font size is calc(var(--k) * N): render-tips.mjs lowers --k until the
-   content fits, never below the 40px minimum text size. */
-:root{--navy:#26247b;--navy2:#141352;--gold:#ffca05;--red:#ec1c24;--white:#fff;--k:1}
+   Font sizes are calc(var(--k) * N) with a 40px floor; render-tips.mjs lowers
+   --k until the content fits. Photo slides: full-bleed photo + navy shade +
+   glass cards. Special pieces: the annotated title deed (.deed) and the
+   listing phone with a magnifier (.phone). */
+:root{--navy:#26247b;--navy2:#141352;--ink:#0d0c3a;--gold:#ffca05;--red:#ec1c24;--k:1}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{background:#0b0b2a}
 body{font-family:'Cairo',sans-serif;direction:rtl;text-align:right}
-#slide{position:relative;width:1080px;height:1350px;overflow:hidden;color:var(--white);
-  background:linear-gradient(170deg,var(--navy) 0%,var(--navy) 55%,var(--navy2) 100%)}
+#slide{position:relative;width:1080px;height:1350px;overflow:hidden;color:#fff;background:var(--navy2)}
 #slide.story{height:1920px}
-#pattern{position:absolute;inset:0;opacity:.05;background-size:180px 180px}
-#glow{position:absolute;width:900px;height:900px;border-radius:50%;left:-420px;bottom:-460px;
-  background:radial-gradient(circle,rgba(255,202,5,.16),rgba(255,202,5,0) 65%)}
+#bg{position:absolute;inset:-2%;background-size:cover;background-position:center}
+#shade{position:absolute;inset:0}
+#pattern{position:absolute;inset:0;opacity:.06;background-size:150px 150px;mix-blend-mode:screen}
+#frame{position:absolute;inset:26px;border:1.5px solid rgba(255,202,5,.35);border-radius:34px;pointer-events:none}
+#bigNum{position:absolute;left:-30px;bottom:90px;font-family:'Poppins',sans-serif;font-weight:800;font-size:640px;line-height:.8;
+  color:transparent;-webkit-text-stroke:3px rgba(255,202,5,.22);direction:ltr}
+.story #bigNum{bottom:180px;font-size:820px}
 .lat{font-family:'Poppins',sans-serif;direction:ltr;unicode-bidi:isolate}
-.acc{color:var(--gold)}
-.red{color:var(--red)}
+.acc{color:var(--gold)} .red{color:var(--red)}
 
-#logo{position:absolute;top:48px;left:52px;width:250px}
-#series{position:absolute;top:62px;right:56px;background:var(--gold);color:var(--navy);
-  font-weight:900;font-size:40px;line-height:1;padding:16px 30px 20px;border-radius:999px}
-#footer{position:absolute;bottom:46px;left:56px;right:56px;display:flex;justify-content:space-between;
-  align-items:center;direction:ltr;font-family:'Poppins',sans-serif;font-weight:600;font-size:40px;color:rgba(255,255,255,.92)}
-#footer .web{color:rgba(255,255,255,.7)}
-#count{font-family:'Poppins',sans-serif;font-weight:600;font-size:40px;color:var(--gold);direction:ltr}
+#logo{position:absolute;top:56px;left:60px;width:240px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))}
+#series{position:absolute;top:66px;right:62px;display:flex;align-items:center;gap:14px;background:var(--gold);color:var(--navy);
+  font-weight:900;font-size:40px;line-height:1;padding:14px 28px 20px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#series i{width:16px;height:16px;border-radius:50%;background:var(--red);display:block;margin-top:6px}
+#footer{position:absolute;bottom:52px;left:62px;right:62px;display:flex;justify-content:space-between;align-items:center;
+  direction:ltr;font-family:'Poppins',sans-serif;font-weight:600;font-size:40px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+#footer .web{color:rgba(255,255,255,.78)}
+#dots{display:flex;gap:10px;align-items:center}
+#dots b{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.35);display:block}
+#dots b.on{width:44px;border-radius:8px;background:var(--gold)}
 
-#content{position:absolute;top:220px;bottom:150px;left:64px;right:64px;display:flex;flex-direction:column;justify-content:center;gap:calc(var(--k)*34px)}
-.story #content{top:300px;bottom:230px;gap:calc(var(--k)*48px)}
+#content{position:absolute;top:196px;bottom:140px;left:66px;right:66px;display:flex;flex-direction:column;justify-content:safe center;gap:calc(var(--k)*26px)}
+.story #content{top:300px;bottom:240px;gap:calc(var(--k)*46px)}
+#content.bottom{justify-content:flex-end}
 
-/* cover */
-.kicker{font-size:max(40px,calc(var(--k)*44px));font-weight:700;color:var(--red);background:#fff;align-self:flex-start;padding:6px 26px 10px;border-radius:14px}
-.hero{font-size:calc(var(--k)*112px);font-weight:900;line-height:1.22}
-.sub{font-size:calc(var(--k)*50px);font-weight:600;line-height:1.5;color:rgba(255,255,255,.88)}
-.swipe{align-self:flex-start;font-size:calc(var(--k)*46px);font-weight:900;color:var(--navy);background:var(--gold);padding:10px 34px 16px;border-radius:999px}
-.icon{align-self:flex-start;width:calc(var(--k)*220px);height:calc(var(--k)*220px)}
-.story .icon{width:calc(var(--k)*280px);height:calc(var(--k)*280px)}
+/* text */
+.kicker{align-self:flex-start;display:flex;align-items:center;gap:14px;font-size:max(40px,calc(var(--k)*42px));font-weight:700;color:#fff;
+  background:var(--red);padding:6px 26px 12px;border-radius:14px}
+.hero{font-size:calc(var(--k)*108px);font-weight:900;line-height:1.2;text-shadow:0 6px 30px rgba(0,0,0,.45)}
+.sub{font-size:calc(var(--k)*48px);font-weight:600;line-height:1.5;color:rgba(255,255,255,.92);text-shadow:0 2px 16px rgba(0,0,0,.5)}
+.swipe{align-self:flex-start;display:flex;align-items:center;gap:16px;font-size:calc(var(--k)*46px);font-weight:900;color:var(--navy);
+  background:var(--gold);padding:10px 34px 16px;border-radius:999px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.title{font-size:calc(var(--k)*68px);font-weight:900;line-height:1.25;text-shadow:0 4px 24px rgba(0,0,0,.5)}
+.title::after{content:"";display:block;width:120px;height:10px;border-radius:6px;background:var(--red);margin-top:14px}
+.center .title::after{margin-inline:auto}
 
-/* titles */
-.title{font-size:calc(var(--k)*70px);font-weight:900;line-height:1.3;color:var(--gold)}
-.note{font-size:max(40px,calc(var(--k)*42px));font-weight:700;line-height:1.5;color:#fff;border-right:10px solid var(--red);padding-right:24px}
+/* glass */
+.glass{background:rgba(17,16,70,.62);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border:1.5px solid rgba(255,255,255,.18);border-radius:34px;box-shadow:0 24px 60px rgba(0,0,0,.35);position:relative}
+.glass::before{content:"";position:absolute;top:-1.5px;right:60px;width:140px;height:5px;border-radius:4px;background:var(--gold)}
 
 /* points */
-.cards{display:flex;flex-direction:column;gap:calc(var(--k)*26px)}
-.card{display:flex;gap:30px;align-items:flex-start;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12);border-radius:28px;padding:calc(var(--k)*28px) 34px}
-.num{flex:none;width:calc(var(--k)*84px);height:calc(var(--k)*84px);border-radius:50%;background:var(--red);color:#fff;
-  font-family:'Poppins',sans-serif;font-weight:700;font-size:calc(var(--k)*46px);display:flex;align-items:center;justify-content:center}
-.card .txt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.cards{display:flex;flex-direction:column;gap:calc(var(--k)*22px)}
+.card{display:flex;gap:28px;align-items:flex-start;padding:calc(var(--k)*26px) 34px}
+.num{flex:none;width:calc(var(--k)*82px);height:calc(var(--k)*82px);border-radius:24px;background:var(--red);color:#fff;transform:rotate(-6deg);
+  font-family:'Poppins',sans-serif;font-weight:800;font-size:calc(var(--k)*46px);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(236,28,36,.4)}
+.card .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
 .term{font-family:'Poppins',sans-serif;font-weight:700;font-size:calc(var(--k)*46px);color:var(--gold);direction:ltr;text-align:right;line-height:1.3}
 .desc{font-size:calc(var(--k)*46px);font-weight:600;line-height:1.45}
+.note{display:flex;gap:20px;align-items:center;font-size:max(40px,calc(var(--k)*44px));font-weight:800;line-height:1.45;
+  background:var(--gold);color:var(--navy);padding:calc(var(--k)*20px) 32px;border-radius:26px;box-shadow:0 14px 34px rgba(0,0,0,.3)}
+.note .bang{flex:none;width:64px;height:64px;border-radius:50%;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:800}
+
+/* the title deed */
+.deedWrap{position:relative;align-self:center;flex:none}
+.deed{position:relative;width:calc(var(--k)*700px);background-color:#f7f2e3;color:var(--ink);border-radius:20px;padding:26px 30px 30px;direction:ltr;text-align:left;
+  box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 10px rgba(255,255,255,.08)}
+.deed .head{position:relative;display:flex;justify-content:space-between;align-items:center;border-bottom:3px double rgba(38,36,123,.5);padding-bottom:12px;margin-bottom:10px}
+.deed .head b{font-family:'Poppins',sans-serif;font-weight:800;font-size:calc(var(--k)*40px);letter-spacing:3px;color:var(--navy);white-space:nowrap}
+.deed .sample{white-space:nowrap;font-family:'Poppins',sans-serif;font-weight:800;font-size:20px;color:var(--red);border:3px solid var(--red);border-radius:10px;padding:2px 12px;transform:rotate(-8deg);letter-spacing:2px}
+.deed .row{position:relative;display:flex;justify-content:space-between;gap:20px;padding:calc(var(--k)*12px) 18px;border-radius:12px;font-family:'Poppins',sans-serif}
+.deed .row:nth-child(odd){background:rgba(38,36,123,.05)}
+.deed .k{font-weight:600;font-size:calc(var(--k)*28px);color:rgba(13,12,58,.65)}
+.deed .v{font-weight:700;font-size:calc(var(--k)*28px)}
+.deed .pin{position:absolute;right:-58px;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;background:var(--red);color:#fff;
+  font-weight:800;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(236,28,36,.5);border:4px solid #fff}
+.deed .row.dim{opacity:.22}
+.deed .row.focus{background:rgba(255,202,5,.35);outline:3px solid var(--gold)}
+.tilt{transform:rotate(-4deg)}
+.deed.mini{width:calc(var(--k)*640px);padding:18px 26px 20px}
+.deed.mini .head{padding-bottom:8px;margin-bottom:6px}
+.deed.mini .head b{font-size:calc(var(--k)*32px)}
+.deed.tilt{width:calc(var(--k)*600px);padding:20px 26px 24px}
+.deed.tilt .row{padding:calc(var(--k)*8px) 16px}
+.deed.tilt .head b{font-size:calc(var(--k)*34px)}
+
+/* listing phone + magnifier */
+.phoneWrap{position:relative;flex:none;width:calc(var(--k)*390px);height:calc(var(--k)*660px)}
+.story .phoneWrap{width:calc(var(--k)*420px);height:calc(var(--k)*760px)}
+/* cover with the phone: text on the right, phone on the left */
+#content.split{flex-direction:row;align-items:center;gap:20px}
+.split .textCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(var(--k)*28px)}
+.split .hero{font-size:calc(var(--k)*92px)}
+.phone{position:absolute;inset:0;border-radius:64px;border:16px solid #0b0b1c;background:#000;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 3px rgba(255,255,255,.15);transform:rotate(5deg)}
+.phone .shot{position:absolute;inset:0;background-size:cover;background-position:center}
+.phone .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:130px;height:34px;border-radius:20px;background:#0b0b1c}
+.phone .chip{position:absolute;top:70px;right:22px;background:var(--gold);color:var(--navy);font-weight:900;font-size:30px;padding:2px 18px 6px;border-radius:12px}
+.phone .heart{position:absolute;top:66px;left:22px;width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center}
+.phone .info{position:absolute;left:18px;right:18px;bottom:22px;background:#fff;color:var(--ink);border-radius:26px;padding:16px 22px}
+.phone .info b{display:block;font-size:30px;font-weight:900;line-height:1.3}
+.phone .info span{font-size:24px;font-weight:600;color:#55557a}
+.phone .stars{color:var(--gold);font-size:26px;letter-spacing:2px;direction:ltr;text-align:right}
+.lens{position:absolute;left:-40px;bottom:-30px;width:230px;height:230px;border-radius:50%;border:16px solid var(--red);background:rgba(13,12,58,.82);
+  backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.lens::after{content:"";position:absolute;width:26px;height:110px;background:var(--red);border-radius:14px;left:6px;bottom:-96px;transform:rotate(40deg)}
+.lens b{font-size:110px;line-height:1;font-weight:900;color:var(--gold)}
+.lens span{font-size:40px;font-weight:900;margin-top:-10px}
 
 /* compare */
-.pair{display:flex;flex-direction:column;gap:0;border-radius:28px;overflow:hidden;border:2px solid rgba(255,255,255,.14)}
-.pair .ad{background:rgba(255,255,255,.08);padding:calc(var(--k)*24px) 34px;font-size:calc(var(--k)*46px);font-weight:700;line-height:1.4;display:flex;gap:20px;align-items:baseline}
-.pair .ask{background:var(--gold);color:var(--navy);padding:calc(var(--k)*24px) 34px;font-size:calc(var(--k)*46px);font-weight:700;line-height:1.45;display:flex;gap:20px;align-items:baseline}
-.lbl{flex:none;font-size:40px;font-weight:900;padding:0 18px 4px;border-radius:12px}
-.ad .lbl{background:rgba(255,255,255,.16);color:#fff}
-.ask .lbl{background:var(--navy);color:var(--gold)}
+.cmp{border-radius:34px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);border:1.5px solid rgba(255,255,255,.2)}
+.cmp .ph{position:relative;height:calc(var(--k)*250px);background-size:cover;background-position:center}
+.one .cmp .ph{height:calc(var(--k)*420px)}
+.story .cmp .ph{height:calc(var(--k)*330px)}
+.story .one .cmp .ph{height:calc(var(--k)*560px)}
+.cmp .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(13,12,58,.75),rgba(13,12,58,0) 60%)}
+.cmp .tag{position:absolute;z-index:2;top:20px;right:22px;background:#fff;color:var(--navy);font-weight:900;font-size:36px;padding:2px 18px 8px;border-radius:12px;transform:rotate(-3deg)}
+.cmp .quote{position:absolute;z-index:2;right:30px;left:30px;bottom:16px;font-size:calc(var(--k)*50px);font-weight:900;text-shadow:0 3px 14px rgba(0,0,0,.6)}
+.cmp .q{display:flex;gap:22px;align-items:center;background:var(--gold);color:var(--navy);padding:calc(var(--k)*22px) 30px;font-size:calc(var(--k)*46px);font-weight:800;line-height:1.4}
+.cmp .qlbl{flex:none;background:var(--navy);color:var(--gold);font-size:40px;font-weight:900;padding:0 20px 6px;border-radius:14px}
+.vs{align-self:center;margin:calc(var(--k)*-48px) 0;z-index:3;width:96px;height:96px;border-radius:50%;background:var(--red);border:6px solid #fff;
+  display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-weight:800;font-size:40px;box-shadow:0 10px 26px rgba(0,0,0,.4)}
 
 /* share + cta */
 .center{align-items:center;text-align:center}
 .center .title,.center .hero,.center .sub{text-align:center}
-.big{font-size:calc(var(--k)*88px);font-weight:900;line-height:1.3;text-align:center}
-.lines{display:flex;flex-direction:column;gap:14px;font-size:calc(var(--k)*46px);font-weight:600;line-height:1.5;text-align:center;color:rgba(255,255,255,.9)}
-.ctaRow{display:flex;flex-direction:column;align-items:center;gap:22px;margin-top:10px}
-.btn{background:var(--gold);color:var(--navy);font-weight:900;font-size:calc(var(--k)*54px);padding:12px 56px 20px;border-radius:22px}
+.panel{padding:calc(var(--k)*50px) 50px;display:flex;flex-direction:column;align-items:center;gap:calc(var(--k)*24px);text-align:center}
+.big{font-size:calc(var(--k)*80px);font-weight:900;line-height:1.3;text-align:center}
+.lines{display:flex;flex-direction:column;gap:6px;font-size:calc(var(--k)*46px);font-weight:600;line-height:1.5;color:rgba(255,255,255,.92)}
+.btn{display:flex;align-items:center;gap:18px;background:var(--gold);color:var(--navy);font-weight:900;font-size:calc(var(--k)*54px);padding:12px 54px 20px;border-radius:22px;box-shadow:0 14px 34px rgba(255,202,5,.3)}
 .ctaText{font-size:calc(var(--k)*46px);font-weight:700}
-.phone{font-family:'Poppins',sans-serif;font-weight:700;font-size:calc(var(--k)*64px);direction:ltr;color:#fff}
-.webBig{font-family:'Poppins',sans-serif;font-weight:600;font-size:max(40px,calc(var(--k)*44px));direction:ltr;color:rgba(255,255,255,.75)}
+.phoneNum{font-family:'Poppins',sans-serif;font-weight:800;font-size:calc(var(--k)*66px);direction:ltr;color:#fff}
+.webBig{font-family:'Poppins',sans-serif;font-weight:600;font-size:max(40px,calc(var(--k)*42px));direction:ltr;color:rgba(255,255,255,.75)}
+.plane{width:calc(var(--k)*170px);height:calc(var(--k)*170px)}
 </style>
 </head>
 <body>
 <div id="slide">
+  <div id="bg"></div>
+  <div id="shade"></div>
   <div id="pattern"></div>
-  <div id="glow"></div>
+  <div id="bigNum"></div>
+  <div id="frame"></div>
   <img id="logo" alt="">
-  <div id="series"></div>
+  <div id="series"><i></i><span></span></div>
   <div id="content"></div>
-  <div id="footer"><span class="ph"></span><span id="count"></span><span class="web"></span></div>
+  <div id="footer"><span class="ph"></span><span id="dots"></span><span class="web"></span></div>
 </div>
 <script>
-// Pattern: repeated brand X (SVG data URI, per the brand rules — no repeating gradients).
-document.getElementById('pattern').style.backgroundImage = "url(\"data:image/svg+xml;utf8," + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><path d="M60 60 L120 120 M120 60 L60 120" stroke="#fff" stroke-width="14" stroke-linecap="round"/></svg>') + "\")";
-
-var ICONS = {
-  // title deed: a sheet with lines and a seal
-  deed: '<svg viewBox="0 0 220 220"><rect x="38" y="18" width="144" height="184" rx="14" fill="none" stroke="#ffca05" stroke-width="10"/><path d="M66 62h88M66 92h88M66 122h56" stroke="#fff" stroke-width="10" stroke-linecap="round"/><circle cx="146" cy="160" r="24" fill="#ec1c24"/><path d="M136 160l7 7 13-14" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  // photo frame with a magnifier
-  frame: '<svg viewBox="0 0 220 220"><rect x="14" y="34" width="160" height="124" rx="14" fill="none" stroke="#ffca05" stroke-width="10"/><path d="M30 140l42-46 30 32 20-20 36 34" stroke="#fff" stroke-width="9" fill="none" stroke-linejoin="round"/><circle cx="150" cy="150" r="34" fill="#26247b" stroke="#ec1c24" stroke-width="10"/><path d="M174 174l30 30" stroke="#ec1c24" stroke-width="12" stroke-linecap="round"/></svg>',
-  // paper plane
-  share: '<svg viewBox="0 0 220 220"><path d="M20 104L198 26l-52 170-44-62z" fill="none" stroke="#ffca05" stroke-width="10" stroke-linejoin="round"/><path d="M102 134l96-108" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M102 134l-6 52 28-30" fill="none" stroke="#ec1c24" stroke-width="10" stroke-linejoin="round"/></svg>'
-};
+var svgURI = function(s){ return "url(\"data:image/svg+xml;utf8," + encodeURIComponent(s) + "\")"; };
+// Brand X pattern (SVG data URI, per the brand rules) and the deed's guilloche lines.
+document.getElementById('pattern').style.backgroundImage = svgURI('<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><path d="M55 55 L95 95 M95 55 L55 95" stroke="#fff" stroke-width="10" stroke-linecap="round"/></svg>');
+var GUILLOCHE = svgURI('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><path d="M0 30 Q30 0 60 30 T120 30 M0 40 Q30 10 60 40 T120 40 M0 20 Q30 -10 60 20 T120 20" fill="none" stroke="#26247b" stroke-opacity=".08" stroke-width="2"/></svg>');
 
 // Text polish: Latin digits, *accent*, Latin runs isolated left-to-right in Poppins.
 function digits(s){return String(s).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);});}
@@ -103,91 +165,159 @@ function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'
 function fmt(s, accClass){
   // Last two words stay together, so no single word sits alone on the last line.
   var t = esc(digits(s || '').replace(/ (\S+)$/, ' $1'));
-  t = t.replace(/([A-Za-zÇĞİÖŞÜçğıöşü][A-Za-z0-9ÇĞİÖŞÜçğıöşü .\/+\-]*[A-Za-z0-9ÇĞİÖŞÜçğıöşü)]|[A-Za-zÇĞİÖŞÜçğıöşü]|\d+(?:[.,+\/\-]\d+)*%?)/g, '<span class="lat">$1</span>');
+  t = t.replace(/([A-Za-zÇĞİÖŞÜçğıöşü][A-Za-z0-9ÇĞİÖŞÜçğıöşü .\/+\-]*[A-Za-z0-9ÇĞİÖŞÜçğıöşü]|[A-Za-zÇĞİÖŞÜçğıöşü]|\d+(?:[.,+\/\-]\d+)*%?)/g, '<span class="lat">$1</span>');
   return t.replace(/\*([^*]+)\*/g, '<span class="' + (accClass || 'acc') + '">$1</span>');
 }
 function el(tag, cls, html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function bgImg(ref){return ref ? 'url("' + ref + '")' : '';}
 
-function build(s){
+var PLANE = '<svg class="plane" viewBox="0 0 220 220"><path d="M20 104L198 26l-52 170-44-62z" fill="rgba(255,202,5,.15)" stroke="#ffca05" stroke-width="10" stroke-linejoin="round"/><path d="M102 134l96-108" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M102 134l-6 52 28-30" fill="none" stroke="#ec1c24" stroke-width="10" stroke-linejoin="round"/></svg>';
+var HEART = '<svg width="34" height="34" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.3C1 8.2 3.4 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.6 0 6 3.7 4.5 7.2C19.5 16.4 12 21 12 21z" fill="#ec1c24"/></svg>';
+
+// The deed mockup: rows [pin, key, value]; focus = pins to highlight (the others dim).
+function deed(d, focus, extra){
+  var w = el('div','deedWrap');
+  var p = el('div','deed' + (extra ? ' ' + extra : ''));
+  p.style.backgroundImage = GUILLOCHE;
+  p.appendChild(el('div','head','<b>TAPU SENEDİ</b><span class="sample">ÖRNEK · SAMPLE</span>'));
+  (d.rows||[]).forEach(function(r){
+    // Zoomed view: only the rows this slide explains.
+    if (focus && focus.indexOf(r[0]) < 0) return;
+    var row = el('div','row' + (focus ? ' focus' : ''),'<span class="k">' + esc(r[1]) + '</span><span class="v">' + esc(r[2]) + '</span>');
+    if (r[0]) row.appendChild(el('span','pin',String(r[0])));
+    p.appendChild(row);
+  });
+  w.appendChild(p);
+  return w;
+}
+
+function phone(s){
+  var w = el('div','phoneWrap');
+  var p = el('div','phone');
+  var shot = el('div','shot'); shot.style.backgroundImage = bgImg(s.phonePhoto);
+  p.appendChild(shot);
+  p.insertAdjacentHTML('beforeend', '<div class="notch"></div><div class="chip">' + esc(s.phoneChip||'إعلان مميز') + '</div><div class="heart">' + HEART + '</div>' +
+    '<div class="info"><div class="stars">★★★★★</div><b>' + fmt(s.phoneTitle||'') + '</b><span>' + fmt(s.phoneSub||'') + '</span></div>');
+  w.appendChild(p);
+  w.appendChild(el('div','lens','<b>?</b><span>' + esc(s.lensText||'الحقيقة') + '</span>'));
+  return w;
+}
+
+function build(s, data){
   var c = document.getElementById('content');
   c.innerHTML=''; c.className='';
   if (s.type === 'cover'){
-    if (s.icon) c.appendChild(el('div','icon',ICONS[s.icon]));
-    if (s.kicker) c.appendChild(el('div','kicker',fmt(s.kicker)));
-    c.appendChild(el('div','hero',fmt(s.title)));
-    if (s.sub) c.appendChild(el('div','sub',fmt(s.sub)));
-    if (s.swipe) c.appendChild(el('div','swipe',fmt(s.swipe)));
+    if (s.visual === 'deed') c.appendChild(deed(data.deed, null, 'tilt'));
+    var col = c;
+    if (s.visual === 'phone'){ c.classList.add('split'); col = el('div','textCol'); c.appendChild(col); }
+    if (s.kicker) col.appendChild(el('div','kicker',fmt(s.kicker)));
+    col.appendChild(el('div','hero',fmt(s.title)));
+    if (s.sub) col.appendChild(el('div','sub',fmt(s.sub)));
+    if (s.swipe) col.appendChild(el('div','swipe',fmt(s.swipe)));
+    if (s.visual === 'phone') c.appendChild(phone(s));
   } else if (s.type === 'points'){
-    c.appendChild(el('div','title',fmt(s.title,'red')));
+    c.appendChild(el('div','title',fmt(s.title,'acc')));
+    if (s.deedFocus) c.appendChild(deed(data.deed, s.deedFocus, 'mini'));
     var cards = el('div','cards');
     (s.items||[]).forEach(function(it){
-      var card = el('div','card');
+      var card = el('div','card glass');
       card.appendChild(el('div','num',fmt(String(it.n))));
       var tx = el('div','txt');
-      if (it.term) tx.appendChild(el('div','term',esc(it.term)));
+      // With the deed on the slide its pins already name the field: the card keeps only the number.
+      if (it.term && !s.deedFocus) tx.appendChild(el('div','term',esc(it.term)));
       tx.appendChild(el('div','desc',fmt(it.text,'acc')));
       card.appendChild(tx); cards.appendChild(card);
     });
     c.appendChild(cards);
   } else if (s.type === 'compare'){
-    c.appendChild(el('div','title',fmt(s.title,'red')));
-    (s.pairs||[]).forEach(function(p){
-      var box = el('div','pair');
-      box.appendChild(el('div','ad','<span class="lbl">' + esc(s.adLabel||'الإعلان') + '</span><span>' + fmt(p.ad) + '</span>'));
-      box.appendChild(el('div','ask','<span class="lbl">' + esc(s.askLabel||'اسأل') + '</span><span>' + fmt(p.ask,'red') + '</span>'));
+    c.appendChild(el('div','title',fmt(s.title,'acc')));
+    if ((s.pairs||[]).length === 1) c.classList.add('one');
+    (s.pairs||[]).forEach(function(p, j){
+      if (j) c.appendChild(el('div','vs','VS'));
+      var box = el('div','cmp');
+      var ph = el('div','ph','<span class="tag">' + esc(s.adLabel||'الإعلان') + '</span><div class="quote">' + fmt(p.ad) + '</div>');
+      ph.style.backgroundImage = bgImg(p.photo);
+      box.appendChild(ph);
+      box.appendChild(el('div','q','<span class="qlbl">' + esc(s.askLabel||'اسأل') + '</span><span>' + fmt(p.ask,'red') + '</span>'));
       c.appendChild(box);
     });
   } else if (s.type === 'share'){
     c.classList.add('center');
-    c.appendChild(el('div','icon',ICONS.share)).style.alignSelf='center';
-    c.appendChild(el('div','big',fmt(s.title)));
-    if (s.sub) c.appendChild(el('div','sub',fmt(s.sub)));
+    var g = el('div','glass panel', PLANE);
+    g.appendChild(el('div','big',fmt(s.title)));
+    if (s.sub) g.appendChild(el('div','sub',fmt(s.sub)));
+    c.appendChild(g);
   } else if (s.type === 'cta'){
     c.classList.add('center');
-    c.appendChild(el('div','big',fmt(s.title)));
+    var g2 = el('div','glass panel');
+    g2.appendChild(el('div','big',fmt(s.title)));
     var ln = el('div','lines');
     (s.lines||[]).forEach(function(l){ln.appendChild(el('div','',fmt(l)));});
-    c.appendChild(ln);
-    var row = el('div','ctaRow');
-    row.appendChild(el('div','btn',esc(s.button||'تواصل معنا')));
-    if (s.ctaText) row.appendChild(el('div','ctaText',fmt(s.ctaText)));
-    row.appendChild(el('div','phone',esc(s.phone)));
-    row.appendChild(el('div','webBig',esc(s.web)));
-    c.appendChild(row);
+    g2.appendChild(ln);
+    g2.appendChild(el('div','btn',esc(s.button||'تواصل معنا')));
+    if (s.ctaText) g2.appendChild(el('div','ctaText',fmt(s.ctaText)));
+    g2.appendChild(el('div','phoneNum',esc(s.phone)));
+    g2.appendChild(el('div','webBig',esc(s.web)));
+    c.appendChild(g2);
   }
-  if (s.note) c.appendChild(el('div','note',fmt(s.note,'acc')));
+  if (s.note) c.appendChild(el('div','note','<span class="bang">!</span><span>' + fmt(s.note,'red') + '</span>'));
+  if (s.align === 'bottom') c.classList.add('bottom');
 }
 
-// Does anything spill out of the content box or overlap the footer / header?
+// Does anything spill out of the content box?
 function issues(){
   var out=[], c=document.getElementById('content'), cr=c.getBoundingClientRect();
   if (c.scrollHeight > c.clientHeight + 1) out.push('content:overflow');
-  c.querySelectorAll('*').forEach(function(e){
+  [].forEach.call(c.children, function(e){ var r=e.getBoundingClientRect(); if (r.top < cr.top - 1 || r.bottom > cr.bottom + 1) out.push('content:overflow'); });
+  c.querySelectorAll('.title,.hero,.sub,.desc,.term,.big,.lines,.q,.quote,.note,.ctaText').forEach(function(e){
     var r=e.getBoundingClientRect();
-    if (r.width && (r.left < cr.left - 1 || r.right > cr.right + 1)) out.push('content:clip:' + (e.className||e.tagName));
+    if (r.width && (r.left < cr.left - 2 || r.right > cr.right + 2)) out.push('content:clip:' + e.className);
   });
   return out.filter(function(v,i,a){return a.indexOf(v)===i;});
 }
 
+var SHADES = {
+  // photo darkened top and bottom, readable everywhere
+  full:   'linear-gradient(180deg,rgba(13,12,58,.82) 0%,rgba(38,36,123,.62) 30%,rgba(38,36,123,.70) 60%,rgba(13,12,58,.95) 100%)',
+  // photo visible at the top, text sits on the dark bottom
+  bottom: 'linear-gradient(180deg,rgba(13,12,58,.55) 0%,rgba(13,12,58,.15) 22%,rgba(20,19,82,.55) 48%,rgba(20,19,82,.94) 72%,#141352 100%)',
+  // deep navy with only a hint of the photo
+  deep:   'linear-gradient(180deg,rgba(20,19,82,.90),rgba(38,36,123,.86) 50%,rgba(13,12,58,.97))',
+  // photo clearly visible behind glass cards
+  soft:   'linear-gradient(180deg,rgba(13,12,58,.78) 0%,rgba(38,36,123,.30) 38%,rgba(38,36,123,.38) 62%,rgba(13,12,58,.90) 100%)'
+};
+
 window.TIPS = {
-  // data = tip.json (logo already a data URI); i = slide index; format = post | story
+  // data = tip.json (images already data URIs); i = slide index; format = post | story
   render: function(data, i, format, k){
-    var slide=document.getElementById('slide'), s=data.slides[i], n=data.slides.length;
+    var slide=document.getElementById('slide'), s=data.slides[i];
     slide.className = format === 'story' ? 'story' : '';
     document.documentElement.style.setProperty('--k', k || 1);
+    document.getElementById('bg').style.backgroundImage = bgImg(s.bg);
+    document.getElementById('bg').style.filter = s.bgBlur ? 'blur(' + s.bgBlur + 'px)' : '';
+    document.getElementById('bg').style.backgroundPosition = s.bgPos || 'center';
+    // bgZoom (percent of the slide height) + bgPos lift the photo's middle above a bottom panel.
+    document.getElementById('bg').style.backgroundSize = s.bgZoom ? 'auto ' + s.bgZoom + '%' : 'cover';
+    document.getElementById('shade').style.background = SHADES[s.shade || (s.bg ? 'full' : 'deep')];
+    document.getElementById('bigNum').textContent = s.bigNum || '';
     document.getElementById('logo').src = data.logo;
-    document.getElementById('series').textContent = data.series || '';
-    var cta = s.type === 'cta';
+    document.querySelector('#series span').textContent = data.series || '';
     s.phone = s.phone || data.contact.phone; s.web = s.web || data.contact.web;
     document.querySelector('#footer .ph').textContent = data.contact.phone;
     document.querySelector('#footer .web').textContent = data.contact.web;
-    document.getElementById('footer').style.visibility = cta ? 'hidden' : 'visible';
-    document.getElementById('count').textContent = (i + 1) + '/' + n;
-    build(s);
+    document.getElementById('footer').style.visibility = s.type === 'cta' ? 'hidden' : 'visible';
+    document.getElementById('dots').innerHTML = data.slides.map(function(_, j){ return '<b' + (j === i ? ' class="on"' : '') + '></b>'; }).join('');
+    build(s, data);
     return issues();
   },
   fit: async function(data, i, format){
     var k = 1, got;
+    // Load every weight before measuring: a weight only starts loading once text uses it.
+    try {
+      await Promise.all(['400','600','700','800','900'].map(function(w){ return document.fonts.load(w + ' 40px Cairo', 'عربي'); })
+        .concat(['500','600','700','800'].map(function(w){ return document.fonts.load(w + ' 40px Poppins'); })));
+    } catch (e) {}
+    this.render(data, i, format, 1);
     await document.fonts.ready;
     while (true){
       got = this.render(data, i, format, k);

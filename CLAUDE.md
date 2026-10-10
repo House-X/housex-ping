@@ -76,7 +76,10 @@ Brand: colours/logo/fonts follow the `housex-brand` skill. Logos live in `carous
 
 Plan and idea bank: `carousel/tips/weekly-tips-plan.md` (Deck of Brilliance ideas, Wednesday 12:00 slot).
 Each tip: `carousel/tips/<slug>/tip.json` (slides typed `cover` · `points` · `compare` · `share` · `cta`, 4-8 slides,
-see the two examples) + `social.json` (same format as projects). Render:
+see the two examples) + `social.json` (same format as projects). Design per slide: `bg` photo in `images/`
+(copy from `carousel/projects/*/images/`), `shade` full · soft · bottom · deep, `bgBlur`, `bgZoom` + `bgPos`, `align: bottom`;
+cover `visual: deed` (annotated title deed from `deed.rows`) or `visual: phone` (listing phone + magnifier);
+`points` with `deedFocus` zooms into those deed rows; `compare` pairs carry a `photo`. Render:
 `node carousel/tips/render-tips.mjs carousel/tips/<slug>/tip.json` → feed + story PNGs, `<slug>-social.docx`,
 exported to `Documents/HOUSE X Carousels/<slug>/` (tips stay out of the projects registry).
 Same copy rules as projects (Latin digits, no prices on the CTA slide, footer `+90 551 4000 200`); legal facts

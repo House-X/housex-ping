@@ -9,54 +9,162 @@
     "https://www.ffkpartnerhukuk.com.tr/tapu-kayitlarinda-gizli-serhler-nasil-sorgulanir-2026-guncel-rehber-2/ (2026-10-10)"
   ],
   "logo": "white-colorx",
-  "contact": { "phone": "+90 551 4000 200", "web": "www.house-ex.com" },
+  "contact": {
+    "phone": "+90 551 4000 200",
+    "web": "www.house-ex.com"
+  },
   "slides": [
     {
       "type": "cover",
-      "icon": "deed",
-      "kicker": "اقرأ الطابو مثل الخبير",
       "title": "ورقة *واحدة* تحمي كل ما تملك",
-      "sub": "6 خانات في سند الطابو يجب أن تفهمها قبل التوقيع",
-      "swipe": "اسحب وتعرّف عليها ←"
+      "swipe": "اسحب وتعرّف عليها ←",
+      "visual": "deed",
+      "bg": "images/city-dusk.webp",
+      "shade": "full",
+      "sub": "6 خانات افهمها قبل التوقيع"
     },
     {
       "type": "points",
       "title": "أين عقارك *بالضبط*؟",
       "items": [
-        { "n": 1, "term": "Ada / Parsel", "text": "رقم الجزيرة والقطعة: عنوان الأرض الرسمي على الخريطة" },
-        { "n": 2, "term": "Blok · Kat · Bağımsız Bölüm", "text": "البلوك والطابق ورقم الشقة: تأكد أنها شقتك أنت" },
-        { "n": 3, "term": "Niteliği", "text": "صفة العقار: سكن (Mesken) أم مكتب أم محل تجاري؟" }
-      ]
+        {
+          "n": 1,
+          "term": "Ada / Parsel",
+          "text": "رقم الجزيرة والقطعة: عنوان الأرض الرسمي على الخريطة"
+        },
+        {
+          "n": 2,
+          "term": "Blok · Kat · Bağımsız Bölüm",
+          "text": "البلوك والطابق ورقم الشقة: تأكد أنها شقتك أنت"
+        },
+        {
+          "n": 3,
+          "term": "Niteliği",
+          "text": "صفة العقار: سكن (Mesken) أم مكتب أم محل تجاري؟"
+        }
+      ],
+      "bg": "images/aerial.webp",
+      "bgBlur": 2,
+      "deedFocus": [
+        1,
+        2,
+        3
+      ],
+      "shade": "soft"
     },
     {
       "type": "points",
       "title": "خانات *يخطئ* فيها كثيرون",
       "items": [
-        { "n": 4, "term": "Yüzölçümü", "text": "غالباً مساحة الأرض كلها، وليست مساحة شقتك" },
-        { "n": 5, "term": "Arsa Payı", "text": "حصتك من أرض المبنى المشتركة مع باقي الملاك" },
-        { "n": 6, "term": "Kat Mülkiyeti / Kat İrtifakı", "text": "ملكية طابقية نهائية، أم حق بناء لمبنى لم يكتمل رسمياً؟" }
-      ]
+        {
+          "n": 4,
+          "term": "Yüzölçümü",
+          "text": "غالباً مساحة الأرض كلها، وليست مساحة شقتك"
+        },
+        {
+          "n": 5,
+          "term": "Arsa Payı",
+          "text": "حصتك من أرض المبنى المشتركة مع باقي الملاك"
+        },
+        {
+          "n": 6,
+          "term": "Kat Mülkiyeti / Kat İrtifakı",
+          "text": "ملكية طابقية نهائية، أم حق بناء لمبنى لم يكتمل رسمياً؟"
+        }
+      ],
+      "bg": "images/towers-land.webp",
+      "bgBlur": 2,
+      "deedFocus": [
+        4,
+        5,
+        6
+      ],
+      "shade": "soft"
     },
     {
       "type": "points",
       "title": "ما *لا* يظهر في السند",
       "items": [
-        { "n": "!", "term": "İpotek · Haciz · Şerh", "text": "الرهن والحجز والقيود قد تُسجَّل بعد صدور السند بسنوات" },
-        { "n": "✓", "term": "Tapu Kayıt Belgesi", "text": "اطلب قيداً حديثاً من نظام الطابو الإلكتروني قبل التوقيع" }
+        {
+          "n": "!",
+          "term": "İpotek · Haciz · Şerh",
+          "text": "الرهن والحجز والقيود قد تُسجَّل بعد صدور السند بسنوات"
+        },
+        {
+          "n": "✓",
+          "term": "Tapu Kayıt Belgesi",
+          "text": "اطلب قيداً حديثاً من نظام الطابو الإلكتروني قبل التوقيع"
+        }
       ],
-      "note": "سند قديم نظيف لا يعني *سجلاً* نظيفاً اليوم"
+      "note": "سند قديم نظيف لا يعني *سجلاً* نظيفاً اليوم",
+      "bg": "images/night-balcony.webp",
+      "bigNum": "!",
+      "shade": "soft",
+      "bgBlur": 3
     },
     {
       "type": "share",
       "title": "تعرف أحداً سيوقّع قريباً؟",
-      "sub": "أرسل له هذا المنشور قبل أن يذهب إلى دائرة الطابو"
+      "sub": "أرسل له هذا المنشور قبل أن يذهب إلى دائرة الطابو",
+      "bg": "images/towers-palms.webp",
+      "shade": "bottom",
+      "align": "bottom",
+      "bgZoom": 165,
+      "bgPos": "center 92%"
     },
     {
       "type": "cta",
       "title": "احفظ المنشور ليوم التوقيع",
-      "lines": ["فريق هاوس إكس يراجع معك الطابو خانةً خانة", "منذ 2014 في إسطنبول"],
+      "lines": [
+        "فريق هاوس إكس يراجع معك الطابو خانةً خانة",
+        "منذ 2014 في إسطنبول"
+      ],
       "button": "تواصل معنا",
-      "ctaText": "لاستشارة قبل التوقيع"
+      "ctaText": "لاستشارة قبل التوقيع",
+      "bg": "images/sea-night.webp",
+      "shade": "bottom",
+      "align": "bottom",
+      "bgZoom": 165,
+      "bgPos": "center 92%"
     }
-  ]
+  ],
+  "deed": {
+    "rows": [
+      [
+        "",
+        "İli / İlçesi",
+        "İSTANBUL / BAŞAKŞEHİR"
+      ],
+      [
+        1,
+        "Ada / Parsel",
+        "1234 / 5"
+      ],
+      [
+        2,
+        "Blok / Kat / B.B. No",
+        "A / 5 / 23"
+      ],
+      [
+        3,
+        "Niteliği",
+        "MESKEN"
+      ],
+      [
+        4,
+        "Yüzölçümü",
+        "8.450,00 m²"
+      ],
+      [
+        5,
+        "Arsa Payı",
+        "120 / 48000"
+      ],
+      [
+        6,
+        "Mülkiyet",
+        "KAT MÜLKİYETİ"
+      ]
+    ]
+  }
 }
