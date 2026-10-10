@@ -71,3 +71,13 @@ Brand: colours/logo/fonts follow the `housex-brand` skill. Logos live in `carous
 - ~~Footer phone~~ decided 2026-10-10: always `+90 551 4000 200` (not the brand skill's `+90 551 900 6600`) unless Mohamad says otherwise.
 - ~~CTA badge contrast~~ decided 2026-10-10: slide-5 CTA badge is navy `#26247b` text on gold `#ffca05`.
 - Only one template exists (project launch). Proposed next: "market news" and "Turkish citizenship" templates on the same project.json pipeline.
+
+## Weekly tips carousels («قبل ما توقّع»)
+
+Plan and idea bank: `carousel/tips/weekly-tips-plan.md` (Deck of Brilliance ideas, Wednesday 12:00 slot).
+Each tip: `carousel/tips/<slug>/tip.json` (slides typed `cover` · `points` · `compare` · `share` · `cta`, 4-8 slides,
+see the two examples) + `social.json` (same format as projects). Render:
+`node carousel/tips/render-tips.mjs carousel/tips/<slug>/tip.json` → feed + story PNGs, `<slug>-social.docx`,
+exported to `Documents/HOUSE X Carousels/<slug>/` (tips stay out of the projects registry).
+Same copy rules as projects (Latin digits, no prices on the CTA slide, footer `+90 551 4000 200`); legal facts
+are checked online before writing and listed in `sources`; no invented client cases.

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>HOUSE X — Tips template</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* One slide at full export size (1080 × 1350 feed, 1080 × 1920 story).
+   Every font size is calc(var(--k) * N): render-tips.mjs lowers --k until the
+   content fits, never below the 40px minimum text size. */
+:root{--navy:#26247b;--navy2:#141352;--gold:#ffca05;--red:#ec1c24;--white:#fff;--k:1}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#0b0b2a}
+body{font-family:'Cairo',sans-serif;direction:rtl;text-align:right}
+#slide{position:relative;width:1080px;height:1350px;overflow:hidden;color:var(--white);
+  background:linear-gradient(170deg,var(--navy) 0%,var(--navy) 55%,var(--navy2) 100%)}
+#slide.story{height:1920px}
+#pattern{position:absolute;inset:0;opacity:.05;background-size:180px 180px}
+#glow{position:absolute;width:900px;height:900px;border-radius:50%;left:-420px;bottom:-460px;
+  background:radial-gradient(circle,rgba(255,202,5,.16),rgba(255,202,5,0) 65%)}
+.lat{font-family:'Poppins',sans-serif;direction:ltr;unicode-bidi:isolate}
+.acc{color:var(--gold)}
+.red{color:var(--red)}
+
+#logo{position:absolute;top:48px;left:52px;width:250px}
+#series{position:absolute;top:62px;right:56px;background:var(--gold);color:var(--navy);
+  font-weight:900;font-size:40px;line-height:1;padding:16px 30px 20px;border-radius:999px}
+#footer{position:absolute;bottom:46px;left:56px;right:56px;display:flex;justify-content:space-between;
+  align-items:center;direction:ltr;font-family:'Poppins',sans-serif;font-weight:600;font-size:40px;color:rgba(255,255,255,.92)}
+#footer .web{color:rgba(255,255,255,.7)}
+#count{font-family:'Poppins',sans-serif;font-weight:600;font-size:40px;color:var(--gold);direction:ltr}
+
+#content{position:absolute;top:220px;bottom:150px;left:64px;right:64px;display:flex;flex-direction:column;justify-content:center;gap:calc(var(--k)*34px)}
+.story #content{top:300px;bottom:230px;gap:calc(var(--k)*48px)}
+
+/* cover */
+.kicker{font-size:max(40px,calc(var(--k)*44px));font-weight:700;color:var(--red);background:#fff;align-self:flex-start;padding:6px 26px 10px;border-radius:14px}
+.hero{font-size:calc(var(--k)*112px);font-weight:900;line-height:1.22}
+.sub{font-size:calc(var(--k)*50px);font-weight:600;line-height:1.5;color:rgba(255,255,255,.88)}
+.swipe{align-self:flex-start;font-size:calc(var(--k)*46px);font-weight:900;color:var(--navy);background:var(--gold);padding:10px 34px 16px;border-radius:999px}
+.icon{align-self:flex-start;width:calc(var(--k)*220px);height:calc(var(--k)*220px)}
+.story .icon{width:calc(var(--k)*280px);height:calc(var(--k)*280px)}
+
+/* titles */
+.title{font-size:calc(var(--k)*70px);font-weight:900;line-height:1.3;color:var(--gold)}
+.note{font-size:max(40px,calc(var(--k)*42px));font-weight:700;line-height:1.5;color:#fff;border-right:10px solid var(--red);padding-right:24px}
+
+/* points */
+.cards{display:flex;flex-direction:column;gap:calc(var(--k)*26px)}
+.card{display:flex;gap:30px;align-items:flex-start;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12);border-radius:28px;padding:calc(var(--k)*28px) 34px}
+.num{flex:none;width:calc(var(--k)*84px);height:calc(var(--k)*84px);border-radius:50%;background:var(--red);color:#fff;
+  font-family:'Poppins',sans-serif;font-weight:700;font-size:calc(var(--k)*46px);display:flex;align-items:center;justify-content:center}
+.card .txt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.term{font-family:'Poppins',sans-serif;font-weight:700;font-size:calc(var(--k)*46px);color:var(--gold);direction:ltr;text-align:right;line-height:1.3}
+.desc{font-size:calc(var(--k)*46px);font-weight:600;line-height:1.45}
+
+/* compare */
+.pair{display:flex;flex-direction:column;gap:0;border-radius:28px;overflow:hidden;border:2px solid rgba(255,255,255,.14)}
+.pair .ad{background:rgba(255,255,255,.08);padding:calc(var(--k)*24px) 34px;font-size:calc(var(--k)*46px);font-weight:700;line-height:1.4;display:flex;gap:20px;align-items:baseline}
+.pair .ask{background:var(--gold);color:var(--navy);padding:calc(var(--k)*24px) 34px;font-size:calc(var(--k)*46px);font-weight:700;line-height:1.45;display:flex;gap:20px;align-items:baseline}
+.lbl{flex:none;font-size:40px;font-weight:900;padding:0 18px 4px;border-radius:12px}
+.ad .lbl{background:rgba(255,255,255,.16);color:#fff}
+.ask .lbl{background:var(--navy);color:var(--gold)}
+
+/* share + cta */
+.center{align-items:center;text-align:center}
+.center .title,.center .hero,.center .sub{text-align:center}
+.big{font-size:calc(var(--k)*88px);font-weight:900;line-height:1.3;text-align:center}
+.lines{display:flex;flex-direction:column;gap:14px;font-size:calc(var(--k)*46px);font-weight:600;line-height:1.5;text-align:center;color:rgba(255,255,255,.9)}
+.ctaRow{display:flex;flex-direction:column;align-items:center;gap:22px;margin-top:10px}
+.btn{background:var(--gold);color:var(--navy);font-weight:900;font-size:calc(var(--k)*54px);padding:12px 56px 20px;border-radius:22px}
+.ctaText{font-size:calc(var(--k)*46px);font-weight:700}
+.phone{font-family:'Poppins',sans-serif;font-weight:700;font-size:calc(var(--k)*64px);direction:ltr;color:#fff}
+.webBig{font-family:'Poppins',sans-serif;font-weight:600;font-size:max(40px,calc(var(--k)*44px));direction:ltr;color:rgba(255,255,255,.75)}
+</style>
+</head>
+<body>
+<div id="slide">
+  <div id="pattern"></div>
+  <div id="glow"></div>
+  <img id="logo" alt="">
+  <div id="series"></div>
+  <div id="content"></div>
+  <div id="footer"><span class="ph"></span><span id="count"></span><span class="web"></span></div>
+</div>
+<script>
+// Pattern: repeated brand X (SVG data URI, per the brand rules — no repeating gradients).
+document.getElementById('pattern').style.backgroundImage = "url(\"data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><path d="M60 60 L120 120 M120 60 L60 120" stroke="#fff" stroke-width="14" stroke-linecap="round"/></svg>') + "\")";
+
+var ICONS = {
+  // title deed: a sheet with lines and a seal
+  deed: '<svg viewBox="0 0 220 220"><rect x="38" y="18" width="144" height="184" rx="14" fill="none" stroke="#ffca05" stroke-width="10"/><path d="M66 62h88M66 92h88M66 122h56" stroke="#fff" stroke-width="10" stroke-linecap="round"/><circle cx="146" cy="160" r="24" fill="#ec1c24"/><path d="M136 160l7 7 13-14" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  // photo frame with a magnifier
+  frame: '<svg viewBox="0 0 220 220"><rect x="14" y="34" width="160" height="124" rx="14" fill="none" stroke="#ffca05" stroke-width="10"/><path d="M30 140l42-46 30 32 20-20 36 34" stroke="#fff" stroke-width="9" fill="none" stroke-linejoin="round"/><circle cx="150" cy="150" r="34" fill="#26247b" stroke="#ec1c24" stroke-width="10"/><path d="M174 174l30 30" stroke="#ec1c24" stroke-width="12" stroke-linecap="round"/></svg>',
+  // paper plane
+  share: '<svg viewBox="0 0 220 220"><path d="M20 104L198 26l-52 170-44-62z" fill="none" stroke="#ffca05" stroke-width="10" stroke-linejoin="round"/><path d="M102 134l96-108" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M102 134l-6 52 28-30" fill="none" stroke="#ec1c24" stroke-width="10" stroke-linejoin="round"/></svg>'
+};
+
+// Text polish: Latin digits, *accent*, Latin runs isolated left-to-right in Poppins.
+function digits(s){return String(s).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);});}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function fmt(s, accClass){
+  // Last two words stay together, so no single word sits alone on the last line.
+  var t = esc(digits(s || '').replace(/ (\S+)$/, ' $1'));
+  t = t.replace(/([A-Za-zÇĞİÖŞÜçğıöşü][A-Za-z0-9ÇĞİÖŞÜçğıöşü .\/+\-]*[A-Za-z0-9ÇĞİÖŞÜçğıöşü)]|[A-Za-zÇĞİÖŞÜçğıöşü]|\d+(?:[.,+\/\-]\d+)*%?)/g, '<span class="lat">$1</span>');
+  return t.replace(/\*([^*]+)\*/g, '<span class="' + (accClass || 'acc') + '">$1</span>');
+}
+function el(tag, cls, html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+
+function build(s){
+  var c = document.getElementById('content');
+  c.innerHTML=''; c.className='';
+  if (s.type === 'cover'){
+    if (s.icon) c.appendChild(el('div','icon',ICONS[s.icon]));
+    if (s.kicker) c.appendChild(el('div','kicker',fmt(s.kicker)));
+    c.appendChild(el('div','hero',fmt(s.title)));
+    if (s.sub) c.appendChild(el('div','sub',fmt(s.sub)));
+    if (s.swipe) c.appendChild(el('div','swipe',fmt(s.swipe)));
+  } else if (s.type === 'points'){
+    c.appendChild(el('div','title',fmt(s.title,'red')));
+    var cards = el('div','cards');
+    (s.items||[]).forEach(function(it){
+      var card = el('div','card');
+      card.appendChild(el('div','num',fmt(String(it.n))));
+      var tx = el('div','txt');
+      if (it.term) tx.appendChild(el('div','term',esc(it.term)));
+      tx.appendChild(el('div','desc',fmt(it.text,'acc')));
+      card.appendChild(tx); cards.appendChild(card);
+    });
+    c.appendChild(cards);
+  } else if (s.type === 'compare'){
+    c.appendChild(el('div','title',fmt(s.title,'red')));
+    (s.pairs||[]).forEach(function(p){
+      var box = el('div','pair');
+      box.appendChild(el('div','ad','<span class="lbl">' + esc(s.adLabel||'الإعلان') + '</span><span>' + fmt(p.ad) + '</span>'));
+      box.appendChild(el('div','ask','<span class="lbl">' + esc(s.askLabel||'اسأل') + '</span><span>' + fmt(p.ask,'red') + '</span>'));
+      c.appendChild(box);
+    });
+  } else if (s.type === 'share'){
+    c.classList.add('center');
+    c.appendChild(el('div','icon',ICONS.share)).style.alignSelf='center';
+    c.appendChild(el('div','big',fmt(s.title)));
+    if (s.sub) c.appendChild(el('div','sub',fmt(s.sub)));
+  } else if (s.type === 'cta'){
+    c.classList.add('center');
+    c.appendChild(el('div','big',fmt(s.title)));
+    var ln = el('div','lines');
+    (s.lines||[]).forEach(function(l){ln.appendChild(el('div','',fmt(l)));});
+    c.appendChild(ln);
+    var row = el('div','ctaRow');
+    row.appendChild(el('div','btn',esc(s.button||'تواصل معنا')));
+    if (s.ctaText) row.appendChild(el('div','ctaText',fmt(s.ctaText)));
+    row.appendChild(el('div','phone',esc(s.phone)));
+    row.appendChild(el('div','webBig',esc(s.web)));
+    c.appendChild(row);
+  }
+  if (s.note) c.appendChild(el('div','note',fmt(s.note,'acc')));
+}
+
+// Does anything spill out of the content box or overlap the footer / header?
+function issues(){
+  var out=[], c=document.getElementById('content'), cr=c.getBoundingClientRect();
+  if (c.scrollHeight > c.clientHeight + 1) out.push('content:overflow');
+  c.querySelectorAll('*').forEach(function(e){
+    var r=e.getBoundingClientRect();
+    if (r.width && (r.left < cr.left - 1 || r.right > cr.right + 1)) out.push('content:clip:' + (e.className||e.tagName));
+  });
+  return out.filter(function(v,i,a){return a.indexOf(v)===i;});
+}
+
+window.TIPS = {
+  // data = tip.json (logo already a data URI); i = slide index; format = post | story
+  render: function(data, i, format, k){
+    var slide=document.getElementById('slide'), s=data.slides[i], n=data.slides.length;
+    slide.className = format === 'story' ? 'story' : '';
+    document.documentElement.style.setProperty('--k', k || 1);
+    document.getElementById('logo').src = data.logo;
+    document.getElementById('series').textContent = data.series || '';
+    var cta = s.type === 'cta';
+    s.phone = s.phone || data.contact.phone; s.web = s.web || data.contact.web;
+    document.querySelector('#footer .ph').textContent = data.contact.phone;
+    document.querySelector('#footer .web').textContent = data.contact.web;
+    document.getElementById('footer').style.visibility = cta ? 'hidden' : 'visible';
+    document.getElementById('count').textContent = (i + 1) + '/' + n;
+    build(s);
+    return issues();
+  },
+  fit: async function(data, i, format){
+    var k = 1, got;
+    await document.fonts.ready;
+    while (true){
+      got = this.render(data, i, format, k);
+      if (!got.length || k <= 0.87) break;   // 0.87 keeps the smallest scaled text (46px) at 40px
+      k = Math.round((k - 0.02) * 100) / 100;
+    }
+    return { k: k, remaining: got };
+  }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "name": "tips-tapu-anatomy",
+  "titleAr": "تشريح الطابو",
+  "created": "2026-10-10",
+  "series": "قبل ما توقّع",
+  "technique": "ES04 Elevate an Object — سند الطابو هو بطل الكاروسيل",
+  "sources": [
+    "https://www.hesapkurdu.com/konut-kredisi/rehber/tapu-uzerindeki-ifadelerin-anlamlari-nelerdir (2026-10-10)",
+    "https://www.ffkpartnerhukuk.com.tr/tapu-kayitlarinda-gizli-serhler-nasil-sorgulanir-2026-guncel-rehber-2/ (2026-10-10)"
+  ],
+  "logo": "white-colorx",
+  "contact": { "phone": "+90 551 4000 200", "web": "www.house-ex.com" },
+  "slides": [
+    {
+      "type": "cover",
+      "icon": "deed",
+      "kicker": "اقرأ الطابو مثل الخبير",
+      "title": "ورقة *واحدة* تحمي كل ما تملك",
+      "sub": "6 خانات في سند الطابو يجب أن تفهمها قبل التوقيع",
+      "swipe": "اسحب وتعرّف عليها ←"
+    },
+    {
+      "type": "points",
+      "title": "أين عقارك *بالضبط*؟",
+      "items": [
+        { "n": 1, "term": "Ada / Parsel", "text": "رقم الجزيرة والقطعة: عنوان الأرض الرسمي على الخريطة" },
+        { "n": 2, "term": "Blok · Kat · Bağımsız Bölüm", "text": "البلوك والطابق ورقم الشقة: تأكد أنها شقتك أنت" },
+        { "n": 3, "term": "Niteliği", "text": "صفة العقار: سكن (Mesken) أم مكتب أم محل تجاري؟" }
+      ]
+    },
+    {
+      "type": "points",
+      "title": "خانات *يخطئ* فيها كثيرون",
+      "items": [
+        { "n": 4, "term": "Yüzölçümü", "text": "غالباً مساحة الأرض كلها، وليست مساحة شقتك" },
+        { "n": 5, "term": "Arsa Payı", "text": "حصتك من أرض المبنى المشتركة مع باقي الملاك" },
+        { "n": 6, "term": "Kat Mülkiyeti / Kat İrtifakı", "text": "ملكية طابقية نهائية، أم حق بناء لمبنى لم يكتمل رسمياً؟" }
+      ]
+    },
+    {
+      "type": "points",
+      "title": "ما *لا* يظهر في السند",
+      "items": [
+        { "n": "!", "term": "İpotek · Haciz · Şerh", "text": "الرهن والحجز والقيود قد تُسجَّل بعد صدور السند بسنوات" },
+        { "n": "✓", "term": "Tapu Kayıt Belgesi", "text": "اطلب قيداً حديثاً من نظام الطابو الإلكتروني قبل التوقيع" }
+      ],
+      "note": "سند قديم نظيف لا يعني *سجلاً* نظيفاً اليوم"
+    },
+    {
+      "type": "share",
+      "title": "تعرف أحداً سيوقّع قريباً؟",
+      "sub": "أرسل له هذا المنشور قبل أن يذهب إلى دائرة الطابو"
+    },
+    {
+      "type": "cta",
+      "title": "احفظ المنشور ليوم التوقيع",
+      "lines": ["فريق هاوس إكس يراجع معك الطابو خانةً خانة", "منذ 2014 في إسطنبول"],
+      "button": "تواصل معنا",
+      "ctaText": "لاستشارة قبل التوقيع"
+    }
+  ]
+}
