@@ -21,3 +21,9 @@ When Mohamad sends project info (text, brochure, photos) and asks for a carousel
 
 Brand: colours/logo/fonts follow the `housex-brand` skill. Logos live in `carousel/assets/`.
 `carousel/projects/vadi-premium/` is the reference example.
+
+## Open decisions (ask Mohamad before changing)
+
+- Footer phone: builder uses `+90 551 4000 200`; brand skill lists `+90 551 900 6600`. Kept the builder's number.
+- CTA badge on slide 5 is red text on navy (weak contrast). Proposed: navy text on gold `#ffca05`.
+- Only one template exists (project launch). Proposed next: "market news" and "Turkish citizenship" templates on the same project.json pipeline.
