@@ -23,6 +23,7 @@ When Mohamad sends project info (text, brochure, photos) and asks for a carousel
      The renderer refuses such words there (exit 1).
    - Slide-5 `desc`: 2 short independent sentences as an array, ≤ 42 chars each; each gets its own line.
    - Numbers in the slide-1 bullets are all red automatically (with their م²); no need to mark them with `*…*`.
+   - Put a space between و and a following number group (`1+1 و 2+1`, not `و2+1`): attached, the و renders after the number.
    - Footer phone is always `+90 551 4000 200` unless Mohamad asks for another number.
 3. **Write `social.json`** next to `project.json`: the Instagram caption and the Facebook post for this project
    (format in SCHEMA.md). Same copy rules as the slides; no prices or payments; end with the contact line and
