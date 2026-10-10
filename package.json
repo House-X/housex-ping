@@ -6,6 +6,11 @@
     "render": "node carousel/render.mjs"
   },
   "devDependencies": {
+    "docx": "9.5.1",
+    "exceljs": "4.4.0",
     "playwright": "1.56.1"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
   }
 }

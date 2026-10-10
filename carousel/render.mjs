@@ -1,29 +1,39 @@
 #!/usr/bin/env node
 // Renders a HOUSE X carousel project to PNG slides.
 //
-//   node carousel/render.mjs carousel/projects/<slug>/project.json [--story] [--no-fit] [--check]
+//   node carousel/render.mjs carousel/projects/<slug>/project.json [--post | --story] [--no-fit] [--check] [--no-export]
 //
 // The project is checked first (missing text, 6-10 amenities, image files,
 // length guides, photos, footer phone); --check stops after that step.
-// Output: carousel/projects/<slug>/out/<slug>-s1.png … s5.png (1080×1350, or
-// 1080×1920 with --story) plus fit-report.json. Local image paths in the
+// Output in carousel/projects/<slug>/out/: the feed slides <slug>-s1.png … s5.png
+// (1080×1350) and the story slides <slug>-s1-story.png … (1080×1920) — both by
+// default, --post / --story for one — plus fit-report.json and, when the
+// project has social.json, <slug>-social.docx (Instagram + Facebook copy).
+// Then the latest set is copied to ~/Documents/HOUSE X Carousels/<slug>/
+// (Feed/, Story/, the .docx), replacing the previous one; set HOUSEX_EXPORT_DIR
+// to change the folder. Skipped on CI and with --no-export. Local image paths in the
 // project are resolved relative to project.json and inlined, so the render
 // never depends on remote image hosts.
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { buildSocialDoc, checkSocial } from './social-doc.mjs';
+import { findDuplicates, writeRegistry, REGISTRY_FILE } from './registry.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const projectPath = args.find(a => !a.startsWith('--'));
 if (!projectPath) {
-  console.error('usage: node carousel/render.mjs <project.json> [--story] [--no-fit] [--check]');
+  console.error('usage: node carousel/render.mjs <project.json> [--post | --story] [--no-fit] [--check] [--no-export]');
   process.exit(1);
 }
 const projectDir = path.dirname(path.resolve(projectPath));
 const project = JSON.parse(fs.readFileSync(projectPath, 'utf8'));
-if (args.includes('--story')) project.format = 'story';
+const FORMATS = args.includes('--story') ? ['story'] : args.includes('--post') ? ['post'] : ['post', 'story'];
+const socialPath = path.join(projectDir, 'social.json');
+const social = fs.existsSync(socialPath) ? JSON.parse(fs.readFileSync(socialPath, 'utf8')) : null;
 const slug = project.name || path.basename(projectDir);
 
 // ── Pre-render check ─────────────────────────────────
@@ -39,6 +49,11 @@ const TEXT = {
   s3: { title: 32 },
   s4: { nameEn: 0, slogan: 26, desc: 110, ctaBtn: 0, ctaText: 40 },
 };
+// s4.desc: one line per sentence (array, or \n; otherwise split after ، . ؛), each kept on one line.
+const DESC_LINE = 42;
+const descLines = d => (Array.isArray(d) ? d.join('\n') : String(d || ''))
+  .replace(/([،.؛])\s+/g, (m, p, at, t) => (t.includes('\n') ? m : p + '\n'))
+  .split('\n').map(l => l.trim()).filter(Boolean);
 const LABEL = ['الغلاف', 'الوحدات', 'الموقع', 'المرافق', 'التواصل'];
 
 function checkProject(p) {
@@ -53,12 +68,22 @@ function checkProject(p) {
     const s = slides[sk];
     if (!s) { errors.push(`${sk} (${LABEL[i]}): الشريحة غير موجودة`); return; }
     Object.entries(keys).forEach(([k, max]) => {
-      const v = s[k];
+      const v = Array.isArray(s[k]) && sk === 's4' && k === 'desc' ? s[k].join('\n') : s[k];
       if (typeof v !== 'string' || !v.trim()) { errors.push(`${where(i, k)}: نص فارغ أو غير موجود`); return; }
+      if (sk === 's4' && k === 'desc') descLines(v).forEach((l, j) => {
+        if (l.length > DESC_LINE) warnings.push(`s4 (التواصل) desc سطر ${j + 1}: ${l.length} حرفاً (الحد ${DESC_LINE} للسطر) — سيُصغَّر الخط`);
+      });
       const len = v.replace(/\*/g, '').length;
       if (max && len > max) warnings.push(`${where(i, k)}: ${len} حرفاً (الحد ${max}) — قد يُصغَّر الخط`);
     });
     if (s.look) { imageRef(s.look.bg, `${sk}.look.bg`); imageRef(s.look.logo, `${sk}.look.logo`); }
+  });
+  // Slide 5 never mentions prices or payments (Mohamad, 2026-10-10).
+  const MONEY = /سعر|أسعار|اسعار|دفع|قسط|أقساط|اقساط|تقسيط|خصم|ليرة|دولار|يورو|\$|€|₺|\bTRY\b|\bUSD\b|\bEUR\b/;
+  if (slides.s4) ['slogan', 'desc', 'ctaBtn', 'ctaText'].forEach(k => {
+    const v = Array.isArray(slides.s4[k]) ? slides.s4[k].join(' ') : slides.s4[k];
+    const m = typeof v === 'string' && v.match(MONEY);
+    if (m) errors.push(`s4 (التواصل) ${k}: لا أسعار ولا دفعات في الشريحة الأخيرة («${m[0]}»)`);
   });
   const items = slides.s3 && slides.s3.items;
   if (slides.s3) {
@@ -82,6 +107,11 @@ function checkProject(p) {
 const LOGOS = ['fullcolor', 'white-colorx', 'all-white', 'navy-mono'];
 {
   const { errors, warnings } = checkProject(project);
+  // A project is created once: same name or source page as another project → stop.
+  for (const d of findDuplicates(path.join(here, 'projects'), slug)) errors.push(`مشروع مكرر: ${d}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(project.created || '')) warnings.push('created (تاريخ إنشاء المشروع YYYY-MM-DD) غير موجود في project.json');
+  if (!social) warnings.push('لا يوجد social.json: لن يُنشأ ملف منشورات انستغرام وفيسبوك');
+  else errors.push(...checkSocial(social));
   warnings.forEach(w => console.warn(`⚠ ${w}`));
   errors.forEach(e => console.error(`✖ ${e}`));
   console.log(`check: ${errors.length} errors, ${warnings.length} warnings`);
@@ -125,38 +155,65 @@ const browser = await chromium.launch(
   .catch(() => chromium.launch({ channel: 'chrome' }))
   .catch(() => chromium.launch({ channel: 'msedge' }));
 
-const fmt = project.format === 'story' ? { w: 280, h: 280 * 16 / 9 } : { w: 378, h: 472.5 };
-const out = { w: 1080, h: project.format === 'story' ? 1920 : 1350 };
 const page = await browser.newPage({ viewport: { width: 1200, height: 2000 } });
 page.on('pageerror', e => console.warn('page error:', e.message));
 await page.goto(pathToFileURL(path.join(here, 'builder.html')).href, { waitUntil: 'load' });
 await page.evaluate(() => document.fonts.ready);
-await page.evaluate(p => window.HX.loadProject(p), project);
-// Layout stays at preview size (so fit checks match the builder); the
-// capture is the slide scaled up to whole export pixels from the page origin.
-const shoot = async file => {
-  await page.evaluate(k => {
-    const s = document.getElementById('slide');
-    s.dataset.prev = s.getAttribute('style');
-    Object.assign(s.style, { position: 'fixed', top: '0', left: '0', zIndex: 9999, borderRadius: '0', boxShadow: 'none', transformOrigin: '0 0', transform: `scale(${k})` });
-  }, out.w / fmt.w);
-  await page.screenshot({ path: file, animations: 'disabled', clip: { x: 0, y: 0, width: out.w, height: out.h } });
-  await page.evaluate(() => { const s = document.getElementById('slide'); s.setAttribute('style', s.dataset.prev); });
-};
 
-const report = [];
-for (let i = 0; i < 5; i++) {
-  const fit = args.includes('--no-fit')
-    ? { slide: i, steps: 0, remaining: await page.evaluate(n => { window.HX.goSlide(n); return window.HX.fitIssues(); }, i) }
-    : await page.evaluate(n => window.HX.fitSlide(n), i);
-  await page.evaluate(() => Promise.all([...document.images].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; }))));
-  await page.waitForTimeout(150);
-  const file = path.join(outDir, `${slug}-s${i + 1}${project.format === 'story' ? '-story' : ''}.png`);
-  await shoot(file);
-  report.push({ ...fit, file: path.relative(process.cwd(), file) });
-  const flag = fit.remaining.length ? `  ⚠ ${fit.remaining.join(', ')}` : fit.steps ? `  (shrunk ${fit.steps}×)` : '';
-  console.log(`s${i + 1} → ${path.relative(process.cwd(), file)}${flag}`);
+const report = [], files = [];
+for (const format of FORMATS) {
+  const fmt = format === 'story' ? { w: 280, h: 280 * 16 / 9 } : { w: 378, h: 472.5 };
+  const out = { w: 1080, h: format === 'story' ? 1920 : 1350 };
+  await page.evaluate(p => window.HX.loadProject(p), { ...project, format });
+  // Layout stays at preview size (so fit checks match the builder); the
+  // capture is the slide scaled up to whole export pixels from the page origin.
+  const shoot = async file => {
+    await page.evaluate(k => {
+      const s = document.getElementById('slide');
+      s.dataset.prev = s.getAttribute('style');
+      Object.assign(s.style, { position: 'fixed', top: '0', left: '0', zIndex: 9999, borderRadius: '0', boxShadow: 'none', transformOrigin: '0 0', transform: `scale(${k})` });
+    }, out.w / fmt.w);
+    await page.screenshot({ path: file, animations: 'disabled', clip: { x: 0, y: 0, width: out.w, height: out.h } });
+    await page.evaluate(() => { const s = document.getElementById('slide'); s.setAttribute('style', s.dataset.prev); });
+  };
+  for (let i = 0; i < 5; i++) {
+    const fit = args.includes('--no-fit')
+      ? { slide: i, steps: 0, remaining: await page.evaluate(n => { window.HX.goSlide(n); return window.HX.fitIssues(); }, i) }
+      : await page.evaluate(n => window.HX.fitSlide(n), i);
+    await page.evaluate(() => Promise.all([...document.images].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; }))));
+    await page.waitForTimeout(150);
+    const file = path.join(outDir, `${slug}-s${i + 1}${format === 'story' ? '-story' : ''}.png`);
+    await shoot(file);
+    files.push({ format, file });
+    report.push({ format, ...fit, file: path.relative(process.cwd(), file) });
+    const flag = fit.remaining.length ? `  ⚠ ${fit.remaining.join(', ')}` : fit.steps ? `  (shrunk ${fit.steps}×)` : '';
+    console.log(`${format === 'story' ? 'story' : 'feed '} s${i + 1} → ${path.relative(process.cwd(), file)}${flag}`);
+  }
 }
 fs.writeFileSync(path.join(outDir, 'fit-report.json'), JSON.stringify(report, null, 2));
 await browser.close();
+
+const today = new Date().toISOString().slice(0, 10);
+const docFile = path.join(outDir, `${slug}-social.docx`);
+if (social) {
+  await buildSocialDoc({ project, social, file: docFile, date: today });
+  console.log(`social → ${path.relative(process.cwd(), docFile)}`);
+}
+
+// Latest set only: each exported format folder is emptied, then refilled.
+if (!process.env.CI && !args.includes('--no-export')) {
+  const root = process.env.HOUSEX_EXPORT_DIR || path.join(os.homedir(), 'Documents', 'HOUSE X Carousels');
+  const dest = path.join(root, slug);
+  for (const format of FORMATS) {
+    const dir = path.join(dest, format === 'story' ? 'Story' : 'Feed');
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.mkdirSync(dir, { recursive: true });
+    for (const f of files.filter(x => x.format === format)) fs.copyFileSync(f.file, path.join(dir, path.basename(f.file)));
+  }
+  if (social) fs.copyFileSync(docFile, path.join(dest, path.basename(docFile)));
+  console.log(`export → ${dest}`);
+  const reg = await writeRegistry(path.join(here, 'projects'), root);
+  if (reg.error) console.warn(`⚠ ${REGISTRY_FILE}: ${reg.error}`);
+  else console.log(`registry → ${reg.file} (${reg.count} مشاريع)`);
+}
 if (report.some(r => r.remaining.length)) process.exitCode = 2;
