@@ -36,11 +36,16 @@ Leave them out unless there is a reason; `render.mjs` auto-shrinks text that ove
 
 `*word*` renders as the accent colour (red) — use it for 1-2 numbers or power words per line, never whole sentences.
 
+The slide text is polished automatically (builder and renderer):
+- digits become Latin (`١٥` → `15`), so write Latin digits in the first place;
+- number groups (`2+1`, `2-5`, `24/7`) are kept as one left-to-right unit, so they never flip to `1+2` or split across lines;
+- the last two words of a line are joined, so no single word sits alone on the last line.
+
 | slide | keys | length guide (Arabic chars) |
 |---|---|---|
 | **s0 Cover** | `tAr` project name · `tEn` Latin name · `sl1`, `sl2` two-line hook | tAr ≤ 18 · tEn ≤ 22 · sl ≤ 45 each |
 | **s1 Units** | `h` headline lead-in · `hR` hero number (`48,200 م²`) · `u1` `u2` `u3` bullets · `cl` closer | h ≤ 22 · u ≤ 34 · cl ≤ 32 |
-| **s2 Location** | `title` · `t1..t4` time (`١٥ دقيقة`) · `d1..d4` destination · `cl` closer | title ≤ 32 · t ≤ 9 · d ≤ 24 · cl ≤ 45 |
+| **s2 Location** | `title` · `t1..t4` time (`15 دقيقة`) · `d1..d4` destination · `cl` closer | title ≤ 32 · t ≤ 9 · d ≤ 24 · cl ≤ 45 |
 | **s3 Amenities** | `title` · `items` array (6-10) | title ≤ 32 · item ≤ 22 |
 | **s4 CTA** | `nameEn` · `slogan` · `desc` · `ctaBtn` · `ctaText` | slogan ≤ 26 · desc ≤ 110 · ctaText ≤ 40 |
 
@@ -54,6 +59,11 @@ npm install                                    # once (playwright)
 node carousel/render.mjs carousel/projects/<slug>/project.json            # post
 node carousel/render.mjs carousel/projects/<slug>/project.json --story    # story
 ```
+
+Before rendering, the project is checked. Errors stop the render (exit code 1): a missing slide or text key
+(it would otherwise show the builder's Vadi Premium copy), fewer than 6 or more than 10 amenities, an image file
+that does not exist. Warnings are printed and the render continues: text over its length guide, no photos
+(empty navy cover collage), a footer phone other than `+90 551 4000 200`. `--check` runs only this step.
 
 Exit code 2 = a slide still has a layout issue after auto-fit; the warning names the element
 (`el_d3`, `el_tAr:logo`, `el_descBox:overlaps-cta` …). Shorten that text and re-render.

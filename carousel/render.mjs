@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // Renders a HOUSE X carousel project to PNG slides.
 //
-//   node carousel/render.mjs carousel/projects/<slug>/project.json [--story] [--no-fit]
+//   node carousel/render.mjs carousel/projects/<slug>/project.json [--story] [--no-fit] [--check]
 //
+// The project is checked first (missing text, 6-10 amenities, image files,
+// length guides, photos, footer phone); --check stops after that step.
 // Output: carousel/projects/<slug>/out/<slug>-s1.png … s5.png (1080×1350, or
 // 1080×1920 with --story) plus fit-report.json. Local image paths in the
 // project are resolved relative to project.json and inlined, so the render
@@ -16,7 +18,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const projectPath = args.find(a => !a.startsWith('--'));
 if (!projectPath) {
-  console.error('usage: node carousel/render.mjs <project.json> [--story] [--no-fit]');
+  console.error('usage: node carousel/render.mjs <project.json> [--story] [--no-fit] [--check]');
   process.exit(1);
 }
 const projectDir = path.dirname(path.resolve(projectPath));
@@ -24,8 +26,70 @@ const project = JSON.parse(fs.readFileSync(projectPath, 'utf8'));
 if (args.includes('--story')) project.format = 'story';
 const slug = project.name || path.basename(projectDir);
 
-const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
+// ── Pre-render check ─────────────────────────────────
+// Errors stop before the browser starts (exit 1); warnings are printed and the
+// render goes on. --check runs only this step.
+const HOUSE_PHONE = '+90 551 4000 200';
+// Every text key is required: a missing one would silently show the builder's
+// default (Vadi Premium) copy. Numbers are the length guides from SCHEMA.md.
+const TEXT = {
+  s0: { tAr: 18, tEn: 22, sl1: 45, sl2: 45 },
+  s1: { h: 22, hR: 0, u1: 34, u2: 34, u3: 34, cl: 32 },
+  s2: { title: 32, t1: 9, d1: 24, t2: 9, d2: 24, t3: 9, d3: 24, t4: 9, d4: 24, cl: 45 },
+  s3: { title: 32 },
+  s4: { nameEn: 0, slogan: 26, desc: 110, ctaBtn: 0, ctaText: 40 },
+};
+const LABEL = ['الغلاف', 'الوحدات', 'الموقع', 'المرافق', 'التواصل'];
+
+function checkProject(p) {
+  const errors = [], warnings = [];
+  const where = (i, k) => `s${i} (${LABEL[i]}) ${k}`;
+  const imageRef = (ref, label) => {
+    if (!ref || /^(data:|https?:)/.test(ref) || LOGOS.includes(ref)) return;
+    if (!fs.existsSync(path.resolve(projectDir, ref))) errors.push(`${label}: الصورة غير موجودة ${ref}`);
+  };
+  const slides = p.slides || {};
+  Object.entries(TEXT).forEach(([sk, keys], i) => {
+    const s = slides[sk];
+    if (!s) { errors.push(`${sk} (${LABEL[i]}): الشريحة غير موجودة`); return; }
+    Object.entries(keys).forEach(([k, max]) => {
+      const v = s[k];
+      if (typeof v !== 'string' || !v.trim()) { errors.push(`${where(i, k)}: نص فارغ أو غير موجود`); return; }
+      const len = v.replace(/\*/g, '').length;
+      if (max && len > max) warnings.push(`${where(i, k)}: ${len} حرفاً (الحد ${max}) — قد يُصغَّر الخط`);
+    });
+    if (s.look) { imageRef(s.look.bg, `${sk}.look.bg`); imageRef(s.look.logo, `${sk}.look.logo`); }
+  });
+  const items = slides.s3 && slides.s3.items;
+  if (slides.s3) {
+    if (!Array.isArray(items)) errors.push('s3 (المرافق) items: القائمة غير موجودة');
+    else {
+      if (items.length < 6 || items.length > 10) errors.push(`s3 (المرافق) items: ${items.length} بنود، المطلوب 6 إلى 10`);
+      items.forEach((it, j) => {
+        if (typeof it !== 'string' || !it.trim()) errors.push(`s3 (المرافق) items[${j}]: بند فارغ`);
+        else if (it.length > 22) warnings.push(`s3 (المرافق) items[${j}]: ${it.length} حرفاً (الحد 22)`);
+      });
+    }
+  }
+  const t = p.theme || {};
+  imageRef(t.bg, 'theme.bg'); imageRef(t.collage, 'theme.collage'); imageRef(t.logo, 'theme.logo');
+  if (!t.bg && !t.collage) warnings.push('لا توجد صور (theme.bg / theme.collage): الغلاف سيظهر بمربعات كحلية فارغة');
+  const phone = p.contact && p.contact.phone;
+  if (phone && phone.trim() !== HOUSE_PHONE) warnings.push(`رقم التذييل ${phone} يختلف عن الرقم المعتمد ${HOUSE_PHONE}`);
+  return { errors, warnings };
+}
+
 const LOGOS = ['fullcolor', 'white-colorx', 'all-white', 'navy-mono'];
+{
+  const { errors, warnings } = checkProject(project);
+  warnings.forEach(w => console.warn(`⚠ ${w}`));
+  errors.forEach(e => console.error(`✖ ${e}`));
+  console.log(`check: ${errors.length} errors, ${warnings.length} warnings`);
+  if (errors.length) process.exit(1);
+  if (args.includes('--check')) process.exit(0);
+}
+
+const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
 
 function inline(ref) {
   if (!ref || /^(data:|https?:)/.test(ref)) return ref;

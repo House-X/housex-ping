@@ -14,9 +14,11 @@ When Mohamad sends project info (text, brochure, photos) and asks for a carousel
    - Cover hook sells the outcome (lifestyle / investment / citizenship), not the brochure name.
    - One `*accent*` per line at most, on a number or power word.
    - Stay inside the length guides in SCHEMA.md.
-   - Use Arabic-Indic digits in Arabic lines, as in the example project.
+   - Use Latin digits (0-9) everywhere, Arabic lines included (`15 دقيقة`, `2+1`, `24/7`). The renderer also converts any ٠-٩ it finds.
+   - Footer phone is always `+90 551 4000 200` unless Mohamad asks for another number.
 3. **Render**: `node carousel/render.mjs carousel/projects/<slug>/project.json` (add `--story` if asked).
-   Exit code 2 → shorten the flagged text and re-render. Then look at the PNGs yourself before sending.
+   It checks the project first: exit code 1 → fix the listed errors (missing text, 6-10 amenities, image files);
+   read the warnings too (over-length text, no photos, a different phone). Exit code 2 → shorten the flagged text and re-render. Then look at the PNGs yourself before sending.
 4. **Deliver** the PNGs from `out/` to the user, commit `project.json` + `images/` (not `out/`), push.
 
 Brand: colours/logo/fonts follow the `housex-brand` skill. Logos live in `carousel/assets/`.
@@ -24,6 +26,6 @@ Brand: colours/logo/fonts follow the `housex-brand` skill. Logos live in `carous
 
 ## Open decisions (ask Mohamad before changing)
 
-- Footer phone: builder uses `+90 551 4000 200`; brand skill lists `+90 551 900 6600`. Kept the builder's number.
+- ~~Footer phone~~ decided 2026-10-10: always `+90 551 4000 200` (not the brand skill's `+90 551 900 6600`) unless Mohamad says otherwise.
 - ~~CTA badge contrast~~ decided 2026-10-10: slide-5 CTA badge is navy `#26247b` text on gold `#ffca05`.
 - Only one template exists (project launch). Proposed next: "market news" and "Turkish citizenship" templates on the same project.json pipeline.
