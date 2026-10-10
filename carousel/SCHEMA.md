@@ -16,6 +16,7 @@ carousel/projects/<slug>/
 | key | value |
 |---|---|
 | `name` | slug, used for file names (`vadi-premium`) |
+| `source` | optional: the page the copy came from, `"<url> (<date>)"` — not shown on the slides |
 | `format` | `post` (1080×1350) or `story` (1080×1920) |
 | `theme.bg` | background photo for every slide, path relative to project.json, URL, or data URI. Omit → brand navy field |
 | `theme.collage` | cover collage photo (slide 1) |

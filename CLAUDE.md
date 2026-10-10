@@ -21,6 +21,32 @@ When Mohamad sends project info (text, brochure, photos) and asks for a carousel
    read the warnings too (over-length text, no photos, a different phone). Exit code 2 → shorten the flagged text and re-render. Then look at the PNGs yourself before sending.
 4. **Deliver** the PNGs from `out/` to the user, commit `project.json` + `images/` (not `out/`), push.
 
+## Carousel from a link
+
+When Mohamad sends a project page URL instead of a brief, the link *is* the brief:
+
+1. **Read the page in the browser** (pages are often client-rendered, so a plain fetch misses the text).
+   Take the visible text (`document.body.innerText` when `get_page_text` comes back nearly empty) and the
+   gallery image URLs from the page HTML. Use only what the page states.
+2. **Copy goes through step 2 above**. Leave out by default, and tell him you did:
+   prices and "starts from", time-limited discounts, estimated ROI / rental yield / growth figures.
+   Record the page in `project.json` as `"source": "<url> (<date>)"`.
+3. **Photos**: list them for Mohamad (count, total size, host) and download only after he says yes:
+   `node carousel/fetch-images.mjs <slug> <url> <url> …` → `images/01.webp`, `02.webp` …
+   Then look at every photo: drop floor plans, icons and anything with another company's logo or watermark;
+   use the strongest exterior/aerial for `theme.bg` and the cover `theme.collage`.
+4. Continue with **Render** / **Deliver** above.
+
+Site notes:
+
+| site | page | text | gallery |
+|---|---|---|---|
+| `house-ex.com` (ours) | `/projects/<slug>` | client-rendered: use `document.body.innerText` | `admin.house-ex.com//storage/<id>/…webp`; the project's photos are the first N matching the page's «إظهار N صور» (later ones are icons / other projects). Its footer shows `+90 551 900 66 00`: ignore it, the carousel keeps `+90 551 4000 200`. |
+| `emlakplatform.com.tr` | `/ar/projects/<slug>`. The `/ar/portal/projects/<slug>` link needs a login: switch to the public one | `get_page_text` works | `/proj_imgs/…` (gallery) and the `/uploads/` cover image. Other `/uploads/` images are similar projects; `/icons/` are distance icons. Marked «صور نموذجية» (renders). |
+| any other site | – | browser text | gallery `<img>` / HTML image URLs; skip logos, icons, avatars, other listings |
+
+If a page needs a login, ask Mohamad to sign in in the browser pane himself, or to send the text. Never type a password.
+
 Brand: colours/logo/fonts follow the `housex-brand` skill. Logos live in `carousel/assets/`.
 `carousel/projects/vadi-premium/` is the reference example.
 
