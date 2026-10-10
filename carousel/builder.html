@@ -78,6 +78,7 @@ select:focus{border-color:var(--gold)}
 .s-loc-card{border-radius:6px;overflow:hidden;display:flex;flex-direction:row;height:52px}
 .s-loc-time{background:#ec1c24;width:38%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;text-align:center;padding:4px;line-height:1.2;font-family:'Cairo',sans-serif}
 .s-loc-dest{background:rgba(28,33,88,.9);flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;text-align:center;padding:4px;line-height:1.3;font-family:'Cairo',sans-serif}
+.num{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
 .s-cta-badge{display:inline-block;background:#ffca05;color:#26247b;text-shadow:none;padding:2px 10px;border-radius:4px;font-weight:700;font-size:14px;font-family:'Cairo',sans-serif}
 </style>
 </head>
@@ -199,20 +200,20 @@ var SD=[
    fTAr:FAR[0],fTEn:FEN[0],fSl:FAR[0],
    fx:{tAr:{bold:true},tEn:{},sl:{}}},
   // 1 Units
-  {h:'تحفة معمارية على',hR:'48,200 م²',u1:'١١٦ فيلا فاخرة بإطلالات بانورامية',u2:'دوبلكس *٢+١* بمساحات *١٠٣ م²*',u3:'حدائق خاصة بين *٥٣* و*١٧٤ م²*',cl:'خيار مثالي للخصوصية والهدوء',
+  {h:'تحفة معمارية على',hR:'48,200 م²',u1:'116 فيلا فاخرة بإطلالات بانورامية',u2:'دوبلكس *2+1* بمساحات *103 م²*',u3:'حدائق خاصة بين *53* و*174 م²*',cl:'خيار مثالي للخصوصية والهدوء',
    cH:'#2b3280',cHR:'#ec1c24',cU:'#1a1a3e',cCl:'#2b3280',
    szH:26,szU:15,szCl:17,cardOp:45,
    fH:FAR[0],fU:FAR[0],fCl:FAR[0],
    fx:{h:{bold:true},u:{},cl:{}}},
   // 2 Location
-  {title:'موقع يربطك بكل ما تحتاج إليه:',t1:'١٥ دقيقة',d1:'لمطار ميلاس بودروم',t2:'١٠ دقائق',d2:'لـ مركز كاريا بورت للتسوق',t3:'٣٠ دقيقة',d3:'لمركز مدينة بودروم',t4:'٤٠ دقيقة',d4:'لمارينا ياليكافاك',cl:'القرب من جميع الخدمات اليومية بين *٢-٥ دقائق*',
+  {title:'موقع يربطك بكل ما تحتاج إليه:',t1:'15 دقيقة',d1:'لمطار ميلاس بودروم',t2:'10 دقائق',d2:'لـ مركز كاريا بورت للتسوق',t3:'30 دقيقة',d3:'لمركز مدينة بودروم',t4:'40 دقيقة',d4:'لمارينا ياليكافاك',cl:'القرب من جميع الخدمات اليومية بين *2-5 دقائق*',
    cTitle:'#fff',cCl:'#fff',cClAc:'#ec1c24',
    szTitle:22,szCl:17,titleOp:82,
    fTitle:FAR[0],fCl:FAR[0],
    fx:{title:{bold:true},cl:{}}},
   // 3 Amenities
   {title:'مجتمع متكامل لتجربة منتجعية يومية',
-   items:['مسبح رملي بطراز ميامي','مسبح خارجي واسع','صالة رياضية','ساونا + حمام تركي','استديو يوغا وبيلاتس','ملاعب أطفال','مناطق فعاليات وهوايات','بلياردو + تنس طاولة','مواقف سيارات','حراسة ٧/٢٤'],
+   items:['مسبح رملي بطراز ميامي','مسبح خارجي واسع','صالة رياضية','ساونا + حمام تركي','استديو يوغا وبيلاتس','ملاعب أطفال','مناطق فعاليات وهوايات','بلياردو + تنس طاولة','مواقف سيارات','حراسة 24/7'],
    cTitle:'#fff',cItem:'#1a1a3e',szTitle:20,szItem:13,titleOp:82,cardOp:50,
    fTitle:FAR[0],fItem:FAR[0],
    fx:{title:{bold:true},item:{}}},
@@ -339,7 +340,7 @@ function panelS5(){
   '</div>';
 }
 
-var PROMPT_TEMPLATE='أنت خبير تسويق عقاري. بناءً على تفاصيل المشروع التالية، اكتب النصوص المناسبة لكاروسيل انستغرام من 5 شرائح. أعطني النتيجة بصيغة JSON فقط بدون أي نص إضافي بهذا الشكل بالضبط:\n\n{\n  "s0": {"tAr":"اسم المشروع عربي (1-3 كلمات)","tEn":"NAME IN ENGLISH","sl1":"سلوجان أول مع *كلمة مميزة*","sl2":"سلوجان ثانٍ مع *كلمة مميزة*"},\n  "s1": {"h":"عنوان المساحة","hR":"الرقم المميز مثل 48,200 م²","u1":"ميزة وحدات ١","u2":"ميزة مع *أرقام*","u3":"ميزة مع *أرقام*","cl":"جملة ختامية"},\n  "s2": {"title":"عنوان الموقع","t1":"مدة","d1":"وجهة","t2":"مدة","d2":"وجهة","t3":"مدة","d3":"وجهة","t4":"مدة","d4":"وجهة","cl":"ختامية مع *رقم*"},\n  "s3": {"title":"عنوان المرافق","items":["مرفق1","مرفق2","مرفق3","مرفق4","مرفق5","مرفق6","مرفق7","مرفق8","مرفق9","مرفق10"]},\n  "s4": {"nameEn":"NAME","slogan":"سلوجان ختامي","desc":"وصف تسويقي 2-3 جمل","ctaBtn":"تواصل معنا","ctaText":"لمعرفة الأسعار وخيارات الدفع المتاحة"}\n}\n\nتفاصيل المشروع:\n';
+var PROMPT_TEMPLATE='أنت خبير تسويق عقاري. بناءً على تفاصيل المشروع التالية، اكتب النصوص المناسبة لكاروسيل انستغرام من 5 شرائح. اكتب كل الأرقام بالأرقام اللاتينية (0-9). أعطني النتيجة بصيغة JSON فقط بدون أي نص إضافي بهذا الشكل بالضبط:\n\n{\n  "s0": {"tAr":"اسم المشروع عربي (1-3 كلمات)","tEn":"NAME IN ENGLISH","sl1":"سلوجان أول مع *كلمة مميزة*","sl2":"سلوجان ثانٍ مع *كلمة مميزة*"},\n  "s1": {"h":"عنوان المساحة","hR":"الرقم المميز مثل 48,200 م²","u1":"ميزة وحدات 1","u2":"ميزة مع *أرقام*","u3":"ميزة مع *أرقام*","cl":"جملة ختامية"},\n  "s2": {"title":"عنوان الموقع","t1":"مدة","d1":"وجهة","t2":"مدة","d2":"وجهة","t3":"مدة","d3":"وجهة","t4":"مدة","d4":"وجهة","cl":"ختامية مع *رقم*"},\n  "s3": {"title":"عنوان المرافق","items":["مرفق1","مرفق2","مرفق3","مرفق4","مرفق5","مرفق6","مرفق7","مرفق8","مرفق9","مرفق10"]},\n  "s4": {"nameEn":"NAME","slogan":"سلوجان ختامي","desc":"وصف تسويقي 2-3 جمل","ctaBtn":"تواصل معنا","ctaText":"لمعرفة الأسعار وخيارات الدفع المتاحة"}\n}\n\nتفاصيل المشروع:\n';
 
 function copyPrompt(){
   var input=document.getElementById('aiInput');
@@ -678,13 +679,17 @@ function renderS4(){
   document.getElementById('colPanel').style.display='none';
   var s=SD[4];
   document.getElementById('slideContent').innerHTML=
-    '<div style="position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:68px 20px 0;gap:0">'+
-      '<div style="background:#26247b;border-radius:7px;padding:6px 22px;width:100%;text-align:center;margin-bottom:38px">'+
+    // padding-bottom keeps the CTA line + footer zone free; the slogan and
+    // description are centred in the space between the name and the CTA.
+    '<div style="position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:68px 20px 92px;gap:0">'+
+      '<div style="background:#26247b;border-radius:7px;padding:6px 22px;width:100%;text-align:center">'+
         '<div id="el_name" style="font-family:'+s.fName+';font-weight:900;font-size:'+s.szName+'px;color:'+s.cName+';letter-spacing:1px">'+s.nameEn+'</div>'+
       '</div>'+
-      '<div id="el_slogan" style="font-family:'+s.fSlogan+';font-size:'+s.szSlogan+'px;font-weight:700;color:'+s.cSlogan+';text-align:center;margin-bottom:18px">'+s.slogan+'</div>'+
-      '<div id="el_descBox" style="background:rgba(255,255,255,'+s.descOp/100+');border-radius:10px;padding:22px;width:240px;min-height:200px;display:flex;align-items:center;justify-content:center">'+
-        '<div id="el_desc" style="font-family:'+s.fDesc+';font-size:'+s.szDesc+'px;color:'+s.cDesc+';font-weight:700;line-height:1.7;text-align:center">'+s.desc+'</div>'+
+      '<div style="flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px">'+
+        '<div id="el_slogan" style="font-family:'+s.fSlogan+';font-size:'+s.szSlogan+'px;font-weight:700;color:'+s.cSlogan+';text-align:center">'+s.slogan+'</div>'+
+        '<div id="el_descBox" style="background:rgba(255,255,255,'+s.descOp/100+');border-radius:10px;padding:20px 24px;width:88%;box-sizing:border-box">'+
+          '<div id="el_desc" style="font-family:'+s.fDesc+';font-size:'+s.szDesc+'px;color:'+s.cDesc+';font-weight:700;line-height:1.7;text-align:center">'+s.desc+'</div>'+
+        '</div>'+
       '</div>'+
     '</div>'+
     '<div style="position:absolute;bottom:42px;right:16px;left:16px;z-index:20;text-align:right">'+
@@ -816,6 +821,7 @@ function goSlide(i){
   curSlide=i;
   document.querySelectorAll('.stab').forEach(function(t,j){t.classList.toggle('active',i===j);});
   renderers[i]();
+  polishText();
   document.getElementById('textPanel').innerHTML=panels[i]();
   palBuilders[i]();
   // restore bg image + its transform + overlay (all slides)
@@ -889,6 +895,60 @@ async function downloadAll(){
   catch(e){alert(e.message);}
   goSlide(back<5?back:0);btn.textContent='⬇ الكل';btn.disabled=false;
 }
+
+// ── TEXT POLISH ──────────────────────────────────────
+// Runs on the rendered slide (builder and render.mjs alike):
+//  · every number uses Latin digits (١٥ → 15, ٢٫٥ → 2.5)
+//  · the last two words of a 3+ word line are bound with a no-break space,
+//    so a single word never wraps onto a line by itself.
+var NBSP=' ';
+function latinDigits(v){
+  return String(v).replace(/[٠-٩۰-۹٫٬]/g,function(c){
+    if(c==='٫')return '.';if(c==='٬')return ',';
+    var k=c.charCodeAt(0);return String(k-(k>=0x6F0?0x6F0:0x660));
+  });
+}
+function bindLastWords(el){
+  var txt=el.textContent;
+  if(txt.indexOf(NBSP)>=0||txt.trim().split(/\s+/).length<3)return; // already bound / too short
+  var nodes=[],w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT),n;
+  while((n=w.nextNode()))nodes.push(n);
+  var seen=false; // has a word already been passed (walking backwards)?
+  for(var j=nodes.length-1;j>=0;j--){
+    var v=nodes[j].nodeValue,i=(seen?v:v.replace(/\s+$/,'')).lastIndexOf(' ');
+    // a space at index 0 still counts when earlier nodes hold the words before it
+    if(i>0||(i===0&&j>0)){nodes[j].nodeValue=v.slice(0,i)+NBSP+v.slice(i+1);return;}
+    if(/\S/.test(v))seen=true;
+  }
+}
+// Number groups like 2+1, 2-5, 24/7 are isolated as one left-to-right unit:
+// inside an Arabic line Chrome would otherwise show 2+1 as 1+2 and could
+// break the line inside 2-5.
+var NUM_GROUP=/\d+(?:[.,:+\-–\/]\d+)+/g;
+function isolateNumbers(n){
+  var v=n.nodeValue;NUM_GROUP.lastIndex=0;
+  if(!NUM_GROUP.test(v)||(n.parentNode.classList&&n.parentNode.classList.contains('num')))return;
+  var frag=document.createDocumentFragment(),last=0;
+  v.replace(NUM_GROUP,function(m,at){
+    if(at>last)frag.appendChild(document.createTextNode(v.slice(last,at)));
+    var s=document.createElement('span');s.className='num';s.textContent=m;frag.appendChild(s);
+    last=at+m.length;
+  });
+  if(last<v.length)frag.appendChild(document.createTextNode(v.slice(last)));
+  n.parentNode.replaceChild(frag,n);
+}
+function polishText(){
+  var root=document.getElementById('slideContent');if(!root)return;
+  var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n,nodes=[];
+  while((n=w.nextNode()))nodes.push(n);
+  nodes.forEach(function(n){var v=latinDigits(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;isolateNumbers(n);});
+  root.querySelectorAll('[id^="el_"]').forEach(function(el){if(!el.querySelector('div'))bindLastWords(el);});
+}
+// Builder edits re-render text through reS0..reS4; polish after each.
+['reS0','reS1','reS2','reS3','reS4'].forEach(function(name){
+  var f=window[name];
+  window[name]=function(){f.apply(this,arguments);polishText();if(curSlide===0)posCollage();};
+});
 
 // ── PROJECT (JSON in → full carousel out) ─────────────
 // Schema: carousel/SCHEMA.md. Each slides.sN object is merged into SD[N]
