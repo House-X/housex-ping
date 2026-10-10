@@ -1,0 +1,264 @@
+{
+  "_note": "You (ideally with your Sharia advisor) own this list; the agent can read it but never edit it. Crypto: only crypto_spot_bases are tradable. Stocks: screened automatically (AAOIFI ratios); stocks_etfs force-approves and stocks_blocked force-blocks a ticker, e.g. a participation bank like ALBRK.IS.",
+  "crypto_spot_bases": [
+    "BTC",
+    "ETH",
+    "XRP",
+    "SOL",
+    "TRX",
+    "LINK",
+    "ADA",
+    "NEAR",
+    "XLM",
+    "BCH",
+    "LTC",
+    "TON",
+    "GRAM",
+    "AVAX",
+    "SUI",
+    "HBAR",
+    "TAO",
+    "DOT",
+    "ICP",
+    "ETC",
+    "ARB",
+    "KAS",
+    "ALGO",
+    "RENDER",
+    "ATOM",
+    "FIL",
+    "QNT",
+    "WLD",
+    "ZRO"
+  ],
+  "crypto_approvals": {
+    "BTC": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ETH": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "XRP": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "SOL": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "TRX": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "LINK": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ADA": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "NEAR": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "XLM": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "BCH": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "LTC": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "TON": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08",
+      "note": "Toncoin, renamed Gram: both tickers accepted"
+    },
+    "GRAM": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08",
+      "note": "Toncoin, renamed Gram: both tickers accepted"
+    },
+    "AVAX": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "SUI": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "HBAR": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "TAO": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "DOT": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ICP": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ETC": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ARB": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "KAS": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ALGO": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "RENDER": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "ATOM": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "FIL": {
+      "source": "Islamic Finance Guru + CryptoHalal (cryptohalal.cc): both rate it permissible",
+      "date": "2026-10-08"
+    },
+    "QNT": {
+      "source": "CryptoHalal (cryptohalal.cc) rates it permissible; not covered by Islamic Finance Guru. Added by the trader's decision.",
+      "date": "2026-10-08"
+    },
+    "WLD": {
+      "source": "CryptoHalal (cryptohalal.cc) rates it permissible; not covered by Islamic Finance Guru. Added by the trader's decision.",
+      "date": "2026-10-08"
+    },
+    "ZRO": {
+      "source": "CryptoHalal (cryptohalal.cc) rates it permissible; not covered by Islamic Finance Guru. Added by the trader's decision.",
+      "date": "2026-10-08"
+    }
+  },
+  "crypto_blocked_bases": [
+    "DOGE",
+    "SHIB",
+    "PEPE",
+    "FLOKI",
+    "BONK",
+    "WIF",
+    "PENGU",
+    "TRUMP",
+    "BOME",
+    "MEME",
+    "NEIRO",
+    "TURBO",
+    "MEW",
+    "POPCAT",
+    "PNUT",
+    "ACT",
+    "BABYDOGE",
+    "1000SATS",
+    "1000CAT",
+    "DOGS",
+    "HMSTR",
+    "CATI",
+    "MOODENG",
+    "GOAT",
+    "BROCCOLI",
+    "FARTCOIN",
+    "PEOPLE",
+    "HYPE",
+    "ENA",
+    "USDE",
+    "ONDO",
+    "AAVE",
+    "MKR",
+    "FTT",
+    "XMR",
+    "ZEC",
+    "OM",
+    "BNB",
+    "CRO",
+    "OKB",
+    "BGB",
+    "UNI",
+    "PAXG",
+    "JST",
+    "GT",
+    "KCS",
+    "INJ",
+    "CAKE",
+    "USDD"
+  ],
+  "crypto_blocked_reasons": {
+    "DOGE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "SHIB": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PEPE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "FLOKI": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BONK": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "WIF": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PENGU": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "TRUMP": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BOME": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "MEME": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "NEIRO": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "TURBO": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "MEW": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "POPCAT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PNUT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "ACT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BABYDOGE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "1000SATS": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "1000CAT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "DOGS": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "HMSTR": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "CATI": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "MOODENG": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "GOAT": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "BROCCOLI": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "FARTCOIN": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "PEOPLE": "Meme coin: no underlying utility, driven by speculation (gharar / maysir). Kept blocked by the trader even where IFG rates it permissible.",
+    "HYPE": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "ENA": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "USDE": "Synthetic dollar built on short futures positions - not permissible per Islamic Finance Guru.",
+    "ONDO": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "AAVE": "Interest-based lending protocol (riba) - not permissible per Islamic Finance Guru.",
+    "MKR": "Governance token of an interest-based loan platform (DAI stability fee) - not permissible per Islamic Finance Guru.",
+    "FTT": "Rated not permissible / doubtful by Islamic Finance Guru (2026-10-08 review).",
+    "XMR": "Privacy coin: excluded by the trader on taqwa grounds (IFG itself is uncomfortable adding value to it).",
+    "ZEC": "Privacy coin: excluded by the trader on taqwa grounds (IFG itself is uncomfortable adding value to it).",
+    "OM": "Excluded by the trader for risk: collapsed >90% in hours in April 2025 amid governance concerns.",
+    "BNB": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "CRO": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "OKB": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "BGB": "Exchange token: CryptoHalal rates it not permissible (value tied to an exchange that offers leverage, futures and interest-based lending); IFG permits it. Excluded by the trader's consensus rule (only coins both sources permit).",
+    "UNI": "Liquidity-provision structure: CryptoHalal rates it not permissible; IFG raised the same concern but permitted it. Excluded by the trader's consensus rule.",
+    "PAXG": "Tokenized gold: CryptoHalal rates it not permissible (gold needs immediate possession, taqabud). Use physical gold or a participation-bank gold account instead.",
+    "JST": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "GT": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "KCS": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "INJ": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "CAKE": "Rated not permissible by CryptoHalal (2026-10-08 review).",
+    "USDD": "Rated doubtful (mushtabah) by CryptoHalal."
+  },
+  "_crypto_blocked_reason": "Meme coins: no underlying utility, driven by speculation (gharar / maysir).",
+  "stablecoins_note": "USDT and USDC are rated permissible by both sources and USDT is the account's cash; DAI is permissible per IFG but not per CryptoHalal. Stablecoins are not traded for profit.",
+  "stocks_etfs": [
+    "SPUS",
+    "HLAL"
+  ],
+  "stocks_blocked": [],
+  "review_note": "Single-source coins (IFG permits, CryptoHalal not yet reviewed): APT, VET, POL, FET, THETA, EOS, XTZ, IOTA, NEO, EGLD, LEO, MNT. Not tradable until a second source covers them."
+}

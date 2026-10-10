@@ -1,0 +1,14 @@
+[Unit]
+Description=Trading desk browser interface (localhost only, reach it through an SSH tunnel)
+After=network-online.target
+
+[Service]
+User=trader
+WorkingDirectory=/opt/trading-agent
+ExecStart=/opt/trading-agent/.venv/bin/streamlit run app.py --server.address 127.0.0.1 --server.port 8501 --server.headless true
+Restart=always
+RestartSec=20
+Environment=PYTHONIOENCODING=utf-8
+
+[Install]
+WantedBy=multi-user.target
