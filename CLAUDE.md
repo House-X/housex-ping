@@ -6,9 +6,13 @@ Infra pings for HOUSE X (`.github/workflows/`) and the **carousel generator** (`
 
 When Mohamad sends project info (text, brochure, photos) and asks for a carousel / شرائح / كاروسيل:
 
+0. **Not a duplicate?** Look at `carousel/projects/` (or `Documents/HOUSE X Carousels/سجل المشاريع.xlsx`) first.
+   If the project already exists, update that one instead of creating a new slug; the renderer refuses a second
+   project with the same Arabic name, Latin name or source page (exit 1).
 1. **Slug + folder**: `carousel/projects/<slug>/`. Copy any photos he uploaded into `images/`
    (pick the strongest exterior/aerial for `theme.bg` and the cover `theme.collage`).
-2. **Write `project.json`** per `carousel/SCHEMA.md`. Copy rules:
+2. **Write `project.json`** per `carousel/SCHEMA.md`, with `created` (today, YYYY-MM-DD, never changed later)
+   and `location` (city — district). Copy rules:
    - Modern Standard Arabic, simplified and confident; premium positioning, no cheap hype, no invented facts.
      Missing data (e.g. distances) → ask, or drop that line; never fabricate numbers.
    - Cover hook sells the outcome (lifestyle / investment / citizenship), not the brochure name.
@@ -25,7 +29,8 @@ When Mohamad sends project info (text, brochure, photos) and asks for a carousel
    `+90 551 4000 200`; Instagram ≈ 10-15 hashtags (Arabic + English), Facebook a longer factual post with 4-6.
 4. **Render**: `node carousel/render.mjs carousel/projects/<slug>/project.json`. It always renders the feed (1080×1350)
    and the story (1080×1920) set, builds `<slug>-social.docx` from `social.json`, and copies the latest set to
-   `Documents/HOUSE X Carousels/<slug>/` (`Feed/`, `Story/`, the .docx), replacing the previous one.
+   `Documents/HOUSE X Carousels/<slug>/` (`Feed/`, `Story/`, the .docx), replacing the previous one, and rewrites
+   the registry `Documents/HOUSE X Carousels/سجل المشاريع.xlsx` (every project, created date, last render, source).
    It checks the project first: exit code 1 → fix the listed errors (missing text, 6-10 amenities, image files);
    read the warnings too (over-length text, no photos, a different phone). Exit code 2 → shorten the flagged text and re-render. Then look at the PNGs yourself before sending.
 5. **Deliver** the feed PNGs to the user (story too if asked) and tell him the folder; commit `project.json`,

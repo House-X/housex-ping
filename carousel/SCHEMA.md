@@ -16,6 +16,8 @@ carousel/projects/<slug>/
 | key | value |
 |---|---|
 | `name` | slug, used for file names (`vadi-premium`) |
+| `created` | date the project was first made, `YYYY-MM-DD`; shown in the registry, never changed |
+| `location` | city — district (`إسطنبول الأوروبية — باشاك شهير`), shown in the registry |
 | `source` | optional: the page the copy came from, `"<url> (<date>)"` — not shown on the slides |
 | `format` | `post` (1080×1350) or `story` (1080×1920) |
 | `theme.bg` | background photo for every slide, path relative to project.json, URL, or data URI. Omit → brand navy field |
@@ -78,6 +80,10 @@ npm install                                                       # once (playwr
 node carousel/render.mjs carousel/projects/<slug>/project.json     # feed + story + social.docx + export
 node carousel/render.mjs carousel/projects/<slug>/project.json --post | --story   # one format only
 ```
+
+Each render also rewrites `~/Documents/HOUSE X Carousels/سجل المشاريع.xlsx`: one row per project (name, Latin
+name, location, created, last render, folder, source). A project whose Arabic name, Latin name or source page
+matches another project fails the check (exit 1).
 
 Output in `out/`: `<slug>-s1.png` … `s5.png` (feed), `<slug>-s1-story.png` … (story), `<slug>-social.docx`,
 `fit-report.json`. The latest set is then copied to `~/Documents/HOUSE X Carousels/<slug>/` (`Feed/`, `Story/`, the

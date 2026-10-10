@@ -20,6 +20,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildSocialDoc, checkSocial } from './social-doc.mjs';
+import { findDuplicates, writeRegistry, REGISTRY_FILE } from './registry.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -106,6 +107,9 @@ function checkProject(p) {
 const LOGOS = ['fullcolor', 'white-colorx', 'all-white', 'navy-mono'];
 {
   const { errors, warnings } = checkProject(project);
+  // A project is created once: same name or source page as another project → stop.
+  for (const d of findDuplicates(path.join(here, 'projects'), slug)) errors.push(`مشروع مكرر: ${d}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(project.created || '')) warnings.push('created (تاريخ إنشاء المشروع YYYY-MM-DD) غير موجود في project.json');
   if (!social) warnings.push('لا يوجد social.json: لن يُنشأ ملف منشورات انستغرام وفيسبوك');
   else errors.push(...checkSocial(social));
   warnings.forEach(w => console.warn(`⚠ ${w}`));
@@ -208,5 +212,8 @@ if (!process.env.CI && !args.includes('--no-export')) {
   }
   if (social) fs.copyFileSync(docFile, path.join(dest, path.basename(docFile)));
   console.log(`export → ${dest}`);
+  const reg = await writeRegistry(path.join(here, 'projects'), root);
+  if (reg.error) console.warn(`⚠ ${REGISTRY_FILE}: ${reg.error}`);
+  else console.log(`registry → ${reg.file} (${reg.count} مشاريع)`);
 }
 if (report.some(r => r.remaining.length)) process.exitCode = 2;
