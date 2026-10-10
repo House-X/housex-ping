@@ -25,5 +25,5 @@ Brand: colours/logo/fonts follow the `housex-brand` skill. Logos live in `carous
 ## Open decisions (ask Mohamad before changing)
 
 - Footer phone: builder uses `+90 551 4000 200`; brand skill lists `+90 551 900 6600`. Kept the builder's number.
-- CTA badge on slide 5 is red text on navy (weak contrast). Proposed: navy text on gold `#ffca05`.
+- ~~CTA badge contrast~~ decided 2026-10-10: slide-5 CTA badge is navy `#26247b` text on gold `#ffca05`.
 - Only one template exists (project launch). Proposed next: "market news" and "Turkish citizenship" templates on the same project.json pipeline.
